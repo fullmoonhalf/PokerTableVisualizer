@@ -191,28 +191,3 @@ bool UhfRfidDriver::_send(uint8_t command, uint8_t *param, uint16_t length, bool
         return _send_enqueue(command, param, length);
     }
 }
-
-
-/// @brief 送信: 23. Set the transmitting power
-/// @param power db(x100) ex. 2600 = 26db
-/// @param immidiately 
-/// @return 
-bool UhfRfidDriver::commandTxPower(uint16_t power, bool immidiately)
-{
-    uint8_t command_param[2];
-    command_param[0] = (power >> 8) & 0xff;
-    command_param[1] = power & 0xff;
-    return _send(UhfRfidCommand::UhfRfidCommand_SetTheTransmittingPower, command_param, 2, immidiately);
-}
-
-
-/// @brief 0. Hardware version or 1. Software version or 2. Manufacturers
-/// @param what 
-/// @param immidiately 
-/// @return 
-bool UhfRfidDriver::commandInformation(uint8_t what, bool immidiately)
-{
-    uint8_t command_param[1];
-    command_param[0] = what;
-    return _send(UhfRfidCommand::UhfRfidCommand_Information, command_param, 1, immidiately);
-}

@@ -31,9 +31,9 @@ void setup()
   _UhfRfidDriver.setVerbose(true);
   _UhfRfidDriver.begin(&Serial2, 115200, 33, 32);
   _UhfRfidDriver.commandTxPower(2600, true);
-  _UhfRfidDriver.commandInformation(0, false);
-  _UhfRfidDriver.commandInformation(1, false);
-  _UhfRfidDriver.commandInformation(2, false);
+  _UhfRfidDriver.commandInformation(0);
+  _UhfRfidDriver.commandInformation(1);
+  _UhfRfidDriver.commandInformation(2);
   BaseType_t result = xTaskCreatePinnedToCore(task_driver_process, "t1", 4096, NULL, 1, NULL, 0);
 
 }
@@ -50,7 +50,11 @@ void loop()
 
   if(M5.BtnA.wasPressed())
   {
-    __DUMP_FL__
+    _UhfRfidDriver.commandSinglePollingInstruction();
+  }
+  else if(M5.BtnB.wasPressed())
+  {
+    _UhfRfidDriver.commandMultiPollingInstruction(100);
   }
 
   delay(100);

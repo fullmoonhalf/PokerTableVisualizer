@@ -41,6 +41,8 @@ enum UhfRfidChunk
 enum UhfRfidCommand
 {
     UhfRfidCommand_Information = 0x03,
+    UhfRfidCommand_SinglePollingInstruction = 0x22,
+    UhfRfidCommand_MultiPollingInstruction = 0x27,
     UhfRfidCommand_SetTheTransmittingPower = 0xB6,
 };
 
@@ -98,8 +100,11 @@ public:
     void setVerbose(bool sw);
     int getUpdateCount();
 
-    bool commandTxPower(uint16_t power, bool immidiately);
-    bool commandInformation(uint8_t what, bool immidiately);
+    bool commandTxPower(uint16_t power, bool immidiately = false);
+    bool commandInformation(uint8_t what, bool immidiately = false);
+    bool commandSinglePollingInstruction(bool immidiately = false);
+    bool commandMultiPollingInstruction(uint16_t count, bool immidiately = false);
+
 
 private:
     bool _read_immidiately(UhfRfidFrame *read_buffer);
