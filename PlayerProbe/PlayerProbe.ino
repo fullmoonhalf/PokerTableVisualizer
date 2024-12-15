@@ -56,6 +56,10 @@ void loop()
   {
     _UhfRfidDriver.commandMultiPollingInstruction(100);
   }
+  else if(M5.BtnC.wasPressed())
+  {
+    _UhfRfidDriver.commandGetTheSelectParameter();
+  }
 
   delay(100);
 }

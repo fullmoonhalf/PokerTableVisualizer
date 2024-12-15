@@ -199,9 +199,54 @@ void UhfRfidFrame::dump(const char *header)
     Serial.printf("Command %02x ", command);
     Serial.printf("Param(len=%d) ", length);
 
-    for(int index=0; index<length; ++index)
+    switch(type)
     {
-        Serial.printf("%02x ", parameter[index]);
+        case UhfRfidFrameType::TypeCommand:
+            break;
+        case UhfRfidFrameType::TypeResponse:
+            switch(command)
+            {
+                case UhfRfidResponse::UhfRfidResponse_GetTheSelectParameter:
+                    {
+                        uint8_t sel_param = parameter[0];
+                        uint32_t ptr = (parameter[1] << 24) | (parameter[2] << 16) | (parameter[3] << 8) | (parameter[4]);
+                        uint8_t mask_len = parameter[5];
+                        uint8_t truncate = parameter[6];
+                        Serial.printf("SelParam %02X Ptr %04X Truncate %d Mask(len=%d) ", sel_param, ptr, truncate, mask_len);
+                        _dump_hex_stream(parameter+7, mask_len, true);
+                    }
+                    return;
+            }
+            break;
+        case UhfRfidFrameType::TypeNotify:
+            switch(command)
+            {
+                case UhfRfidNotify::UhfRfidNotify_Polling:
+                    {
+                        uint8_t rssi = parameter[0];
+                        uint16_t pc = (parameter[1] << 8) | (parameter[2]);
+                        Serial.printf("rssi %d pc %04X epc ", rssi, pc);
+                        _dump_hex_stream(parameter+3, 12, true);
+                    }
+                    return;
+            }
+            break;
     }
-    Serial.println(".");
+
+    // どこにもひっかからなかったので、パラメータバイナリを表示する
+    _dump_hex_stream(parameter, length, true);
+}
+
+
+void UhfRfidFrame::_dump_hex_stream(uint8_t *argStream, uint16_t argLength, bool newline)
+{
+    for(uint16_t index=0; index<argLength; ++index)
+    {
+        Serial.printf("%02x ", argStream[index]);
+    }
+
+    if(newline)
+    {
+        Serial.println(".");
+    }
 }

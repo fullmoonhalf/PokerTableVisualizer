@@ -41,9 +41,24 @@ enum UhfRfidChunk
 enum UhfRfidCommand
 {
     UhfRfidCommand_Information = 0x03,
+    UhfRfidCommand_GetTheSelectParameter = 0x0B,
+    UhfRfidCommand_SetTheSelectParameterInstruction = 0x0C,
     UhfRfidCommand_SinglePollingInstruction = 0x22,
     UhfRfidCommand_MultiPollingInstruction = 0x27,
     UhfRfidCommand_SetTheTransmittingPower = 0xB6,
+};
+
+
+enum UhfRfidResponse
+{
+    UhfRfidResponse_GetTheSelectParameter = 0x0B,
+    UhfRfidResponse_Error = 0xff,
+};
+
+
+enum UhfRfidNotify
+{
+    UhfRfidNotify_Polling = 0x22,
 };
 
 
@@ -56,6 +71,9 @@ public:
     uint8_t calcurateChecksum();
     bool setup(uint8_t type, uint8_t command, uint8_t *param, uint16_t length);
     void dump(const char *header);
+
+private:
+    void _dump_hex_stream(uint8_t *stream, uint16_t length, bool newline);
 
 public:
     uint8_t type;
@@ -104,6 +122,8 @@ public:
     bool commandInformation(uint8_t what, bool immidiately = false);
     bool commandSinglePollingInstruction(bool immidiately = false);
     bool commandMultiPollingInstruction(uint16_t count, bool immidiately = false);
+    bool commandGetTheSelectParameter(bool immidiately = false);
+    bool commandSetTheSelectParameterInstruction(bool immidiately = false);
 
 
 private:
