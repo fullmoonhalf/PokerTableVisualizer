@@ -1,3 +1,4 @@
 # Unity
 ## Requirements
 - InputSystem (>= 1.7.0)
+- 2D Sprite (>= 1.0.0)
