@@ -54,7 +54,6 @@ void loop()
   }
   else if(M5.BtnB.wasPressed())
   {
-    _UhfRfidDriver.commandMultiPollingInstruction(100);
   }
   else if(M5.BtnC.wasPressed())
   {

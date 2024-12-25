@@ -1,5 +1,5 @@
 #include "UhfRfidDriver.h"
-
+#include "UhfRfidFormat.h"
 
 
 /// @brief 
@@ -224,9 +224,12 @@ void UhfRfidFrame::dump(const char *header)
                 case UhfRfidNotify::UhfRfidNotify_Polling:
                     {
                         uint8_t rssi = parameter[0];
-                        uint16_t pc = (parameter[1] << 8) | (parameter[2]);
-                        Serial.printf("rssi %d pc %04X epc ", rssi, pc);
-                        _dump_hex_stream(parameter+3, 12, true);
+                        UhfRfidPCConvert pc = { (parameter[1] << 8) | (parameter[2]) };
+                        uint16_t epc_length = pc.format.Length * 2;
+                        uint16_t crc_index = 3 + epc_length;
+                        uint16_t crc = (parameter[crc_index] << 8) | (parameter[crc_index + 1]);
+                        Serial.printf("rssi %d pc %04X(%d,%d,%d,%d,%d) crc %04X epc ", rssi, pc.value, pc.format.Length, pc.format.UMI, pc.format.XPC, pc.format.Toggle, pc.format.RFUorAFI, crc);
+                        _dump_hex_stream(parameter+3, epc_length, true);
                     }
                     return;
             }

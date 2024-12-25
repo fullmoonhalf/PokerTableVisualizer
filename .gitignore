@@ -70,3 +70,4 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /CenterMonitor/[Aa]ssets/[Ss]treamingAssets/aa.meta
 /CenterMonitor/[Aa]ssets/[Ss]treamingAssets/aa/*
+PlayerProbe/.vscode/c_cpp_properties.json
