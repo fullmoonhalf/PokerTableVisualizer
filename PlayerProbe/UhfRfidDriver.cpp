@@ -131,7 +131,6 @@ bool UhfRfidDriver::_send_immidiately(UhfRfidFrame *send_frame)
     _serial->write(_send_buffer, encode_length);
     if(_verbose)
     {
-        dump("[UhfRfidDriver::_send_immidiately]", _send_buffer, encode_length);
         send_frame->dump("[UhfRfidDriver::_send_immidiately]");
     }
 
@@ -190,4 +189,41 @@ bool UhfRfidDriver::_send(uint8_t command, uint8_t *param, uint16_t length, bool
     {
         return _send_enqueue(command, param, length);
     }
+}
+
+
+/// @brief 
+/// @param output 
+/// @param input 
+/// @return 
+int UhfRfidDriver::_write_uint32_to_stream(uint8_t *output, uint32_t input)
+{
+    output[0] = (input >> 24) & 0xff;
+    output[1] = (input >> 16) & 0xff;
+    output[2] = (input >> 8) & 0xff;
+    output[3] = (input) & 0xff;
+    return 4;
+}
+
+
+/// @brief 
+/// @param output 
+/// @param input 
+/// @return 
+int UhfRfidDriver::_write_uint16_to_stream(uint8_t *output, uint16_t input)
+{
+    output[0] = (input >> 8) & 0xff;
+    output[1] = (input) & 0xff;
+    return 2;
+}
+
+
+/// @brief 
+/// @param output 
+/// @param input 
+/// @return 
+int UhfRfidDriver::_write_uint8_to_stream(uint8_t *output, uint8_t input)
+{
+    output[0] = input;
+    return 1;
 }

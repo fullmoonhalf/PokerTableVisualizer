@@ -8,9 +8,12 @@
 bool UhfRfidDriver::commandTxPower(uint16_t power, bool immidiately)
 {
     uint8_t command_param[2];
-    command_param[0] = (power >> 8) & 0xff;
-    command_param[1] = power & 0xff;
-    return _send(UhfRfidCommand::UhfRfidCommand_SetTheTransmittingPower, command_param, sizeof(command_param), immidiately);
+    uint8_t *seek = command_param;
+
+    seek += _write_uint16_to_stream(seek, power);
+
+    uint16_t command_param_length = seek - command_param;
+    return _send(UhfRfidCommand::UhfRfidCommand_SetTheSelectParameterInstruction, command_param, command_param_length, immidiately);
 }
 
 
@@ -21,8 +24,12 @@ bool UhfRfidDriver::commandTxPower(uint16_t power, bool immidiately)
 bool UhfRfidDriver::commandInformation(uint8_t what, bool immidiately)
 {
     uint8_t command_param[1];
-    command_param[0] = what;
-    return _send(UhfRfidCommand::UhfRfidCommand_Information, command_param, sizeof(command_param), immidiately);
+    uint8_t *seek = command_param;
+
+    seek += _write_uint8_to_stream(seek, what); // reserved number.
+
+    uint16_t command_param_length = seek - command_param;
+    return _send(UhfRfidCommand::UhfRfidCommand_SetTheSelectParameterInstruction, command_param, command_param_length, immidiately);
 }
 
 
@@ -57,10 +64,13 @@ bool UhfRfidDriver::commandSinglePollingInstruction(bool immidiately)
 bool UhfRfidDriver::commandMultiPollingInstruction(uint16_t count, bool immidiately)
 {
     uint8_t command_param[3];
-    command_param[0] = 0x22; // reserved number.
-    command_param[1] = (count >> 8) & 0xff;
-    command_param[2] = count & 0xff;
-    return _send(UhfRfidCommand::UhfRfidCommand_Information, command_param, sizeof(command_param), immidiately);
+    uint8_t *seek = command_param;
+
+    seek += _write_uint8_to_stream(seek, 0x22); // reserved number.
+    seek += _write_uint16_to_stream(seek, count);
+
+    uint16_t command_param_length = seek - command_param;
+    return _send(UhfRfidCommand::UhfRfidCommand_Information, command_param, command_param_length, immidiately);
 }
 
 
@@ -73,11 +83,166 @@ bool UhfRfidDriver::commandGetTheSelectParameter(bool immidiately)
 }
 
 
-
-bool UhfRfidDriver::commandSetTheSelectParameterInstruction(bool immidiately)
+/// @brief 
+/// @param target 
+/// Target は、Select がタグの SL フラグを変更するか、インベントリされたフラグを変更するかを示し、インベントリされた場合は、さらに 4 つのセッションのいずれかを指定します。
+/// SLフラグを変更するSelectは、インベントリされたフラグを変更してはならない。また、その逆も同様である。
+/// タグは、ターゲットが 101(2)、110(2)、または 111(2) の Select を無視するものとします。
+/// @param action 
+/// アクションは、表 6.30 の Tag 動作を引き出します。
+/// この動作では、一致するタグと一致しないタグが SL をアサートまたはディアサートするか、インベントリされたフラグを A または B に設定します。
+/// MemBank、Pointer、Length、および Mask フィールドの内容に準拠するタグが一致しています。
+/// これらのフィールドの内容に準拠していないタグが一致していません。
+/// タグが一致しているかどうかを判断するための基準は、MemBank、Pointer、Length、および Mask フィールドによって指定されます。
+/// @param membank 
+/// MemBankは、タグがマスクを適用する方法を指定します。
+/// MemBank=00(2) の場合、タグは FileType が Mask に一致するファイルを少なくとも 1 つ検索します。
+/// MemBank=01(2)、10(2)、11(2) の場合、タグは EPC メモリ バンク、TID メモリ バンク、または File_0 にそれぞれマスクを適用します。
+/// Select は、1 つの FileType またはメモリ バンクを指定します。
+/// 連続セレクトは、異なるファイルタイプやメモリバンクに適用される場合があります。
+/// @param pointer 
+/// Pointer は、マスク比較の開始ビット アドレスを指定します。
+/// ポインタは、EBV フォーマット (付録 A を参照) とビット (ワードではない) アドレス指定を使用します。
+/// MemBank=00(2) の場合、質問者は Pointer を 00h に設定します。
+/// タグがMemBank=00(2)と0以外のポインタ値を持つSelectを受け取った場合、Selectを無視する必要があります。
+/// @param length 
+/// マスクの長さを指定します。
+/// 0 から 255 ビットまでのマスクの長さが可能です。
+/// Mem Bank=00(2) の場合、質問者は Length=00001000(2) を設定する。
+/// タグがMemBank=00(2)とLength!=00001000(2)のSelectを受け取った場合、そのSelectは無視されます。
+/// @param mask 
+/// Mask は、
+/// ・FileType (MemBank=00(2) の場合)
+/// ・Tag が Pointer で始まり Length ビット後に終了するメモリ位置と比較するビット文字列 (MemBank<>002 の場合) 
+/// のいずれかです。
+/// 追跡不可能なタグは、
+/// ・ユーザーメモリが追跡可能なMemBank=00(2)
+/// ・Maskが完全に追跡可能なビット文字列で動作するMemBank<>00(2)を持つ選択
+/// を処理する必要があります。
+/// タグは、Maskが追跡不可能な隠しメモリを含むSelectコマンドと一致しないものとして扱う必要があります。
+///
+/// MemBank=00(2): 
+/// タグに指定された FileType のファイルがある場合、タグは一致しています。
+/// タグがファイルをサポートしていないか、指定した FileType のファイルがない場合、タグは一致しません。
+///
+/// MemBank<>00(2): 
+/// Mask が Pointer と Length で指定された文字列と一致する場合、タグは一致しています。
+/// ポインターと長さが存在しないメモリ位置を参照している場合、タグは一致していません。
+/// Length が 0 の場合、Tag は一致しますが、Pointer が存在しないメモリ位置を参照しているか、
+/// Truncate=1 で Pointer が StoredPC の length フィールドで指定された EPC の外部にある場合、Tag は一致しません。
+/// @param truncate 
+/// Truncate は、タグの後方散乱応答を Mask に続く EPC ビットに切り捨てるかどうかを示します。
+/// インテロゲータがTruncateをアサートし、後続のQueryがSel=10またはSel=11を指定した場合、
+/// 一致するTagは、そのACK応答をEPCのMaskの直後の部分に切り捨て、その後にPacketCRCを続けます。
+/// 尋問者がTruncateを主張した場合、それを主張するものとします。
+/// @param immidiately 
+/// 即時実行フラグ
+/// @return 
+/// 送信に成功したか？ (あるいは、送信キューに乗せられたかどうか)
+/// @details
+///「選択」コマンドを使用すると、インテロゲーターはインベントリを作成する前に特定のタグ母集団を選択できます。
+/// 選択はユーザー定義の基準に基づいており、和集合 (U)、交差 (∩)、および否定 (~) ベースのタグ分割が有効になります。
+/// インテロゲータは、連続して Select コマンドを発行して、ユーザーと∩の操作を実行します。
+/// Select では、タグの SL フラグをアサートまたはディアサートしたり、
+/// タグのインベントリ済みフラグを 4 つのセッションのいずれかで A または B に設定したりできます。
+///
+/// Selectを受け取ると、強制終了されていないタグは準備完了状態に戻り、基準を評価し、評価によっては指定されたSLまたはインベントリされたフラグを変更する場合があります。
+/// クエリ コマンドは、これらのフラグを使用して、後続のインベントリ ラウンドに参加するタグを選択します。
+/// インテロゲータは、SLタグまたは~SLタグをインベントリしてアクセスすることも、SLフラグをまったく使用しないことを選択することもできます。
+/// 選択は、強制終了以外の任意の状態のタグで開始でき、準備完了のタグで終了します。
+///
+/// [ターゲット] と [アクション] は、Select がタグの SL またはインベントリされたフラグを変更するかどうか、またどのように変更するかを示します。
+/// また、インベントリされたフラグの場合は、どのセッションに対して変更するかを示します。
+/// SL フラグを変更する Select は、インベントリード フラグを変更せず、その逆も同様です。
+bool UhfRfidDriver::commandSetTheSelectParameterInstruction(
+        UhfRfidSelectSelParamTarget target,
+        UhfRfidSelectSelParamAction action,
+        UhfRfidSelectSelParamMembank membank,
+        uint32_t pointer,
+        uint8_t length,
+        uint8_t *mask,
+        bool truncate,
+        bool immidiately
+    )
 {
-    uint8_t command_param[0x13];
-    command_param[0] = 0x22; // reserved number.
-    return _send(UhfRfidCommand::UhfRfidCommand_Information, command_param, sizeof(command_param), immidiately);
+    uint8_t command_param[256];
+    uint8_t *seek = command_param;
 
+    UhfRfidSelectSelParamConvert SelParam;
+    SelParam.format.MemBank = membank;
+    SelParam.format.Action = action;
+    SelParam.format.Target = target;
+    seek += _write_uint8_to_stream(seek, SelParam.value);
+
+    uint32_t applied_pointer = (membank == UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_RFU) ? 0 : pointer;
+    seek += _write_uint32_to_stream(seek, applied_pointer);
+
+    uint8_t applied_length = (membank == UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_RFU) ? 8 : length;
+    seek += _write_uint8_to_stream(seek, applied_length);
+
+    seek += _write_uint8_to_stream(seek, truncate ? 1 : 0);
+
+    for(int index=0; index<length; ++index)
+    {
+        *seek = mask[index];
+        seek++;
+    }
+
+    uint16_t command_param_length = seek - command_param;
+    return _send(UhfRfidCommand::UhfRfidCommand_SetTheSelectParameterInstruction, command_param, command_param_length, immidiately);
+}
+
+
+/// @brief 8. Set the SELECT mode
+/// @param mode 
+/// @param immidiately 
+/// @return 
+bool UhfRfidDriver::commandSetTheSelectMode(UhfRfidSelectMode mode, bool immidiately)
+{
+    uint8_t command_param[1];
+    command_param[0] = mode;
+    return _send(UhfRfidCommand::UhfRfidCommand_SetTheSelectMode, command_param, sizeof(command_param), immidiately);
+}
+
+
+/// @brief 
+/// @param access_password 
+/// パスワード
+/// @param membank 
+/// 対象メモリバンク
+/// @param sa
+/// ラベル・データ域のアドレス・オフセットの読み取り 
+/// @param dl 
+/// 読み込み長。単位はワード、つまり2バイト/16ビットです。
+/// @param immidiately 
+/// @return 
+bool UhfRfidDriver::commandReadLabelDataStorageArea(uint32_t access_password, UhfRfidSelectSelParamMembank membank, uint16_t sa, uint16_t dl, bool immidiately)
+{
+    uint8_t command_param[9];
+    uint8_t *seek = command_param;
+
+    seek += _write_uint32_to_stream(seek, access_password);
+    seek += _write_uint8_to_stream(seek, membank);
+    seek += _write_uint16_to_stream(seek, sa);
+    seek += _write_uint16_to_stream(seek, dl);
+
+    uint16_t param_length = seek - command_param;
+    return _send(UhfRfidCommand::UhfRfidCommand_ReadLabelDataStorageArea, command_param, param_length, immidiately);
+}
+
+
+/// @brief 
+/// @param immidiately 
+/// @return 
+bool UhfRfidDriver::commandWriteTheLabelDataStore(bool immidiately)
+{
+#if 0
+    uint8_t command_param[9];
+    uint8_t *seek = command_param;
+
+    uint16_t param_length = seek - command_param;
+    return _send(UhfRfidCommand::UhfRfidCommand_SetTheSelectMode, command_param, param_length, immidiately);
+#else
+    return false;
+#endif
 }

@@ -42,23 +42,86 @@ void setup()
 // -------------------------------------------------------------------------------------
 // main loop
 // -------------------------------------------------------------------------------------
+static void test_commandSinglePollingInstruction()
+{
+  _UhfRfidDriver.commandSinglePollingInstruction();
+}
+
+static void test_commandGetTheSelectParameter()
+{
+  _UhfRfidDriver.commandGetTheSelectParameter();
+}
+
+static void test_commandReadLabelDataStorageArea()
+{
+  _UhfRfidDriver.commandReadLabelDataStorageArea(
+    0x0, 
+    UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_RFU,
+    0, 
+    2
+  );
+}
+
+static void test_commandSetTheSelectParameterInstruction_Reset()
+{
+  _UhfRfidDriver.commandSetTheSelectParameterInstruction(
+    UhfRfidSelectSelParamTarget::UhfRfidSelectSelParamTarget_Inventoried_1,
+    UhfRfidSelectSelParamAction::UhfRfidSelectSelParamAction_0,
+    UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_EPC, 
+    0,
+    0,
+    nullptr,
+    false
+  );
+}
+
+
+
+struct Command
+{
+  const char *name;
+  void (*func)();
+};
+static Command _command_list[] = 
+{
+  { "SinglePolling        ", test_commandSinglePollingInstruction, },
+  { "GetSelect            ", test_commandGetTheSelectParameter, },
+  { "Reset Select         ", test_commandSetTheSelectParameterInstruction_Reset},
+  { "ReadLabel            ", test_commandReadLabelDataStorageArea, },
+};
+static int _command_index = 0;
+
+
+
+
 void loop() 
 {
   M5.update();
-  M5.Lcd.drawNumber(counter++, 60, 20, 4);
-  M5.Lcd.drawNumber(_UhfRfidDriver.getUpdateCount(), 60, 40, 4);
 
   if(M5.BtnA.wasPressed())
   {
-    _UhfRfidDriver.commandSinglePollingInstruction();
+    _command_list[_command_index].func();
   }
   else if(M5.BtnB.wasPressed())
   {
+    _command_index--;
+    if(_command_index < 0)
+    {
+      _command_index = __ARRAY_SIZE__(_command_list);
+    }
   }
   else if(M5.BtnC.wasPressed())
   {
-    _UhfRfidDriver.commandGetTheSelectParameter();
+    _command_index++;
+    if(_command_index >= __ARRAY_SIZE__(_command_list))
+    {
+      _command_index = 0;
+    }
   }
+
+  M5.Lcd.drawNumber(counter++, 20, 20, 4);
+  M5.Lcd.drawNumber(_UhfRfidDriver.getUpdateCount(), 20, 40, 4);
+  M5.Lcd.drawString(_command_list[_command_index].name, 20, 60, 4);
 
   delay(100);
 }

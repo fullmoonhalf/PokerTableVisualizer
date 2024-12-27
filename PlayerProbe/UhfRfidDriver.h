@@ -1,66 +1,11 @@
 #ifndef __UHF_RFID_DRIVER_H_
 #define __UHF_RFID_DRIVER_H_
 #include <Arduino.h>
-
-
-#define HEADER_MAGIC_NUMBER (0xBB)
-#define FOOTER_MAGIC_NUMBER (0x7E)
-
+#include "UhfRfidFormat.h"
 
 
 #define __DUMP_FL__ Serial.printf("<%s:%d>\r\n", __FILE__, __LINE__);
-
-
-enum UhfRfidFrameType
-{
-    /// @brief send to M100 chip.
-    TypeCommand = 0,
-    /// @brief response from M100 chip.
-    TypeResponse = 1,
-    /// @brief notify from M100 chip.
-    /// 1 つのポーリング命令と複数のポーリング命令にも、対応する通知フレームがあります。 
-    /// マイコンから送信された通知フレームの数は、読み取り状況に応じて自律的にホストコンピュータに送信されます。 
-    /// リーダーがタグを読み取ると通知フレームが送信され、リーダーが複数のタグを読み取ると、複数の通知フレームが送信されます
-    TypeNotify = 2,
-};
-
-
-enum UhfRfidChunk
-{
-    ChunkInvalid,
-    ChunkHeader,
-    ChunkType,
-    ChunkCommand,
-    ChunkLength,
-    ChunkParameter,
-    ChunkChecksum,
-    ChunkFooter,
-};
-
-
-enum UhfRfidCommand
-{
-    UhfRfidCommand_Information = 0x03,
-    UhfRfidCommand_GetTheSelectParameter = 0x0B,
-    UhfRfidCommand_SetTheSelectParameterInstruction = 0x0C,
-    UhfRfidCommand_SinglePollingInstruction = 0x22,
-    UhfRfidCommand_MultiPollingInstruction = 0x27,
-    UhfRfidCommand_SetTheTransmittingPower = 0xB6,
-};
-
-
-enum UhfRfidResponse
-{
-    UhfRfidResponse_GetTheSelectParameter = 0x0B,
-    UhfRfidResponse_Error = 0xff,
-};
-
-
-enum UhfRfidNotify
-{
-    UhfRfidNotify_Polling = 0x22,
-};
-
+#define __ARRAY_SIZE__(x)  (sizeof((x))/sizeof((x)[0]))
 
 class UhfRfidFrame
 {
@@ -74,6 +19,8 @@ public:
 
 private:
     void _dump_hex_stream(uint8_t *stream, uint16_t length, bool newline);
+    void _dump_error_code_support(uint8_t error_code);
+    void _dump_pc(UhfRfidPCConvert &pc);
 
 public:
     uint8_t type;
@@ -123,8 +70,10 @@ public:
     bool commandSinglePollingInstruction(bool immidiately = false);
     bool commandMultiPollingInstruction(uint16_t count, bool immidiately = false);
     bool commandGetTheSelectParameter(bool immidiately = false);
-    bool commandSetTheSelectParameterInstruction(bool immidiately = false);
-
+    bool commandSetTheSelectParameterInstruction(UhfRfidSelectSelParamTarget target, UhfRfidSelectSelParamAction action, UhfRfidSelectSelParamMembank membank, uint32_t pointer, uint8_t length, uint8_t *mask, bool truncate, bool immidiately = false);
+    bool commandSetTheSelectMode(UhfRfidSelectMode mode, bool immidiately = false);
+    bool commandReadLabelDataStorageArea(uint32_t access_password, UhfRfidSelectSelParamMembank membank, uint16_t sa, uint16_t dl, bool immidiately = false);
+    bool commandWriteTheLabelDataStore(bool immidiately = false);
 
 private:
     bool _read_immidiately(UhfRfidFrame *read_buffer);
@@ -133,6 +82,10 @@ private:
     bool _send_immidiately(uint8_t command, uint8_t *param, uint16_t length);
     bool _send_enqueue(uint8_t command, uint8_t *param, uint16_t length);
     bool _send(uint8_t command, uint8_t *param, uint16_t length, bool immidiately);
+
+    int _write_uint32_to_stream(uint8_t *output, uint32_t input);
+    int _write_uint16_to_stream(uint8_t *output, uint16_t input);
+    int _write_uint8_to_stream(uint8_t *output, uint8_t input);
 
 private:
     HardwareSerial *_serial;
