@@ -236,13 +236,20 @@ bool UhfRfidDriver::commandReadLabelDataStorageArea(uint32_t access_password, Uh
 /// @return 
 bool UhfRfidDriver::commandWriteTheLabelDataStore(bool immidiately)
 {
-#if 0
-    uint8_t command_param[9];
-    uint8_t *seek = command_param;
-
-    uint16_t param_length = seek - command_param;
-    return _send(UhfRfidCommand::UhfRfidCommand_SetTheSelectMode, command_param, param_length, immidiately);
-#else
     return false;
-#endif
+}
+
+
+/// @brief 14. Get parameters related to the Query command
+/// @param immidiately 
+/// @return 
+bool UhfRfidDriver::commandGetParametersRelatedToTheQueryCommand(bool immidiately)
+{
+    return _send(UhfRfidCommand::UhfRfidCommand_GetParametersRelatedToTheQueryCommand, nullptr, 0, immidiately);
+}
+
+
+bool UhfRfidDriver::commandSetTheQueryParameter(bool immidiately)
+{
+    return false;
 }

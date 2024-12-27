@@ -18,7 +18,7 @@ void UhfRfidFrame::dump(const char *header)
                 case UhfRfidResponse::UhfRfidResponse_GetTheSelectParameter:
                     {
                         uint8_t sel_param = parameter[0];
-                        uint32_t ptr = (parameter[1] << 24) | (parameter[2] << 16) | (parameter[3] << 8) | (parameter[4]);
+                        uint32_t ptr = _parseUint32(parameter + 1);
                         uint8_t mask_len = parameter[5];
                         uint8_t truncate = parameter[6];
                         Serial.printf("SelParam %02X Ptr %04X Truncate %d Mask(len=%d) ", sel_param, ptr, truncate, mask_len);
@@ -30,7 +30,7 @@ void UhfRfidFrame::dump(const char *header)
                         uint8_t ul = parameter[0];
                         uint8_t epc_length = ul - 2;
                         uint8_t data_length = length - 1 - ul;
-                        UhfRfidPCConvert pc = { (parameter[1] << 8) | (parameter[2]) };
+                        UhfRfidPCConvert pc = { _parseUint16(parameter + 1) };
 
                         Serial.printf("pc ");
                         _dump_pc(pc);
@@ -38,6 +38,14 @@ void UhfRfidFrame::dump(const char *header)
                         _dump_hex_stream(parameter+3, epc_length, false);
                         Serial.printf(" data(len=%d) ", data_length);
                         _dump_hex_stream(parameter+1+ul, data_length, true);
+                    }
+                    return;
+                case UhfRfidResponse::UhfRfidResponse_GetParametersRelatedToTheQueryCommand:
+                    {
+                        UhfRfidQueryParamConvert param =  { _parseUint16(parameter) };
+                        Serial.printf("param ");
+                        _dump_query_param(param);
+                        Serial.println("");
                     }
                     return;
                 case UhfRfidResponse::UhfRfidResponse_Error:
@@ -75,10 +83,10 @@ void UhfRfidFrame::dump(const char *header)
                 case UhfRfidNotify::UhfRfidNotify_Polling:
                     {
                         uint8_t rssi = parameter[0];
-                        UhfRfidPCConvert pc = { (parameter[1] << 8) | (parameter[2]) };
+                        UhfRfidPCConvert pc = { _parseUint16(parameter + 1) };
                         uint16_t epc_length = pc.format.Length * 2;
                         uint16_t crc_index = 3 + epc_length;
-                        uint16_t crc = (parameter[crc_index] << 8) | (parameter[crc_index + 1]);
+                        uint16_t crc = _parseUint16(parameter+crc_index);
                         Serial.printf("rssi %d pc ", rssi);
                         _dump_pc(pc);
                         Serial.printf(" crc %04X epc ", crc);
@@ -131,4 +139,28 @@ void UhfRfidFrame::_dump_error_code_support(uint8_t error_code)
 void UhfRfidFrame::_dump_pc(UhfRfidPCConvert &pc)
 {
     Serial.printf("%04X(%d,%d,%d,%d,%d)", pc.value, pc.format.Length, pc.format.UMI, pc.format.XPC, pc.format.Toggle, pc.format.RFUorAFI);
+}
+
+
+void UhfRfidFrame::_dump_query_param(UhfRfidQueryParamConvert &param)
+{
+    Serial.printf("%02X(%d,%d,%d,%d,%d,%d,%d)", param.value, param.format.DR, param.format.M, param.format.TRext, param.format.Sel, param.format.Session, param.format.Target, param.format.Q);
+}
+
+
+/// @brief uint8_t の配列から uint16 の値を取得する
+/// @param stream 入力メモリ
+/// @return 解釈値
+uint16_t UhfRfidFrame::_parseUint16(uint8_t *stream)
+{
+    return (stream[0] << 8) | stream[1];
+}
+
+
+/// @brief uint8_t の配列から uint32 の値を取得する
+/// @param stream 入力メモリ
+/// @return 解釈値
+uint32_t UhfRfidFrame::_parseUint32(uint8_t *stream)
+{
+    return (stream[0] << 24) | (stream[1] << 16) | (stream[2] << 8) | stream[3];
 }

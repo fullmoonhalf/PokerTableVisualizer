@@ -21,6 +21,9 @@ private:
     void _dump_hex_stream(uint8_t *stream, uint16_t length, bool newline);
     void _dump_error_code_support(uint8_t error_code);
     void _dump_pc(UhfRfidPCConvert &pc);
+    void _dump_query_param(UhfRfidQueryParamConvert &param);
+    uint32_t _parseUint32(uint8_t *stream);
+    uint16_t _parseUint16(uint8_t *stream);
 
 public:
     uint8_t type;
@@ -74,6 +77,8 @@ public:
     bool commandSetTheSelectMode(UhfRfidSelectMode mode, bool immidiately = false);
     bool commandReadLabelDataStorageArea(uint32_t access_password, UhfRfidSelectSelParamMembank membank, uint16_t sa, uint16_t dl, bool immidiately = false);
     bool commandWriteTheLabelDataStore(bool immidiately = false);
+    bool commandGetParametersRelatedToTheQueryCommand(bool immidiately = false);
+    bool commandSetTheQueryParameter(bool immidiately = false);
 
 private:
     bool _read_immidiately(UhfRfidFrame *read_buffer);

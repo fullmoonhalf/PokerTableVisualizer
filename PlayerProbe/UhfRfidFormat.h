@@ -39,14 +39,23 @@ enum UhfRfidChunk
 enum UhfRfidCommand
 {
     UhfRfidCommand_Information = 0x03,
+    UhfRfidCommand_SetTheTransmittingPower = 0xB6,
 
     UhfRfidCommand_GetTheSelectParameter = 0x0B,
     UhfRfidCommand_SetTheSelectParameterInstruction = 0x0C,
     UhfRfidCommand_SetTheSelectMode = 0x12,
 
+    UhfRfidCommand_GetParametersRelatedToTheQueryCommand = 0x0D,
+    UhfRfidCommand_SetTheQueryParameter = 0x0E,
+
+    /// @brief EPCClass1Gen2 プロトコルでインベントリのポーリング操作を完了します。 
+    /// @details
+    /// Select 操作は、このディレクティブに含まれていません。
+    /// アンプは、各ポーリング命令が実行される前と後に自動的にオン/オフされます。
+    /// Inventory コマンドの 1 回のポーリングでは、Query operation パラメータは別のコマンドによって設定され、初期値はすでにファームウェアに含まれています。 
     UhfRfidCommand_SinglePollingInstruction = 0x22,
     UhfRfidCommand_MultiPollingInstruction = 0x27,
-    UhfRfidCommand_SetTheTransmittingPower = 0xB6,
+
 
     UhfRfidCommand_ReadLabelDataStorageArea = 0x39,
     UhfRfidCommand_WriteTheLabelDataStore = 0x49,
@@ -59,6 +68,7 @@ enum UhfRfidResponse
     UhfRfidResponse_GetTheSelectParameter = 0x0B,
     UhfRfidResponse_Error = 0xff,
     UhfRfidResponse_ReadLabelDataStorageArea = 0x39,
+    UhfRfidResponse_GetParametersRelatedToTheQueryCommand = 0x0D,
 };
 
 
@@ -292,6 +302,82 @@ enum UhfRfidSelectMode
 
 
 
+/// -------------------------------------------------------------------------------------------------------------------------
+/// Query 命令に関すること
+/// -------------------------------------------------------------------------------------------------------------------------
+struct UhfRfidQueryParamFormat
+{
+    /// @brief ラウンドのスロット数
+    uint16_t Q:4;
+    /// @brief インベントリされたフラグがAまたはBのタグがインベントリラウンドに参加するかどうか。
+    /// タグは、個別化の結果として、インベントリされたフラグをAからBに(またはその逆に)変更できる。
+    /// @details UhfRfidQueryParamTargetType で値定義
+    uint16_t Target:1;
+    /// @brief インベントリラウンドのセッション
+    /// @details UhfRfidQueryParamSessionType で値定義
+    uint16_t Session:2;
+    /// @brief どのタグがクエリに応答するか 
+    /// @details UhfRfidQueryParamSelType で値定義
+    uint16_t Sel:2;
+    /// @brief タグが T=>R プリアンブルの先頭にパイロットトーンを付けるかどうかを選択します。
+    /// 遅延応答またはインプロセス応答(6.3.1.6を参照)を使用するコマンドに対するタグの応答は、TRext値に関係なく拡張プリアンブルを使用します。
+    /// @details UhfRfidQueryParamTRextType で値定義
+    uint16_t TRext:1;
+    /// @brief T=>Rデータレート
+    /// @details UhfRfidQueryParamMType で値定義。
+    uint16_t M:2;
+    /// @brief T=>R リンク周波数
+    /// @details UhfRfidQueryParamDRType で値定義。
+    uint16_t DR:1;
+};
+
+union UhfRfidQueryParamConvert
+{
+    uint16_t value;
+    UhfRfidQueryParamFormat format;
+};
+
+enum UhfRfidQueryParamDRType
+{
+    UhfRfidQueryParamDRType_8 = 0,
+    UhfRfidQueryParamDRType_64_per_3 = 1,
+};
+
+enum UhfRfidQueryParamMType
+{
+    UhfRfidQueryParamMType_1 = 0,
+    UhfRfidQueryParamMType_2 = 1,
+    UhfRfidQueryParamMType_4 = 2,
+    UhfRfidQueryParamMType_8 = 3,
+};
+
+enum UhfRfidQueryParamTRextType
+{
+    UhfRfidQueryParamTRextType_NoPilotTone = 0,
+    UhfRfidQueryParamTRextType_UsePilotTone = 1,
+};
+
+enum UhfRfidQueryParamSelType
+{
+    UhfRfidQueryParamSelType_ALL = 0,
+    UhfRfidQueryParamSelType_ALL_alt = 1,
+    UhfRfidQueryParamSelType_Negative_SL = 2,
+    UhfRfidQueryParamSelType_SL = 3,
+};
+
+enum UhfRfidQueryParamSessionType
+{
+    UhfRfidQueryParamSessionType_S0 = 0,
+    UhfRfidQueryParamSessionType_S1 = 1,
+    UhfRfidQueryParamSessionType_S2 = 2,
+    UhfRfidQueryParamSessionType_S3 = 3,
+};
+
+enum UhfRfidQueryParamTargetType
+{
+    UhfRfidQueryParamTargetType_A = 0,
+    UhfRfidQueryParamTargetType_B = 1,
+};
 
 
 

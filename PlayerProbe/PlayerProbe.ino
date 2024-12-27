@@ -75,6 +75,11 @@ static void test_commandSetTheSelectParameterInstruction_Reset()
   );
 }
 
+static void test_commandGetParametersRelatedToTheQueryCommand()
+{
+  _UhfRfidDriver.commandGetParametersRelatedToTheQueryCommand();
+}
+
 
 
 struct Command
@@ -87,6 +92,7 @@ static Command _command_list[] =
   { "SinglePolling        ", test_commandSinglePollingInstruction, },
   { "GetSelect            ", test_commandGetTheSelectParameter, },
   { "Reset Select         ", test_commandSetTheSelectParameterInstruction_Reset},
+  { "GetQuery             ", test_commandGetParametersRelatedToTheQueryCommand, },
   { "ReadLabel            ", test_commandReadLabelDataStorageArea, },
 };
 static int _command_index = 0;
