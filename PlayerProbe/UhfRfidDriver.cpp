@@ -56,6 +56,7 @@ void UhfRfidDriver::process()
         while(UhfRfidFrame *send_frame = _SendFramePool->process())
         {
             _send_immidiately(send_frame);
+            break;
         }
 
         // read 側の処理

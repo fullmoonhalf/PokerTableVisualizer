@@ -31,11 +31,7 @@ void setup()
   _UhfRfidDriver.setVerbose(true);
   _UhfRfidDriver.begin(&Serial2, 115200, 33, 32);
   _UhfRfidDriver.commandTxPower(2600, true);
-  _UhfRfidDriver.commandInformation(0);
-  _UhfRfidDriver.commandInformation(1);
-  _UhfRfidDriver.commandInformation(2);
   BaseType_t result = xTaskCreatePinnedToCore(task_driver_process, "t1", 4096, NULL, 1, NULL, 0);
-
 }
 
 
@@ -45,11 +41,6 @@ void setup()
 static void test_commandSinglePollingInstruction()
 {
   _UhfRfidDriver.commandSinglePollingInstruction();
-}
-
-static void test_commandGetTheSelectParameter()
-{
-  _UhfRfidDriver.commandGetTheSelectParameter();
 }
 
 static void test_commandReadLabelDataStorageArea()
@@ -67,8 +58,12 @@ static void test_reset_inventory_param()
   _UhfRfidDriver.resetInventoryParam();
 }
 
-static void test_commandGetParametersRelatedToTheQueryCommand()
+static void test_get_informations()
 {
+  _UhfRfidDriver.commandInformation(UhfRfidInformationType::UhfRfidInformationType_Hardware);
+  _UhfRfidDriver.commandInformation(UhfRfidInformationType::UhfRfidInformationType_Software);
+  _UhfRfidDriver.commandInformation(UhfRfidInformationType::UhfRfidInformationType_Manufacturers);
+  _UhfRfidDriver.commandGetTheSelectParameter();
   _UhfRfidDriver.commandGetParametersRelatedToTheQueryCommand();
 }
 
@@ -81,11 +76,10 @@ struct Command
 };
 static Command _command_list[] = 
 {
-  { "SinglePolling        ", test_commandSinglePollingInstruction, },
-  { "GetSelect            ", test_commandGetTheSelectParameter, },
-  { "GetQuery             ", test_commandGetParametersRelatedToTheQueryCommand, },
-  { "Reset InventoryParam ", test_reset_inventory_param, },
-  { "ReadLabel            ", test_commandReadLabelDataStorageArea, },
+  { "SinglePolling              ", test_commandSinglePollingInstruction, },
+  { "Get Informations           ", test_get_informations, },
+  { "Reset InventoryParam       ", test_reset_inventory_param, },
+  { "ReadLabel                  ", test_commandReadLabelDataStorageArea, },
 };
 static int _command_index = 0;
 

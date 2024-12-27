@@ -13,23 +13,23 @@ bool UhfRfidDriver::commandTxPower(uint16_t power, bool immidiately)
     seek += _write_uint16_to_stream(seek, power);
 
     uint16_t command_param_length = seek - command_param;
-    return _send(UhfRfidCommand::UhfRfidCommand_SetTheSelectParameterInstruction, command_param, command_param_length, immidiately);
+    return _send(UhfRfidCommand::UhfRfidCommand_SetTheTransmittingPower, command_param, command_param_length, immidiately);
 }
 
 
-/// @brief 0. Hardware version or 1. Software version or 2. Manufacturers
-/// @param what 0: hardware / 1: software / 2: manifactures
+/// @brief 製造情報取得
+/// @param what UhfRfidInformationType で指定
 /// @param immidiately 
 /// @return 
-bool UhfRfidDriver::commandInformation(uint8_t what, bool immidiately)
+bool UhfRfidDriver::commandInformation(UhfRfidInformationType what, bool immidiately)
 {
     uint8_t command_param[1];
     uint8_t *seek = command_param;
 
-    seek += _write_uint8_to_stream(seek, what); // reserved number.
+    seek += _write_uint8_to_stream(seek, what);
 
     uint16_t command_param_length = seek - command_param;
-    return _send(UhfRfidCommand::UhfRfidCommand_SetTheSelectParameterInstruction, command_param, command_param_length, immidiately);
+    return _send(UhfRfidCommand::UhfRfidCommand_Information, command_param, command_param_length, immidiately);
 }
 
 

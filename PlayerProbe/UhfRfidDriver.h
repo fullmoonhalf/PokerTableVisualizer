@@ -70,17 +70,29 @@ public:
 
     bool resetInventoryParam();
 
+    /* セットアップ系 */
     bool commandTxPower(uint16_t power, bool immidiately = false);
-    bool commandInformation(uint8_t what, bool immidiately = false);
-    bool commandSinglePollingInstruction(bool immidiately = false);
-    bool commandMultiPollingInstruction(uint16_t count, bool immidiately = false);
-    bool commandGetTheSelectParameter(bool immidiately = false);
+
+    /* Query まわり */
+    bool commandSetTheQueryParameter(UhfRfidQueryParamDRType dr, UhfRfidQueryParamMType m, UhfRfidQueryParamTRextType trext,  UhfRfidQueryParamSelType sel, UhfRfidQueryParamSessionType session, UhfRfidQueryParamTargetType target, uint8_t q, bool immidiately = false);
+
+    /* Select まわり */
     bool commandSetTheSelectParameterInstruction(UhfRfidSelectSelParamTarget target, UhfRfidSelectSelParamAction action, UhfRfidSelectSelParamMembank membank, uint32_t pointer, uint8_t length, uint8_t *mask, bool truncate, bool immidiately = false);
     bool commandSetTheSelectMode(UhfRfidSelectMode mode, bool immidiately = false);
+
+    /* Polling まわり */
+    bool commandSinglePollingInstruction(bool immidiately = false);
+    bool commandMultiPollingInstruction(uint16_t count, bool immidiately = false);
+
+    /* タグ操作系 */
     bool commandReadLabelDataStorageArea(uint32_t access_password, UhfRfidSelectSelParamMembank membank, uint16_t sa, uint16_t dl, bool immidiately = false);
     bool commandWriteTheLabelDataStore(bool immidiately = false);
+
+    /* 状態取得系 */
+    bool commandInformation(UhfRfidInformationType what, bool immidiately = false);
     bool commandGetParametersRelatedToTheQueryCommand(bool immidiately = false);
-    bool commandSetTheQueryParameter(UhfRfidQueryParamDRType dr, UhfRfidQueryParamMType m, UhfRfidQueryParamTRextType trext,  UhfRfidQueryParamSelType sel, UhfRfidQueryParamSessionType session, UhfRfidQueryParamTargetType target, uint8_t q, bool immidiately = false);
+    bool commandGetTheSelectParameter(bool immidiately = false);
+
 
 private:
     bool _read_immidiately(UhfRfidFrame *read_buffer);
