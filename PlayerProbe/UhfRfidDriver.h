@@ -68,6 +68,8 @@ public:
     void setVerbose(bool sw);
     int getUpdateCount();
 
+    bool resetInventoryParam();
+
     bool commandTxPower(uint16_t power, bool immidiately = false);
     bool commandInformation(uint8_t what, bool immidiately = false);
     bool commandSinglePollingInstruction(bool immidiately = false);
@@ -78,7 +80,7 @@ public:
     bool commandReadLabelDataStorageArea(uint32_t access_password, UhfRfidSelectSelParamMembank membank, uint16_t sa, uint16_t dl, bool immidiately = false);
     bool commandWriteTheLabelDataStore(bool immidiately = false);
     bool commandGetParametersRelatedToTheQueryCommand(bool immidiately = false);
-    bool commandSetTheQueryParameter(bool immidiately = false);
+    bool commandSetTheQueryParameter(UhfRfidQueryParamDRType dr, UhfRfidQueryParamMType m, UhfRfidQueryParamTRextType trext,  UhfRfidQueryParamSelType sel, UhfRfidQueryParamSessionType session, UhfRfidQueryParamTargetType target, uint8_t q, bool immidiately = false);
 
 private:
     bool _read_immidiately(UhfRfidFrame *read_buffer);

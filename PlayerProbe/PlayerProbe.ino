@@ -62,17 +62,9 @@ static void test_commandReadLabelDataStorageArea()
   );
 }
 
-static void test_commandSetTheSelectParameterInstruction_Reset()
+static void test_reset_inventory_param()
 {
-  _UhfRfidDriver.commandSetTheSelectParameterInstruction(
-    UhfRfidSelectSelParamTarget::UhfRfidSelectSelParamTarget_Inventoried_1,
-    UhfRfidSelectSelParamAction::UhfRfidSelectSelParamAction_0,
-    UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_EPC, 
-    0,
-    0,
-    nullptr,
-    false
-  );
+  _UhfRfidDriver.resetInventoryParam();
 }
 
 static void test_commandGetParametersRelatedToTheQueryCommand()
@@ -91,8 +83,8 @@ static Command _command_list[] =
 {
   { "SinglePolling        ", test_commandSinglePollingInstruction, },
   { "GetSelect            ", test_commandGetTheSelectParameter, },
-  { "Reset Select         ", test_commandSetTheSelectParameterInstruction_Reset},
   { "GetQuery             ", test_commandGetParametersRelatedToTheQueryCommand, },
+  { "Reset InventoryParam ", test_reset_inventory_param, },
   { "ReadLabel            ", test_commandReadLabelDataStorageArea, },
 };
 static int _command_index = 0;

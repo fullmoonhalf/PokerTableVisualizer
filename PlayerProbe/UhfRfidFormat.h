@@ -66,9 +66,10 @@ enum UhfRfidCommand
 enum UhfRfidResponse
 {
     UhfRfidResponse_GetTheSelectParameter = 0x0B,
-    UhfRfidResponse_Error = 0xff,
-    UhfRfidResponse_ReadLabelDataStorageArea = 0x39,
     UhfRfidResponse_GetParametersRelatedToTheQueryCommand = 0x0D,
+    UhfRfidResponse_SetTheQueryParameter = 0x0E,
+    UhfRfidResponse_ReadLabelDataStorageArea = 0x39,
+    UhfRfidResponse_Error = 0xff,
 };
 
 
@@ -307,6 +308,9 @@ enum UhfRfidSelectMode
 /// -------------------------------------------------------------------------------------------------------------------------
 struct UhfRfidQueryParamFormat
 {
+    /// @brief パディング
+    /// @warning 使用禁止
+    uint16_t __padding__:3;
     /// @brief ラウンドのスロット数
     uint16_t Q:4;
     /// @brief インベントリされたフラグがAまたはBのタグがインベントリラウンドに参加するかどうか。

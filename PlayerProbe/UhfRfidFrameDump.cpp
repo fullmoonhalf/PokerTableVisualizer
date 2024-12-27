@@ -48,6 +48,12 @@ void UhfRfidFrame::dump(const char *header)
                         Serial.println("");
                     }
                     return;
+                case UhfRfidResponse::UhfRfidResponse_SetTheQueryParameter:
+                    {
+                        uint8_t param = parameter[0];
+                        Serial.printf("param %02X\r\n", param);
+                    }
+                    return;
                 case UhfRfidResponse::UhfRfidResponse_Error:
                     {
                         uint8_t error_code = parameter[0];

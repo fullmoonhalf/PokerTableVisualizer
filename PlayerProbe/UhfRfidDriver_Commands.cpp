@@ -249,7 +249,32 @@ bool UhfRfidDriver::commandGetParametersRelatedToTheQueryCommand(bool immidiatel
 }
 
 
-bool UhfRfidDriver::commandSetTheQueryParameter(bool immidiately)
+/// @brief 15. Set the Query parameter
+/// @param dr 
+/// @param m 
+/// @param trext 
+/// @param sel 
+/// @param session 
+/// @param target 
+/// @param q 
+/// @param immidiately 
+/// @return 
+bool UhfRfidDriver::commandSetTheQueryParameter(UhfRfidQueryParamDRType dr, UhfRfidQueryParamMType m, UhfRfidQueryParamTRextType trext,  UhfRfidQueryParamSelType sel, UhfRfidQueryParamSessionType session, UhfRfidQueryParamTargetType target, uint8_t q, bool immidiately)
 {
-    return false;
+    uint8_t command_param[2];
+    uint8_t *seek = command_param;
+    UhfRfidQueryParamConvert param;
+
+    param.format.DR = dr;
+    param.format.M = m;
+    param.format.TRext = trext;
+    param.format.Sel = sel;
+    param.format.Session = session;
+    param.format.Target = target;
+    param.format.Q = q;
+
+    seek += _write_uint16_to_stream(seek, param.value);
+
+    uint16_t param_length = seek - command_param;
+    return _send(UhfRfidCommand::UhfRfidCommand_SetTheQueryParameter, command_param, param_length, immidiately);
 }
