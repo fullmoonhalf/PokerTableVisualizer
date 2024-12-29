@@ -38,20 +38,52 @@ void setup()
 // -------------------------------------------------------------------------------------
 // main loop
 // -------------------------------------------------------------------------------------
+static int argument_value = 4;
+
+
+static void test_inc()
+{
+  argument_value++;
+  if(argument_value > 16)
+  {
+    argument_value = 16;
+  }
+}
+static void test_dec()
+{
+  argument_value--;
+  if(argument_value < 0)
+  {
+    argument_value = 0;
+  }
+}
+
 static void test_commandSinglePollingInstruction()
 {
   _UhfRfidDriver.commandSinglePollingInstruction();
 }
 
-static void test_commandReadLabelDataStorageArea()
+static void test_read_rfu()
 {
-  _UhfRfidDriver.commandReadLabelDataStorageArea(
-    0x0, 
-    UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_RFU,
-    0, 
-    2
-  );
+  // max 7 word.
+  _UhfRfidDriver.commandReadLabelDataStorageArea(0x0, UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_RFU, 0, argument_value);
 }
+static void test_read_epc()
+{
+  // max 10 word.
+  _UhfRfidDriver.commandReadLabelDataStorageArea(0x0, UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_EPC, 0, argument_value);
+}
+static void test_read_tid()
+{
+  // max 12 word.
+  _UhfRfidDriver.commandReadLabelDataStorageArea(0x0, UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_TID, 0, argument_value);
+}
+static void test_read_user()
+{
+  // max 16+ word.
+  _UhfRfidDriver.commandReadLabelDataStorageArea(0x0, UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_User, 0, 8);
+}
+
 
 static void test_reset_inventory_param()
 {
@@ -67,19 +99,88 @@ static void test_get_informations()
   _UhfRfidDriver.commandGetParametersRelatedToTheQueryCommand();
 }
 
-
 static void test_write_epc_test()
 {
   uint8_t stream[] = {0x30, 0x08, 0x33, 0xb2, 0xdd, 0xd9, 0x01, 0x40, 0x00, 0x01, 0x00, 0xff, };
-  _UhfRfidDriver.commandWriteTheLabelDataStore(0, UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_EPC, stream, sizeof(stream), 0);
+  _UhfRfidDriver.commandWriteTheLabelDataStore(0, UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_EPC, stream, sizeof(stream), 2);
 }
 
 static void test_unlock_epc_test()
 {
   UhfRfidLockOperation operations[] = {
     {UhfRfidLockMemoryTargetType::UhfRfidLockTargetType_EPCMemory, UhfRfidLockActionTargetType::UhfRfidLockTargetType_Permalock, false, },
+    {UhfRfidLockMemoryTargetType::UhfRfidLockTargetType_EPCMemory, UhfRfidLockActionTargetType::UhfRfidLockTargetType_PasswordWrite, false, },
   };
   _UhfRfidDriver.commandLockTheLOCKLabelDataStore(0, operations, __ARRAY_SIZE__(operations));
+}
+
+static void test_scan()
+{
+  uint8_t stream[] = {0xAA, 0x23, 0xAA, 0xFF, 0x00, 0x00, 0x00, 0x00, };
+
+  _UhfRfidDriver.commandSetTheQueryParameter(
+    UhfRfidQueryParamDRType::UhfRfidQueryParamDRType_8,
+    UhfRfidQueryParamMType::UhfRfidQueryParamMType_1,
+    UhfRfidQueryParamTRextType::UhfRfidQueryParamTRextType_UsePilotTone,
+    UhfRfidQueryParamSelType::UhfRfidQueryParamSelType_ALL,
+    UhfRfidQueryParamSessionType::UhfRfidQueryParamSessionType_S2,
+    UhfRfidQueryParamTargetType::UhfRfidQueryParamTargetType_A,
+    4
+  );
+  stream[0x3] = 1;
+  _UhfRfidDriver.commandSetTheSelectParameterInstruction(
+    UhfRfidSelectSelParamTarget::UhfRfidSelectSelParamTarget_Inventoried_3,
+    UhfRfidSelectSelParamAction::UhfRfidSelectSelParamAction_0,
+    UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_User,
+    0,
+    32,
+    stream,
+    false
+  );
+  
+  _UhfRfidDriver.commandSinglePollingInstruction();
+  _UhfRfidDriver.commandReadLabelDataStorageArea(0x0, UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_User, 0, 8);
+}
+
+static void test_scan2()
+{
+//  uint8_t stream[] = {0x30, 0x08, };
+  uint8_t stream[] = {0xAA, 0x23, 0xAA, 0x01, 0x00, 0x00, 0x00, 0x00, };
+  _UhfRfidDriver.commandSetTheQueryParameter(
+    UhfRfidQueryParamDRType::UhfRfidQueryParamDRType_8,
+    UhfRfidQueryParamMType::UhfRfidQueryParamMType_1,
+    UhfRfidQueryParamTRextType::UhfRfidQueryParamTRextType_UsePilotTone,
+    UhfRfidQueryParamSelType::UhfRfidQueryParamSelType_ALL,
+    UhfRfidQueryParamSessionType::UhfRfidQueryParamSessionType_S2,
+    UhfRfidQueryParamTargetType::UhfRfidQueryParamTargetType_A,
+    4
+  );
+  _UhfRfidDriver.commandSetTheSelectParameterInstruction(
+    UhfRfidSelectSelParamTarget::UhfRfidSelectSelParamTarget_Inventoried_3,
+    UhfRfidSelectSelParamAction::UhfRfidSelectSelParamAction_0,
+    UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_User,
+    0,
+    32,
+    stream,
+    false
+  );
+
+  _UhfRfidDriver.commandSinglePollingInstruction();
+  _UhfRfidDriver.commandReadLabelDataStorageArea(0x0, UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_User, 0, 8);
+}
+
+
+
+
+
+static void test_write_user_test()
+{
+  uint8_t stream[] = {0xAA, 0x23, 0xAA, 0xFF, 0x00, 0x00, 0x00, 0x00, };
+  stream[0x3] = argument_value; // deck
+  stream[0x4] = 1; // index
+  stream[0x5] = 1; // suit
+  stream[0x6] = 1; // rank
+  _UhfRfidDriver.commandWriteTheLabelDataStore(0, UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_User, stream, sizeof(stream), 0);
 }
 
 
@@ -93,8 +194,16 @@ static Command _command_list[] =
   { "SinglePolling              ", test_commandSinglePollingInstruction, },
   { "Get Informations           ", test_get_informations, },
   { "Reset InventoryParam       ", test_reset_inventory_param, },
-  { "ReadLabel                  ", test_commandReadLabelDataStorageArea, },
+//  { "Inc                        ", test_inc, },
+//  { "Dec                        ", test_dec, },
+//  { "Read User                 ", test_read_user, },
+//  { "Read RFU                  ", test_read_rfu, },
+//  { "Read TID                  ", test_read_tid, },
+  { "Read EPC                  ", test_read_epc, },
   { "Write EPC                  ", test_write_epc_test, },
+//  { "Write User                 ", test_write_user_test, },
+//  { "Test Scan                 ", test_scan, },
+//  { "Test Scan 2                ", test_scan2, },
   { "Unlock EPC                 ", test_unlock_epc_test, },
 };
 static int _command_index = 0;
@@ -130,6 +239,7 @@ void loop()
   M5.Lcd.drawNumber(counter++, 20, 20, 4);
   M5.Lcd.drawNumber(_UhfRfidDriver.getUpdateCount(), 20, 40, 4);
   M5.Lcd.drawString(_command_list[_command_index].name, 20, 60, 4);
+  M5.Lcd.drawNumber(argument_value, 20, 80, 4);
 
   delay(100);
 }

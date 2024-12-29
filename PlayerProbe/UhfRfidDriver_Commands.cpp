@@ -70,7 +70,7 @@ bool UhfRfidDriver::commandMultiPollingInstruction(uint16_t count, bool immidiat
     seek += _write_uint16_to_stream(seek, count);
 
     uint16_t command_param_length = seek - command_param;
-    return _send(UhfRfidCommand::UhfRfidCommand_Information, command_param, command_param_length, immidiately);
+    return _send(UhfRfidCommand::UhfRfidCommand_MultiPollingInstruction, command_param, command_param_length, immidiately);
 }
 
 
@@ -182,7 +182,7 @@ bool UhfRfidDriver::commandSetTheSelectParameterInstruction(
 
     seek += _write_uint8_to_stream(seek, truncate ? 1 : 0);
 
-    for(int index=0; index<length; ++index)
+    for(int index=0; index<length/8; ++index)
     {
         *seek = mask[index];
         seek++;

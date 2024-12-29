@@ -13,16 +13,26 @@ void UhfRfidFrame::dump(const char *header)
         case UhfRfidFrameType::TypeCommand:
             switch(command)
             {
+                case UhfRfidCommand_SetTheSelectParameterInstruction:
+                    {
+                        UhfRfidSelectSelParamConvert selparam = { parameter[0], };
+                        uint32_t pointer = _parseUint32(parameter + 1);
+                        uint8_t masklen = parameter[5];
+                        uint8_t truncate = parameter[6];
+                        Serial.printf("SelParam(%d,%d,%d) pointer=%d masklen=%d truncate %d mask:", selparam.format.Target, selparam.format.Action, selparam.format.MemBank, pointer, masklen, truncate);
+                        _dump_hex_stream(parameter+7, masklen/8, true);
+                    }
+                    return;
                 case UhfRfidCommand::UhfRfidCommand_WriteTheLabelDataStore:
-                {
-                    uint32_t password = _parseUint32(parameter);
-                    uint8_t membank = parameter[4];
-                    uint16_t sa = _parseUint16(parameter + 5);
-                    uint16_t dl = _parseUint16(parameter + 7);
-                    Serial.printf("password=%08x membank=%d sa=%d dl=%d ", password, membank, sa, dl);
-                    _dump_hex_stream(parameter+9, dl*2, true);
-                }
-                return;
+                    {
+                        uint32_t password = _parseUint32(parameter);
+                        uint8_t membank = parameter[4];
+                        uint16_t sa = _parseUint16(parameter + 5);
+                        uint16_t dl = _parseUint16(parameter + 7);
+                        Serial.printf("password=%08x membank=%d sa=%d dl=%d ", password, membank, sa, dl);
+                        _dump_hex_stream(parameter+9, dl*2, true);
+                    }
+                    return;
             }
             break;
         case UhfRfidFrameType::TypeResponse:
@@ -30,12 +40,12 @@ void UhfRfidFrame::dump(const char *header)
             {
                 case UhfRfidResponse::UhfRfidResponse_GetTheSelectParameter:
                     {
-                        uint8_t sel_param = parameter[0];
+                        UhfRfidSelectSelParamConvert selparam = { parameter[0], };
                         uint32_t ptr = _parseUint32(parameter + 1);
                         uint8_t mask_len = parameter[5];
                         uint8_t truncate = parameter[6];
-                        Serial.printf("SelParam %02X Ptr %04X Truncate %d Mask(len=%d) ", sel_param, ptr, truncate, mask_len);
-                        _dump_hex_stream(parameter+7, mask_len, true);
+                        Serial.printf("SelParam(%d,%d,%d) Ptr %04X Truncate %d Mask(len=%d) ", selparam.format.Target, selparam.format.Action, selparam.format.MemBank, ptr, truncate, mask_len);
+                        _dump_hex_stream(parameter+7, mask_len/8, true);
                     }
                     return;
                 case UhfRfidResponse::UhfRfidResponse_ReadLabelDataStorageArea:

@@ -252,42 +252,42 @@ enum UhfRfidSelectSelParamTarget
 
 enum UhfRfidSelectSelParamAction
 {
-    /// @details
+    /// @brief
     /// Match: assert SL or inventoried → A 
     /// Not-Match: deassert SL or inventoried → B
     UhfRfidSelectSelParamAction_0,
 
-    /// @details
+    /// @brief
     /// Match: assert SL or inventoried → A 
     /// Not-Match: do nothing 
     UhfRfidSelectSelParamAction_1,
 
-    /// @details
+    /// @brief
     /// Match: do nothing 
     /// Not-Match: deassert SL or inventoried → B
     UhfRfidSelectSelParamAction_2,
 
-    /// @details
+    /// @brief
     /// Match: negate SL or (A → B, B → A)
     /// Not-Match: do nothing 
     UhfRfidSelectSelParamAction_3,
 
-    /// @details
+    /// @brief
     /// Match: deassert SL or inventoried → B 
     /// Not-Match: assert SL or inventoried → A 
     UhfRfidSelectSelParamAction_4,
 
-    /// @details
+    /// @brief
     /// Match: deassert SL or inventoried → B 
     /// Not-Match: do nothing 
     UhfRfidSelectSelParamAction_5,
 
-    /// @details
+    /// @brief
     /// Match: do nothing
     /// Not-Match: assert SL or inventoried → A 
     UhfRfidSelectSelParamAction_6,
 
-    /// @details
+    /// @brief
     /// Match: do nothing
     /// Not-Match: negate SL or (A → B, B → A) 
     UhfRfidSelectSelParamAction_7,
