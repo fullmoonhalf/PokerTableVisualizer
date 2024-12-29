@@ -84,6 +84,13 @@ void UhfRfidFrame::dump(const char *header)
                             Serial.println("");
                             return;
                         }
+                        else if((error_code & 0xf0) == UhfRfidErrorType::UhfRfidErrorType_LockError)
+                        {
+                            Serial.printf("Error: LockError");
+                            _dump_error_code_support(error_code);
+                            Serial.println("");
+                            return;
+                        }
                         switch(error_code)
                         {
                             case UhfRfidErrorType::UhfRfidErrorType_InventoryFail:
@@ -94,6 +101,9 @@ void UhfRfidFrame::dump(const char *header)
                                 break;
                             case UhfRfidErrorType::UhfRfidErrorType_ReadFail:
                                 Serial.println("Error: ReadFail.");
+                                break;
+                            case UhfRfidErrorType::UhfRfidErrorType_LockFail:
+                                Serial.println("Error: LockFail.");
                                 break;
                             default:
                                 Serial.printf("Error: code %02X\r\n", error_code);

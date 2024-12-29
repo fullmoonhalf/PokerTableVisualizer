@@ -68,10 +68,18 @@ static void test_get_informations()
 }
 
 
-static void test_write_test()
+static void test_write_epc_test()
 {
   uint8_t stream[] = {0x30, 0x08, 0x33, 0xb2, 0xdd, 0xd9, 0x01, 0x40, 0x00, 0x01, 0x00, 0xff, };
   _UhfRfidDriver.commandWriteTheLabelDataStore(0, UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_EPC, stream, sizeof(stream), 0);
+}
+
+static void test_unlock_epc_test()
+{
+  UhfRfidLockOperation operations[] = {
+    {UhfRfidLockMemoryTargetType::UhfRfidLockTargetType_EPCMemory, UhfRfidLockActionTargetType::UhfRfidLockTargetType_Permalock, false, },
+  };
+  _UhfRfidDriver.commandLockTheLOCKLabelDataStore(0, operations, __ARRAY_SIZE__(operations));
 }
 
 
@@ -86,7 +94,8 @@ static Command _command_list[] =
   { "Get Informations           ", test_get_informations, },
   { "Reset InventoryParam       ", test_reset_inventory_param, },
   { "ReadLabel                  ", test_commandReadLabelDataStorageArea, },
-  { "Write EPC                  ", test_write_test, },
+  { "Write EPC                  ", test_write_epc_test, },
+  { "Unlock EPC                 ", test_unlock_epc_test, },
 };
 static int _command_index = 0;
 

@@ -59,9 +59,10 @@ enum UhfRfidCommand
     UhfRfidCommand_SinglePollingInstruction = 0x22,
     UhfRfidCommand_MultiPollingInstruction = 0x27,
 
-
     UhfRfidCommand_ReadLabelDataStorageArea = 0x39,
     UhfRfidCommand_WriteTheLabelDataStore = 0x49,
+
+    UhfRfidCommand_LockTheLOCKLabelDataStore = 0x82,
 };
 
 
@@ -87,12 +88,16 @@ enum UhfRfidErrorType
 {
     /// @brief タグ データ ストレージ領域の読み取りに失敗しました。 タグが返されないか、返されたデータの CRC 検証エラー
     UhfRfidErrorType_ReadFail = 0x09,
+    /// @brief タグ データ ストレージ領域のロックに失敗しました。 タグが返されないか、返されたデータ CRC 検証エラーが正しくありません。
+    UhfRfidErrorType_LockFail = 0x13,
     /// @brief アクセスタグが失敗した場合は、パスワードが間違っている可能性があります。
     UhfRfidErrorType_AccessFail = 0x16,
     /// @brief タグデータストアの読み取りエラー。詳細として、下位ビットに UhfRfidErrorTypeErrorCode が入る。
     UhfRfidErrorType_ReadError = 0xA0,
     /// @brief タグ データ ストアの書き込みエラー。タグデータストアの読み取りエラー。詳細として、下位ビットに UhfRfidErrorTypeErrorCode が入る。
     UhfRfidErrorType_WriteError = 0xB0,
+    /// @brief ロック ラベル データストア エラー。タグデータストアの読み取りエラー。詳細として、下位ビットに UhfRfidErrorTypeErrorCode が入る。
+    UhfRfidErrorType_LockError = 0xC0,
     /// @brief ポーリング操作が失敗しました。 ラベルが返されないか、返されたデータ CRC 検証エラー。
     UhfRfidErrorType_InventoryFail = 0x15,
 };
@@ -398,6 +403,32 @@ enum UhfRfidQueryParamTargetType
 {
     UhfRfidQueryParamTargetType_A = 0,
     UhfRfidQueryParamTargetType_B = 1,
+};
+
+
+/// -------------------------------------------------------------------------------------------------------------------------
+/// Lock 命令に関すること
+/// -------------------------------------------------------------------------------------------------------------------------
+enum UhfRfidLockMemoryTargetType
+{
+    UhfRfidLockTargetType_KillPassword = 8,
+    UhfRfidLockTargetType_AccessPassword = 6,
+    UhfRfidLockTargetType_EPCMemory = 4,
+    UhfRfidLockTargetType_TIDMemory = 2,
+    UhfRfidLockTargetType_UserMemory = 0,
+};
+
+enum UhfRfidLockActionTargetType
+{
+    UhfRfidLockTargetType_PasswordWrite = 1,
+    UhfRfidLockTargetType_Permalock = 0,
+};
+
+struct UhfRfidLockOperation
+{
+    UhfRfidLockMemoryTargetType Memory;
+    UhfRfidLockActionTargetType Action;
+    bool Setting;
 };
 
 

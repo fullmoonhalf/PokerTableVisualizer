@@ -87,6 +87,7 @@ public:
     /* タグ操作系 */
     bool commandReadLabelDataStorageArea(uint32_t access_password, UhfRfidSelectSelParamMembank membank, uint16_t sa, uint16_t dl, bool immidiately = false);
     bool commandWriteTheLabelDataStore(uint32_t access_password, UhfRfidSelectSelParamMembank membank, uint8_t *stream, int length, uint16_t sa, bool immidiately = false);
+    bool commandLockTheLOCKLabelDataStore(uint32_t password, UhfRfidLockOperation *operations, int operation_count, bool immidiately = false);
 
     /* 状態取得系 */
     bool commandInformation(UhfRfidInformationType what, bool immidiately = false);

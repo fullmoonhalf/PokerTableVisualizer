@@ -297,3 +297,40 @@ bool UhfRfidDriver::commandSetTheQueryParameter(UhfRfidQueryParamDRType dr, UhfR
     uint16_t param_length = seek - command_param;
     return _send(UhfRfidCommand::UhfRfidCommand_SetTheQueryParameter, command_param, param_length, immidiately);
 }
+
+
+
+/// @brief 
+/// @param password 
+/// @param operations 
+/// @param operation_count 
+/// @param immidiately 
+/// @return 
+bool UhfRfidDriver::commandLockTheLOCKLabelDataStore(uint32_t password, UhfRfidLockOperation *operations, int operation_count, bool immidiately)
+{
+    uint8_t command_param[7];
+    uint8_t *seek = command_param;
+
+    seek += _write_uint32_to_stream(seek, password);
+
+    // lock 情報の設定
+    seek[0] = 0;
+    seek[1] = 0;
+    seek[2] = 0;
+    for(int index=0; index<operation_count; ++index)
+    {
+        UhfRfidLockOperation *operation = operations + index;
+        int operation_setting_index = operation->Memory + operation->Action;
+        int operation_setting_array_index = operation_setting_index / 8;
+        int operation_setting_array_shift = operation_setting_index & 7;
+        int operatoin_mask_index = operation_setting_index + 10;
+        int operation_mask_array_index = operatoin_mask_index / 8;
+        int operation_mask_array_shift = operatoin_mask_index & 7;
+        seek[operation_setting_array_index] |= (operation->Setting ? 1 : 0) << operation_setting_array_shift;
+        seek[operation_mask_array_index] |= 1 << operation_setting_array_shift;
+    }
+    seek += 3;
+
+    uint16_t param_length = seek - command_param;
+    return _send(UhfRfidCommand::UhfRfidCommand_LockTheLOCKLabelDataStore, command_param, param_length, immidiately);
+}
