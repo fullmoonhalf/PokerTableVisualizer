@@ -11,6 +11,19 @@ void UhfRfidFrame::dump(const char *header)
     switch(type)
     {
         case UhfRfidFrameType::TypeCommand:
+            switch(command)
+            {
+                case UhfRfidCommand::UhfRfidCommand_WriteTheLabelDataStore:
+                {
+                    uint32_t password = _parseUint32(parameter);
+                    uint8_t membank = parameter[4];
+                    uint16_t sa = _parseUint16(parameter + 5);
+                    uint16_t dl = _parseUint16(parameter + 7);
+                    Serial.printf("password=%08x membank=%d sa=%d dl=%d ", password, membank, sa, dl);
+                    _dump_hex_stream(parameter+9, dl*2, true);
+                }
+                return;
+            }
             break;
         case UhfRfidFrameType::TypeResponse:
             switch(command)
@@ -57,9 +70,16 @@ void UhfRfidFrame::dump(const char *header)
                 case UhfRfidResponse::UhfRfidResponse_Error:
                     {
                         uint8_t error_code = parameter[0];
-                        if((error_code & 0xf0) == UhfRfidErrorType::UhfRfidErrorType_AccessFailReadError)
+                        if((error_code & 0xf0) == UhfRfidErrorType::UhfRfidErrorType_ReadError)
                         {
-                            Serial.printf("Error: AccessFailReadError");
+                            Serial.printf("Error: ReadError");
+                            _dump_error_code_support(error_code);
+                            Serial.println("");
+                            return;
+                        }
+                        else if((error_code & 0xf0) == UhfRfidErrorType::UhfRfidErrorType_WriteError)
+                        {
+                            Serial.printf("Error: WriteError");
                             _dump_error_code_support(error_code);
                             Serial.println("");
                             return;

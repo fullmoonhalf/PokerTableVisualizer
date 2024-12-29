@@ -83,7 +83,7 @@ bool UhfRfidDriver::commandGetTheSelectParameter(bool immidiately)
 }
 
 
-/// @brief 
+/// @brief Select パラメータの設定
 /// @param target 
 /// Target は、Select がタグの SL フラグを変更するか、インベントリされたフラグを変更するかを示し、インベントリされた場合は、さらに 4 つのセッションのいずれかを指定します。
 /// SLフラグを変更するSelectは、インベントリされたフラグを変更してはならない。また、その逆も同様である。
@@ -232,11 +232,30 @@ bool UhfRfidDriver::commandReadLabelDataStorageArea(uint32_t access_password, Uh
 
 
 /// @brief 
-/// @param immidiately 
+/// @param access_password 
+/// @param membank 
+/// @param stream 
+/// @param length 
+/// @param sa 
 /// @return 
-bool UhfRfidDriver::commandWriteTheLabelDataStore(bool immidiately)
+bool UhfRfidDriver::commandWriteTheLabelDataStore(uint32_t access_password, UhfRfidSelectSelParamMembank membank, uint8_t *stream, int length, uint16_t sa, bool immidiately)
 {
-    return false;
+    uint8_t command_param[256];
+    uint8_t *seek = command_param;
+
+    seek += _write_uint32_to_stream(seek, access_password);
+    seek += _write_uint8_to_stream(seek, membank);
+    seek += _write_uint16_to_stream(seek, sa);
+    seek += _write_uint16_to_stream(seek, length/2);
+
+    for(int index=0; index<length; ++index)
+    {
+        seek[index] = stream[index];
+    }
+    seek += length;
+
+    uint16_t param_length = seek - command_param;
+    return _send(UhfRfidCommand::UhfRfidCommand_WriteTheLabelDataStore, command_param, param_length, immidiately);
 }
 
 

@@ -89,8 +89,10 @@ enum UhfRfidErrorType
     UhfRfidErrorType_ReadFail = 0x09,
     /// @brief アクセスタグが失敗した場合は、パスワードが間違っている可能性があります。
     UhfRfidErrorType_AccessFail = 0x16,
-    /// @briefタグデータストアの読み取りエラー。詳細として、下位ビットに UhfRfidErrorTypeErrorCode が入る。
-    UhfRfidErrorType_AccessFailReadError = 0xA0,
+    /// @brief タグデータストアの読み取りエラー。詳細として、下位ビットに UhfRfidErrorTypeErrorCode が入る。
+    UhfRfidErrorType_ReadError = 0xA0,
+    /// @brief タグ データ ストアの書き込みエラー。タグデータストアの読み取りエラー。詳細として、下位ビットに UhfRfidErrorTypeErrorCode が入る。
+    UhfRfidErrorType_WriteError = 0xB0,
     /// @brief ポーリング操作が失敗しました。 ラベルが返されないか、返されたデータ CRC 検証エラー。
     UhfRfidErrorType_InventoryFail = 0x15,
 };
