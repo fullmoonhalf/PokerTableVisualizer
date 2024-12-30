@@ -38,15 +38,15 @@ void setup()
 // -------------------------------------------------------------------------------------
 // main loop
 // -------------------------------------------------------------------------------------
-static int argument_value = 4;
+static int argument_value = 1;
 
 
 static void test_inc()
 {
   argument_value++;
-  if(argument_value > 16)
+  if(argument_value > 64)
   {
-    argument_value = 16;
+    argument_value = 64;
   }
 }
 static void test_dec()
@@ -101,7 +101,7 @@ static void test_get_informations()
 
 static void test_write_epc_test()
 {
-  uint8_t stream[] = {0x30, 0x08, 0x33, 0xb2, 0xdd, 0xd9, 0x01, 0x40, 0x00, 0x01, 0x00, 0xff, };
+  uint8_t stream[] = {0x30, 0x08, 0x33, 0xb2, 0xdd, 0xd9, 0x01, 0x40, 0xAA, 0x23, 0x01, argument_value, };
   _UhfRfidDriver.commandWriteTheLabelDataStore(0, UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_EPC, stream, sizeof(stream), 2);
 }
 
@@ -191,22 +191,84 @@ struct Command
 };
 static Command _command_list[] = 
 {
-  { "SinglePolling              ", test_commandSinglePollingInstruction, },
-  { "Get Informations           ", test_get_informations, },
-  { "Reset InventoryParam       ", test_reset_inventory_param, },
-//  { "Inc                        ", test_inc, },
-//  { "Dec                        ", test_dec, },
+  { "Inc", test_inc, },
+  { "Dec", test_dec, },
+
+  { "SinglePoll", test_commandSinglePollingInstruction, },
+  { "Write EPC", test_write_epc_test, },
+
+  { "Get Info", test_get_informations, },
+  { "Reset Prm", test_reset_inventory_param, },
+
 //  { "Read User                 ", test_read_user, },
 //  { "Read RFU                  ", test_read_rfu, },
 //  { "Read TID                  ", test_read_tid, },
-  { "Read EPC                  ", test_read_epc, },
-  { "Write EPC                  ", test_write_epc_test, },
+//  { "Read EPC                  ", test_read_epc, },
 //  { "Write User                 ", test_write_user_test, },
 //  { "Test Scan                 ", test_scan, },
 //  { "Test Scan 2                ", test_scan2, },
-  { "Unlock EPC                 ", test_unlock_epc_test, },
+//  { "Unlock EPC                 ", test_unlock_epc_test, },
 };
-static int _command_index = 0;
+static int _command_index = -1;
+static int _last_active_command = -1;
+
+
+static bool need_to_draw = true;
+
+
+
+static void update_command_panel(int touchX, int touchY)
+{
+  const int width = 70;
+  const int height = 60;
+  const int col_max = 4;
+  const int offset_x = 20;
+  const int offset_y = 40;
+
+  int touch_x_index = (touchX - offset_x) / width;
+  int touch_y_index = (touchY - offset_y) / height;
+  int selected_index = -1;
+  if(touchX >= 0 && touchY >= 0 && touch_x_index >= 0 && touch_x_index < col_max && touch_y_index >= 0)
+  {
+    int touch_index = touch_x_index + touch_y_index * col_max;
+    if(touch_index <__ARRAY_SIZE__(_command_list))
+    {
+      selected_index = touch_index;
+    }
+  }
+  if(_command_index != selected_index)
+  {
+    if(selected_index >= 0)
+    {
+      _last_active_command = selected_index;
+    }
+    need_to_draw = true;
+  }
+  _command_index = selected_index;
+
+
+
+  // 描画
+  if(need_to_draw)
+  {
+    M5.Lcd.fillScreen( BLACK );
+    for(int index=0; index<__ARRAY_SIZE__(_command_list); ++index)
+    {
+      int x = (index % col_max) * width + offset_x;
+      int y = (index / col_max) * height + offset_y;
+      if  (index == selected_index)
+      {
+        M5.Lcd.fillRect( x, y, width-2, height-2, DARKCYAN );
+      }
+      else
+      {
+        M5.Lcd.drawRect( x, y, width-2, height-2, WHITE );
+      }
+      M5.Lcd.drawString(_command_list[index].name, x+3, y+height/3, 1);
+    }
+    need_to_draw = false;
+  }
+}
 
 
 
@@ -215,34 +277,38 @@ void loop()
 {
   M5.update();
 
-  if(M5.BtnA.wasPressed())
+  int touch_x = -1;
+  int touch_y = -1;
+
+  if( M5.Touch.ispressed() )
   {
-    _command_list[_command_index].func();
+    TouchPoint_t atTouchPoint;
+    atTouchPoint = M5.Touch.getPressPoint();
+    touch_x = atTouchPoint.x;
+    touch_y = atTouchPoint.y;
   }
-  else if(M5.BtnB.wasPressed())
+  else
   {
-    _command_index--;
-    if(_command_index < 0)
+    if(_last_active_command >= 0)
     {
-      _command_index = __ARRAY_SIZE__(_command_list);
-    }
-  }
-  else if(M5.BtnC.wasPressed())
-  {
-    _command_index++;
-    if(_command_index >= __ARRAY_SIZE__(_command_list))
-    {
-      _command_index = 0;
+      _command_list[_last_active_command].func();
+      _last_active_command = -1;
     }
   }
 
-  M5.Lcd.drawNumber(counter++, 20, 20, 4);
-  M5.Lcd.drawNumber(_UhfRfidDriver.getUpdateCount(), 20, 40, 4);
-  M5.Lcd.drawString(_command_list[_command_index].name, 20, 60, 4);
-  M5.Lcd.drawNumber(argument_value, 20, 80, 4);
+  update_command_panel(touch_x, touch_y);
+
+  {
+    char text[64];
+    sprintf(text, "f:%d  c:%d  arg:%d", counter++, _UhfRfidDriver.getUpdateCount(), argument_value );
+    M5.Lcd.drawString(text, 10, 10, 2);
+  }
 
   delay(100);
 }
+
+
+
 
 
 
