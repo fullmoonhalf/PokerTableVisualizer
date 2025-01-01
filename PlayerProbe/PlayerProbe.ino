@@ -1,9 +1,11 @@
-#include <M5Core2.h>
-
-
+#include <M5Unified.h>
 #include "UhfRfidDriver.h"
 
 static UhfRfidDriver _UhfRfidDriver;
+static M5GFX _Display;
+static M5Canvas _Canvas(&_Display);
+
+
 static int counter = 0;
 
 
@@ -12,30 +14,12 @@ static int counter = 0;
 // -------------------------------------------------------------------------------------
 void task_driver_process(void *param)
 {
-  __DUMP_FL__
   _UhfRfidDriver.process();
-  __DUMP_FL__
 }
 
 
 // -------------------------------------------------------------------------------------
-// setup
-// -------------------------------------------------------------------------------------
-void setup() 
-{
-  M5.begin();
-  Serial.begin(115200);
-  M5.Lcd.fillScreen(BLACK);
-
-  _UhfRfidDriver.setVerbose(true);
-  _UhfRfidDriver.begin(&Serial2, 115200, 33, 32);
-  _UhfRfidDriver.commandTxPower(2600, true);
-  BaseType_t result = xTaskCreatePinnedToCore(task_driver_process, "t1", 4096, NULL, 1, NULL, 0);
-}
-
-
-// -------------------------------------------------------------------------------------
-// main loop
+// commands.
 // -------------------------------------------------------------------------------------
 static int argument_value = 1;
 
@@ -245,8 +229,6 @@ static void update_command_panel(int touchX, int touchY)
   }
   _command_index = selected_index;
 
-
-
   // 描画
   if(need_to_draw)
   {
@@ -270,8 +252,28 @@ static void update_command_panel(int touchX, int touchY)
 }
 
 
+// -------------------------------------------------------------------------------------
+// setup
+// -------------------------------------------------------------------------------------
+void setup() 
+{
+  M5.begin();
+
+  Serial.begin(115200);
+
+  _Display.begin();
+  _Display.fillScreen(TFT_BLACK);
+
+  _UhfRfidDriver.setVerbose(true);
+  _UhfRfidDriver.begin(&Serial2, 115200, 33, 32);
+  _UhfRfidDriver.commandTxPower(2600, true);
+  BaseType_t result = xTaskCreatePinnedToCore(task_driver_process, "t1", 4096, NULL, 1, NULL, 0);
+}
 
 
+// -------------------------------------------------------------------------------------
+// main loop
+// -------------------------------------------------------------------------------------
 void loop() 
 {
   M5.update();
@@ -279,12 +281,12 @@ void loop()
   int touch_x = -1;
   int touch_y = -1;
 
-  if( M5.Touch.ispressed() )
+  uint8_t touch_count = M5.Touch.getCount();
+  if( touch_count > 0 )
   {
-    TouchPoint_t atTouchPoint;
-    atTouchPoint = M5.Touch.getPressPoint();
-    touch_x = atTouchPoint.x;
-    touch_y = atTouchPoint.y;
+    auto touch_point = M5.Touch.getTouchPointRaw(0);
+    touch_x = touch_point.x;
+    touch_y = touch_point.y;
   }
   else
   {
