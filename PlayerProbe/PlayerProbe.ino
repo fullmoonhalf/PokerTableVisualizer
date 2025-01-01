@@ -1,14 +1,14 @@
-#include "SD.h"
 #include <M5Unified.h>
 #include "UhfRfidDriver.h"
 #include "AppDisplay.h"
 #include "AppCommandPanel.h"
-
+#include "AppPlaycardSprites.h"
 
 static UhfRfidDriver _UhfRfidDriver;
 static AppDisplay _Display;
 static AppCommandPanel _CommandPanel(&_Display);
-static LGFX_Sprite **_Sprites_Playcard_Collection;
+static AppPlaycardSprites _Playcards(&_Display);
+
 
 static int counter = 0;
 
@@ -104,30 +104,7 @@ void setup()
   {
     _CommandPanel.regist(_command_list + index);
   }
-
-  _Sprites_Playcard_Collection = new LGFX_Sprite *[52];
-  for(int index=0; index<52; ++index)
-  {
-    char filename[32];
-    sprintf(filename, "/cards_m5-%d.jpg", index);
-    Serial.println(filename);
-
-    const char *suit_text[] = {"S","H","D","C"};
-    const uint16_t suit_color[] ={TFT_WHITE, TFT_RED, TFT_CYAN, TFT_GREEN};
-    int suit = index / 13;
-    const char *rank_text[] = {"A","2","3","4","5","6","7","8","9","T","J","Q","K"};
-    int rank = index % 13;
-
-    auto sprite = new LGFX_Sprite( &_Display.Display );
-    _Sprites_Playcard_Collection[index] = sprite;
-    sprite->createSprite(16, 32);
-    sprite->setColorDepth( _Display.Display.getColorDepth() );
-    sprite->setFont(&fonts::Font2);
-    sprite->setTextColor(suit_color[suit]);
-    sprite->drawString(suit_text[suit], 5, 1);
-    sprite->drawString(rank_text[rank], 5, 15);
-    sprite->drawRect(0, 0, 16, 32, suit_color[suit]);
-  }
+  _Playcards.init();
 
   // カードリーダーセットアップ
   _UhfRfidDriver.setVerbose(true);
@@ -165,7 +142,7 @@ void loop()
 
   _CommandPanel.update(touch_x, touch_y);
   _CommandPanel.draw();
-  _Sprites_Playcard_Collection[counter % 52]->pushSprite( 20, 165 );
+  _Playcards.draw(counter % 52, 20, 165);
 
   {
     char text[64];
