@@ -2,8 +2,10 @@
 #include "UhfRfidDriver.h"
 
 static UhfRfidDriver _UhfRfidDriver;
+
 static M5GFX _Display;
-static M5Canvas _Canvas(&_Display);
+static LGFX_Sprite **_Sprites_Command_Collection;
+static int _Sprites_Command_Count;
 
 
 static int counter = 0;
@@ -192,15 +194,46 @@ static Command _command_list[] =
 //  { "Test Scan 2                ", test_scan2, },
 //  { "Unlock EPC                 ", test_unlock_epc_test, },
 };
-static int _command_index = -1;
-static int _last_active_command = -1;
 
 
-static bool need_to_draw = true;
+static void draw_command_panel(bool renew, int active_index)
+{
+  const int width = 70;
+  const int height = 60;
+  const int col_max = 4;
+  const int offset_x = 20;
+  const int offset_y = 40;
+
+  if(renew)
+  {
+    for(int index=0; index<__ARRAY_SIZE__(_command_list); ++index)
+    {
+      auto sprite = _Sprites_Command_Collection[index];
+      if(index == active_index)
+      {
+        sprite->fillSprite(TFT_DARKCYAN);
+      }
+      else
+      {
+        sprite->fillSprite(TFT_BLACK);
+        sprite->drawRect(0, 0, 70, 60, TFT_WHITE);
+      }
+      sprite->drawString(_command_list[index].name, 3, 20);
+    }
+  }
+
+  // 描画
+  for(int index=0; index<__ARRAY_SIZE__(_command_list); ++index)
+  {
+    int x = (index % col_max) * width + offset_x;
+    int y = (index / col_max) * height + offset_y;
+    auto sprite = _Sprites_Command_Collection[index];
+    sprite->pushSprite(x, y);
+  }
+}
 
 
-
-static void update_command_panel(int touchX, int touchY)
+static int update_command_panel(int touchX, int touchY)
 {
   const int width = 70;
   const int height = 60;
@@ -219,36 +252,7 @@ static void update_command_panel(int touchX, int touchY)
       selected_index = touch_index;
     }
   }
-  if(_command_index != selected_index)
-  {
-    if(selected_index >= 0)
-    {
-      _last_active_command = selected_index;
-    }
-    need_to_draw = true;
-  }
-  _command_index = selected_index;
-
-  // 描画
-  if(need_to_draw)
-  {
-    M5.Lcd.fillScreen( BLACK );
-    for(int index=0; index<__ARRAY_SIZE__(_command_list); ++index)
-    {
-      int x = (index % col_max) * width + offset_x;
-      int y = (index / col_max) * height + offset_y;
-      if  (index == selected_index)
-      {
-        M5.Lcd.fillRect( x, y, width-2, height-2, DARKCYAN );
-      }
-      else
-      {
-        M5.Lcd.drawRect( x, y, width-2, height-2, WHITE );
-      }
-      M5.Lcd.drawString(_command_list[index].name, x+3, y+height/3, 1);
-    }
-    need_to_draw = false;
-  }
+  return selected_index;
 }
 
 
@@ -264,6 +268,17 @@ void setup()
   _Display.begin();
   _Display.fillScreen(TFT_BLACK);
 
+  _Sprites_Command_Count = __ARRAY_SIZE__(_command_list);
+  _Sprites_Command_Collection = new LGFX_Sprite *[_Sprites_Command_Count];
+  for(int index=0; index<__ARRAY_SIZE__(_command_list); ++index)
+  {
+    auto sprite = new LGFX_Sprite( &_Display );
+    _Sprites_Command_Collection[index] = sprite;
+    sprite->setColorDepth( _Display.getColorDepth() );
+    sprite->setFont(&fonts::Font2);
+    sprite->createSprite(70, 60);
+  }
+
   _UhfRfidDriver.setVerbose(true);
   _UhfRfidDriver.begin(&Serial2, 115200, 33, 32);
   _UhfRfidDriver.commandTxPower(2600, true);
@@ -274,6 +289,8 @@ void setup()
 // -------------------------------------------------------------------------------------
 // main loop
 // -------------------------------------------------------------------------------------
+static int _last_active_command = -2;
+
 void loop() 
 {
   M5.update();
@@ -293,11 +310,14 @@ void loop()
     if(_last_active_command >= 0)
     {
       _command_list[_last_active_command].func();
-      _last_active_command = -1;
+      _last_active_command = -2;
     }
   }
 
-  update_command_panel(touch_x, touch_y);
+  int selected_index = update_command_panel(touch_x, touch_y);
+  bool renew = selected_index != _last_active_command;
+  _last_active_command = selected_index;
+  draw_command_panel(renew, selected_index);
 
   {
     char text[64];
