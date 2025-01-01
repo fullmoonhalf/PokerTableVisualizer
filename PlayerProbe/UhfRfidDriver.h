@@ -1,11 +1,10 @@
 #ifndef __UHF_RFID_DRIVER_H_
 #define __UHF_RFID_DRIVER_H_
 #include <Arduino.h>
+#include "SysUtils.h"
 #include "UhfRfidFormat.h"
 
 
-#define __DUMP_FL__ Serial.printf("<%s:%d>\r\n", __FILE__, __LINE__);
-#define __ARRAY_SIZE__(x)  (sizeof((x))/sizeof((x)[0]))
 
 class UhfRfidFrame
 {
@@ -16,6 +15,11 @@ public:
     uint8_t calcurateChecksum();
     bool setup(uint8_t type, uint8_t command, uint8_t *param, uint16_t length);
     void dump(const char *header);
+
+    uint8_t parseUint8(int index);
+    uint8_t *parseUint8Stream(int index);
+    uint16_t parseUint16(int index);
+    uint32_t parseUint32(int index);
 
 private:
     void _dump_hex_stream(uint8_t *stream, uint16_t length, bool newline);

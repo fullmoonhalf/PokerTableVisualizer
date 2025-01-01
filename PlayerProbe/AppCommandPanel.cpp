@@ -96,25 +96,25 @@ void AppCommandPanel::draw()
     for(int index=0; index<_Command_Count; ++index)
     {
         auto sprite = _Sprites_Collection[index];
+        int x = (index % _ColNumPerLine) * _Width + _OffsetX;
+        int y = (index / _ColNumPerLine) * _Height + _OffsetY;
 
         // 内容の更新
         if(_RenewToDraw)
         {
             if(index == _SelectedIndex)
             {
-                sprite->fillSprite(TFT_DARKCYAN);
+                sprite->fillRect(0, 0, _Width, _Height, TFT_DARKCYAN);
             }
             else
             {
-                sprite->fillSprite(TFT_BLACK);
-                sprite->drawRect(0, 0, 70, 60, TFT_WHITE);
+                sprite->fillRect(0, 0, _Width, _Height, TFT_BLACK);
+                sprite->drawRect(0, 0, _Width, _Height, TFT_WHITE);
             }
             sprite->drawString(_Command_Collection[index]->name, 3, 20);
         }
 
         // 描画
-        int x = (index % _ColNumPerLine) * _Width + _OffsetX;
-        int y = (index / _ColNumPerLine) * _Height + _OffsetY;
         sprite->pushSprite(x, y);
     }
 

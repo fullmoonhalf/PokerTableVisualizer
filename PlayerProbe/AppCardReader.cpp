@@ -1,0 +1,86 @@
+#include "UhfRfidFrameParser.h"
+#include "AppCardReader.h"
+
+
+/// @brief コンストラクタ
+AppCardReader::AppCardReader()
+{
+    reset();
+}
+
+
+void AppCardReader::reset()
+{
+    for(int index=0; index<__ARRAY_SIZE__(_RecognizedCards); ++index)
+    {
+        Serial.printf("AppCardReader::reset %d - %d\r\n", index, _RecognizedCards[index]);
+        _RecognizedCards[index] = false;
+    }
+}
+
+
+/// @brief 
+/// @param card_index 
+void AppCardReader::recognize(int card_index)
+{
+    Serial.printf("AppCardReader::recognize %d\r\n", card_index);
+    if(card_index >= 0 && card_index < __ARRAY_SIZE__(_RecognizedCards))
+    {
+        _RecognizedCards[card_index] = true;
+    }
+}
+
+
+/// @brief 
+/// @param sprites 
+void AppCardReader::draw(AppPlaycardSprites *sprites)
+{
+    const int baseX = 20;
+    const int baseY = 165;
+    const int colnum = 10;
+    
+    int draw_count = 0;
+    for(int index=1; index<__ARRAY_SIZE__(_RecognizedCards); ++index)
+    {
+        if(_RecognizedCards[index])
+        {
+            int drawX = baseX + (draw_count % colnum) * 18;
+            int drawY = baseY + (draw_count / colnum) * 35;
+            sprites->draw(index, drawX, drawY);
+            ++draw_count;
+        }
+    }
+
+    for(int blank = draw_count; blank < _LastDrawCount; ++blank)
+    {
+        int drawX = baseX + (blank % colnum) * 18;
+        int drawY = baseY + (blank / colnum) * 35;
+        sprites->draw(0, drawX, drawY);
+    }
+
+    _LastDrawCount = draw_count;
+}
+
+
+/// @brief 
+/// @param frame 
+void AppCardReader::onReceive(UhfRfidFrame *frame)
+{
+    Serial.printf("AppCardReader::onReceive %d %d\r\n", frame->type, frame->command);
+    switch(frame->type)
+    {
+        case UhfRfidFrameType::TypeNotify:
+            switch(frame->command)
+            {
+                case UhfRfidNotify::UhfRfidNotify_Polling:
+                    {
+                        UhfRfidNotifyPollingParser parser(frame);
+                        uint8_t *epc = parser.getEPC();
+                        uint8_t card_index = epc[11];
+                        recognize(card_index);
+                    }
+                    return;
+            }
+            break;
+    }
+}

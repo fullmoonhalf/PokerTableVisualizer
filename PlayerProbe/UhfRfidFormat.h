@@ -430,7 +430,4 @@ struct UhfRfidLockOperation
     UhfRfidLockActionTargetType Action;
     bool Setting;
 };
-
-
-
 #endif

@@ -1,4 +1,5 @@
 #include "UhfRfidDriver.h"
+#include "UhfRfidFrameParser.h"
 
 
 /// @brief Dump
@@ -128,15 +129,16 @@ void UhfRfidFrame::dump(const char *header)
             {
                 case UhfRfidNotify::UhfRfidNotify_Polling:
                     {
-                        uint8_t rssi = parameter[0];
-                        UhfRfidPCConvert pc = { _parseUint16(parameter + 1) };
-                        uint16_t epc_length = pc.format.Length * 2;
-                        uint16_t crc_index = 3 + epc_length;
-                        uint16_t crc = _parseUint16(parameter+crc_index);
+                        UhfRfidNotifyPollingParser parser(this);
+                        uint8_t rssi = parser.getRSSI();
+                        UhfRfidPCConvert pc = parser.getPC();
+                        uint16_t crc = parser.getCRC();
+                        uint8_t *epc = parser.getEPC();
+
                         Serial.printf("rssi %d pc ", rssi);
                         _dump_pc(pc);
                         Serial.printf(" crc %04X epc ", crc);
-                        _dump_hex_stream(parameter+3, epc_length, true);
+                        _dump_hex_stream(epc, pc.format.Length * 2, true);
                     }
                     return;
             }
@@ -191,6 +193,31 @@ void UhfRfidFrame::_dump_pc(UhfRfidPCConvert &pc)
 void UhfRfidFrame::_dump_query_param(UhfRfidQueryParamConvert &param)
 {
     Serial.printf("%02X(%d,%d,%d,%d,%d,%d,%d)", param.value, param.format.DR, param.format.M, param.format.TRext, param.format.Sel, param.format.Session, param.format.Target, param.format.Q);
+}
+
+
+
+uint8_t UhfRfidFrame::parseUint8(int index)
+{
+    return parameter[index];
+}
+
+
+uint8_t *UhfRfidFrame::parseUint8Stream(int index)
+{
+    return parameter + index;
+}
+
+
+uint16_t UhfRfidFrame::parseUint16(int index)
+{
+    return _parseUint16(parameter + index);
+}
+
+
+uint32_t UhfRfidFrame::parseUint32(int index)
+{
+    return _parseUint32(parameter + index);
 }
 
 

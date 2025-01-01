@@ -189,3 +189,13 @@ bool UhfRfidDriver::_send(uint8_t command, uint8_t *param, uint16_t length, bool
         return _send_enqueue(command, param, length);
     }
 }
+
+
+/// @brief レシーバーの登録
+/// @param receiver 
+/// @param command 
+void UhfRfidDriver::regist(UhfRfidFrameReceivable *receiver, UhfRfidCommand command)
+{
+    Serial.printf("[UhfRfidDriver::regist] Regist %d\r\n", command);
+    _Receivers[command] = receiver;
+}

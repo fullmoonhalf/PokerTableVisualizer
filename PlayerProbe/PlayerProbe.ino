@@ -3,12 +3,14 @@
 #include "AppDisplay.h"
 #include "AppCommandPanel.h"
 #include "AppPlaycardSprites.h"
+#include "AppCardReader.h"
+
 
 static UhfRfidDriver _UhfRfidDriver;
 static AppDisplay _Display;
 static AppCommandPanel _CommandPanel(&_Display);
 static AppPlaycardSprites _Playcards(&_Display);
-
+static AppCardReader _CardReader;
 
 static int counter = 0;
 
@@ -50,6 +52,10 @@ static void test_commandSinglePollingInstruction()
   _UhfRfidDriver.commandSinglePollingInstruction();
 }
 
+static void test_commandMultiPollingInstruction()
+{
+  _UhfRfidDriver.commandMultiPollingInstruction(30);
+}
 
 static void test_reset_inventory_param()
 {
@@ -71,16 +77,24 @@ static void test_write_epc_test()
   _UhfRfidDriver.commandWriteTheLabelDataStore(0, UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_EPC, stream, sizeof(stream), 2);
 }
 
+static void test_reset_cardreader()
+{
+  _CardReader.reset();
+}
+
 static AppCommand _command_list[] = 
 {
+  { "SinglePoll", test_commandSinglePollingInstruction, },
+  { "MutiPoll", test_commandMultiPollingInstruction, },
+  { "ResetRead", test_reset_cardreader, },
+
+#if 0
+  { "Write EPC", test_write_epc_test, },
   { "Inc", test_inc, },
   { "Dec", test_dec, },
-
-  { "SinglePoll", test_commandSinglePollingInstruction, },
-  { "Write EPC", test_write_epc_test, },
-
   { "Get Info", test_get_informations, },
   { "Reset Prm", test_reset_inventory_param, },
+#endif
 };
 
 
@@ -109,6 +123,7 @@ void setup()
   // カードリーダーセットアップ
   _UhfRfidDriver.setVerbose(true);
   _UhfRfidDriver.begin(&Serial2, 115200, 33, 32);
+  _UhfRfidDriver.regist(&_CardReader, UhfRfidCommand::UhfRfidCommand_SinglePollingInstruction);
   _UhfRfidDriver.commandTxPower(2600, true);
   BaseType_t result = xTaskCreatePinnedToCore(task_driver_process, "t1", 4096, NULL, 1, NULL, 0);
 }
@@ -142,8 +157,11 @@ void loop()
 
   _CommandPanel.update(touch_x, touch_y);
   _CommandPanel.draw();
-  _Playcards.draw(counter % 52, 20, 165);
+  _CardReader.draw(&_Playcards);
+//  _Playcards.draw((counter % 52) + 1, 20, 110);
 
+  ++counter;
+  if(false)
   {
     char text[64];
     sprintf(text, "f:%d  c:%d  arg:%d", counter++, _UhfRfidDriver.getUpdateCount(), argument_value );

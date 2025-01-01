@@ -13,7 +13,7 @@ public:
     void draw(int index, int x, int y);
 
 private:
-    LGFX_Sprite *_Sprites_Collection[52];
+    LGFX_Sprite *_Sprites_Collection[1+52];
     AppDisplay *_Display;
 };
 
