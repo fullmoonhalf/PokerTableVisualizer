@@ -56,19 +56,26 @@ private:
 };
 
 
+class UhfRfidFrameReceivable
+{
+public:
+    virtual void onReceive(UhfRfidFrame *frame) = 0;
+};
+
+
 /// @brief 
 class UhfRfidDriver
 {
 public:
     UhfRfidDriver();
+    
+    /* プロセス制御系 */
     void begin(HardwareSerial *serial, int baud, uint8_t RX, uint8_t TX);
     void process();
     void end();
 
-    void setVerbose(bool sw);
-    int getUpdateCount();
-
-    bool resetInventoryParam();
+    /* レシーバー */
+    void regist(UhfRfidFrameReceivable *receiver, UhfRfidCommand command);
 
     /* セットアップ系 */
     bool commandTxPower(uint16_t power, bool immidiately = false);
@@ -94,6 +101,12 @@ public:
     bool commandGetParametersRelatedToTheQueryCommand(bool immidiately = false);
     bool commandGetTheSelectParameter(bool immidiately = false);
 
+    /* 一括コマンド発行系 */
+    bool resetInventoryParam();
+
+    /* デバッグ関連 */
+    void setVerbose(bool sw);
+    int getUpdateCount();
 
 private:
     bool _read_immidiately(UhfRfidFrame *read_buffer);
@@ -113,6 +126,7 @@ private:
     UhfRfidFramePool *_SendFramePool;
     UhfRfidFrame _SendFrameImmidiate;
     uint8_t _send_buffer[256];
+    UhfRfidFrameReceivable *_Receivers[256];
 
     bool _verbose;
     int _update_count;

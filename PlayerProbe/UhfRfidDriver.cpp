@@ -38,6 +38,12 @@ void UhfRfidDriver::begin(HardwareSerial *serial, int baud, uint8_t RX, uint8_t 
     _SendFramePool = new UhfRfidFramePool(SEND_BUFFER_COLLECTION_CAPACITY, SEND_BUFFER_LENGTH);
     _SendFrameImmidiate.init(SEND_BUFFER_LENGTH);
 
+    // レシーバーコンテキストの初期化
+    for(int index=0; index<__ARRAY_SIZE__(_Receivers); ++index)
+    {
+        _Receivers[index] = nullptr;
+    }
+
     // シリアルコンテキスト初期化
     _serial = serial;
     _serial->begin(baud, SERIAL_8N1, RX, TX);
@@ -74,6 +80,11 @@ void UhfRfidDriver::process()
         // 読んだデータの処理
         while(UhfRfidFrame *read_frame = _ReadFramePool->process())
         {
+            auto receiver = _Receivers[read_frame->command];
+            if(receiver != nullptr)
+            {
+                receiver->onReceive(read_frame);
+            }
             if(_verbose)
             {
                 read_frame->dump("[UhfRfidDriver::process recv]");
