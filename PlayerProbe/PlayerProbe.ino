@@ -1,11 +1,15 @@
+#include "SD.h"
 #include <M5Unified.h>
 #include "UhfRfidDriver.h"
 
 static UhfRfidDriver _UhfRfidDriver;
 
 static M5GFX _Display;
+
 static LGFX_Sprite **_Sprites_Command_Collection;
 static int _Sprites_Command_Count;
+static LGFX_Sprite **_Sprites_Playcard_Collection;
+
 
 
 static int counter = 0;
@@ -261,24 +265,53 @@ static int update_command_panel(int touchX, int touchY)
 // -------------------------------------------------------------------------------------
 void setup() 
 {
+  // System
   M5.begin();
 
+  // Serial
   Serial.begin(115200);
 
+  // LCD
   _Display.begin();
   _Display.fillScreen(TFT_BLACK);
 
+  // UI セットアップ
   _Sprites_Command_Count = __ARRAY_SIZE__(_command_list);
   _Sprites_Command_Collection = new LGFX_Sprite *[_Sprites_Command_Count];
   for(int index=0; index<__ARRAY_SIZE__(_command_list); ++index)
   {
     auto sprite = new LGFX_Sprite( &_Display );
     _Sprites_Command_Collection[index] = sprite;
+    sprite->createSprite(70, 60);
     sprite->setColorDepth( _Display.getColorDepth() );
     sprite->setFont(&fonts::Font2);
-    sprite->createSprite(70, 60);
   }
 
+  _Sprites_Playcard_Collection = new LGFX_Sprite *[52];
+  for(int index=0; index<52; ++index)
+  {
+    char filename[32];
+    sprintf(filename, "/cards_m5-%d.jpg", index);
+    Serial.println(filename);
+
+    const char *suit_text[] = {"S","H","D","C"};
+    const uint16_t suit_color[] ={TFT_WHITE, TFT_RED, TFT_CYAN, TFT_GREEN};
+    int suit = index / 13;
+    const char *rank_text[] = {"A","2","3","4","5","6","7","8","9","T","J","Q","K"};
+    int rank = index % 13;
+
+    auto sprite = new LGFX_Sprite( &_Display );
+    _Sprites_Playcard_Collection[index] = sprite;
+    sprite->createSprite(16, 32);
+    sprite->setColorDepth( _Display.getColorDepth() );
+    sprite->setFont(&fonts::Font2);
+    sprite->setTextColor(suit_color[suit]);
+    sprite->drawString(suit_text[suit], 5, 1);
+    sprite->drawString(rank_text[rank], 5, 15);
+    sprite->drawRect(0, 0, 16, 32, suit_color[suit]);
+  }
+
+  // カードリーダーセットアップ
   _UhfRfidDriver.setVerbose(true);
   _UhfRfidDriver.begin(&Serial2, 115200, 33, 32);
   _UhfRfidDriver.commandTxPower(2600, true);
@@ -318,6 +351,7 @@ void loop()
   bool renew = selected_index != _last_active_command;
   _last_active_command = selected_index;
   draw_command_panel(renew, selected_index);
+  _Sprites_Playcard_Collection[counter % 52]->pushSprite( 20, 165 );
 
   {
     char text[64];
