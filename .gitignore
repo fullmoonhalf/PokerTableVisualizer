@@ -72,3 +72,5 @@ crashlytics-build.properties
 /CenterMonitor/[Aa]ssets/[Ss]treamingAssets/aa/*
 PlayerProbe/.vscode/c_cpp_properties.json
 /PlayerProbe/.vscode
+Assets/UI/cards_m5.xcf
+Assets/UI/cards_m5.png
