@@ -28,6 +28,7 @@ void task_driver_process(void *param)
 // commands.
 // -------------------------------------------------------------------------------------
 static int argument_value = 1;
+static bool polling_enable = false;
 
 
 static void test_inc()
@@ -45,6 +46,16 @@ static void test_dec()
   {
     argument_value = 0;
   }
+}
+
+static void test_start_polling()
+{
+    polling_enable = true;
+}
+
+static void test_stop_polling()
+{
+    polling_enable = false;
 }
 
 static void test_commandSinglePollingInstruction()
@@ -84,11 +95,13 @@ static void test_reset_cardreader()
 
 static AppCommand _command_list[] = 
 {
-  { "SinglePoll", test_commandSinglePollingInstruction, },
-  { "MutiPoll", test_commandMultiPollingInstruction, },
+  { "Start", test_start_polling, },
+  { "Stop", test_stop_polling, },
   { "ResetRead", test_reset_cardreader, },
 
 #if 0
+  { "SinglePoll", test_commandSinglePollingInstruction, },
+  { "MutiPoll", test_commandMultiPollingInstruction, },
   { "Write EPC", test_write_epc_test, },
   { "Inc", test_inc, },
   { "Dec", test_dec, },
@@ -152,6 +165,13 @@ void loop()
     {
       selected_command->func();
       _CommandPanel.resetSelected();
+    }
+  }
+  if(polling_enable)
+  {
+    if(counter % 5)
+    {
+      test_commandSinglePollingInstruction();
     }
   }
 
