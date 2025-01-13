@@ -3,14 +3,18 @@
 #include "AppDisplay.h"
 #include "AppCommandPanel.h"
 #include "AppPlaycardSprites.h"
+#include "AppStatusPanel.h"
 #include "AppCardReader.h"
 
 
 static UhfRfidDriver _UhfRfidDriver;
 static AppDisplay _Display;
+static AppCardReader _CardReader;
+
+// Interface.
 static AppCommandPanel _CommandPanel(&_Display);
 static AppPlaycardSprites _Playcards(&_Display);
-static AppCardReader _CardReader;
+static AppStatusPanel _StatusPanel(&_Display);
 
 static int counter = 0;
 
@@ -115,10 +119,14 @@ static AppCommand _command_list[] =
 // -------------------------------------------------------------------------------------
 // setup
 // -------------------------------------------------------------------------------------
+GuiGauge *_TestGauge = nullptr;
+
+
 void setup() 
 {
   // System
   M5.begin();
+  M5.Power.begin();
 
   // Serial
   Serial.begin(115200);
@@ -132,6 +140,8 @@ void setup()
     _CommandPanel.regist(_command_list + index);
   }
   _Playcards.init();
+  _StatusPanel.init();
+  _TestGauge = new GuiGauge(&_Display.Display, 0, 30, 20, 4);
 
   // カードリーダーセットアップ
   _UhfRfidDriver.setVerbose(true);
@@ -145,10 +155,9 @@ void setup()
 // -------------------------------------------------------------------------------------
 // main loop
 // -------------------------------------------------------------------------------------
-void loop() 
+/// @brief 更新処理
+static void application_update()
 {
-  M5.update();
-
   int touch_x = -1;
   int touch_y = -1;
   uint8_t touch_count = M5.Touch.getCount();
@@ -176,16 +185,31 @@ void loop()
   }
 
   _CommandPanel.update(touch_x, touch_y);
+  _StatusPanel.update();
+
+  _TestGauge->setCurrentValue(counter % 30);
+  _TestGauge->update();
+}
+
+
+/// @brief 描画処理
+static void applicatoin_draw()
+{
   _CommandPanel.draw();
   _CardReader.draw(&_Playcards);
 //  _Playcards.draw((counter % 52) + 1, 20, 110);
+  _StatusPanel.draw(10, 10);
+  _TestGauge->draw(200, 10);
+}
 
+
+void loop() 
+{
   ++counter;
-  if(false)
-  {
-    char text[64];
-    sprintf(text, "f:%d  c:%d  arg:%d", counter++, _UhfRfidDriver.getUpdateCount(), argument_value );
-    M5.Lcd.drawString(text, 10, 10, 2);
-  }
+
+  M5.update();
+  application_update();
+  applicatoin_draw();
+
   delay(100);
 }
