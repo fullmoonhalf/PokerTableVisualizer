@@ -14,7 +14,7 @@ static AppCardReader _CardReader;
 // Interface.
 static AppCommandPanel _CommandPanel(&_Display);
 static AppPlaycardSprites _Playcards(&_Display);
-static AppStatusPanel _StatusPanel(&_Display);
+static AppStatusPanel _StatusPanel(&_Display, &_UhfRfidDriver);
 
 static int counter = 0;
 
@@ -62,16 +62,6 @@ static void test_stop_polling()
     polling_enable = false;
 }
 
-static void test_commandSinglePollingInstruction()
-{
-  _UhfRfidDriver.commandSinglePollingInstruction();
-}
-
-static void test_commandMultiPollingInstruction()
-{
-  _UhfRfidDriver.commandMultiPollingInstruction(30);
-}
-
 static void test_reset_inventory_param()
 {
   _UhfRfidDriver.resetInventoryParam();
@@ -104,8 +94,6 @@ static AppCommand _command_list[] =
   { "ResetRead", test_reset_cardreader, },
 
 #if 0
-  { "SinglePoll", test_commandSinglePollingInstruction, },
-  { "MutiPoll", test_commandMultiPollingInstruction, },
   { "Write EPC", test_write_epc_test, },
   { "Inc", test_inc, },
   { "Dec", test_dec, },
@@ -180,7 +168,7 @@ static void application_update()
   {
     if(counter % 5)
     {
-      test_commandSinglePollingInstruction();
+      _UhfRfidDriver.commandSinglePollingInstruction();
     }
   }
 
