@@ -52,6 +52,13 @@ void AppReporter::process()
     {
         if(_Connected)
         {
+            char buffer[256];
+            if(_CardReader->tryGetStatus(buffer))
+            {
+                _BLECharacteristic->setValue(buffer);
+                _BLECharacteristic->notify();
+                Serial.printf("[AppReporter] notify '%s'\r\n", buffer);
+            }
         }
 
         // ちょいまち

@@ -1,0 +1,17 @@
+.all
+{
+    background-color:aquamarine;
+}
+
+.test_card
+{
+    width: 32px;
+    height: auto;
+    opacity: 0.4;
+}
+
+.test_card_selected
+{
+    width: 32px;
+    height: auto;
+}

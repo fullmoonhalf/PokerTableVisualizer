@@ -149,7 +149,7 @@ void setup()
   _TestGauge = new GuiGauge(&_Display.Display, 0, 30, 20, 4);
 
   // カードリーダーセットアップ
-  _UhfRfidDriver.setVerbose(true);
+  _UhfRfidDriver.setVerbose(false);
   _UhfRfidDriver.begin(&Serial2, 115200, 33, 32);
   _UhfRfidDriver.regist(&_CardReader, UhfRfidCommand::UhfRfidCommand_SinglePollingInstruction);
   _UhfRfidDriver.commandTxPower(2600, true);

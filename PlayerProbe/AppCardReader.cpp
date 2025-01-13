@@ -4,6 +4,7 @@
 
 /// @brief コンストラクタ
 AppCardReader::AppCardReader()
+    : _StatusUpdated(true)
 {
     reset();
 }
@@ -11,6 +12,7 @@ AppCardReader::AppCardReader()
 
 void AppCardReader::reset()
 {
+    _StatusUpdated = true;
     for(int index=0; index<__ARRAY_SIZE__(_RecognizedCards); ++index)
     {
         Serial.printf("AppCardReader::reset %d - %d\r\n", index, _RecognizedCards[index]);
@@ -26,8 +28,13 @@ void AppCardReader::recognize(int card_index)
     Serial.printf("AppCardReader::recognize %d\r\n", card_index);
     if(card_index >= 0 && card_index < __ARRAY_SIZE__(_RecognizedCards))
     {
+        if(_RecognizedCards[card_index] != true)
+        {
+            _StatusUpdated = true;
+        }
         _RecognizedCards[card_index] = true;
     }
+
 }
 
 
@@ -37,7 +44,7 @@ void AppCardReader::draw(AppPlaycardSprites *sprites)
 {
     const int baseX = 20;
     const int baseY = 165;
-    const int colnum = 10;
+    const int colnum = 16;
     
     int draw_count = 0;
     for(int index=1; index<__ARRAY_SIZE__(_RecognizedCards); ++index)
@@ -83,4 +90,30 @@ void AppCardReader::onReceive(UhfRfidFrame *frame)
             }
             break;
     }
+}
+
+
+/// @brief ステータス取得する
+/// @param buffer 
+/// @return 
+bool AppCardReader::tryGetStatus(char *buffer)
+{
+    if(_StatusUpdated == false)
+    {
+        return false;
+    }
+
+    char *seek = buffer;
+    const char *delim = "";
+    for(int index=1; index<__ARRAY_SIZE__(_RecognizedCards); ++index)
+    {
+        if(_RecognizedCards[index])
+        {
+            seek += sprintf(seek, "%s%d", delim, index);
+            delim = ",";
+        }
+    }
+
+    _StatusUpdated = false;
+    return true;
 }
