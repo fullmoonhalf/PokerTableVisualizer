@@ -1,6 +1,6 @@
 #include "UhfRfidDriver.h"
 
-static const uint16_t SEND_BUFFER_LENGTH = 128;
+static const uint16_t SEND_BUFFER_LENGTH = 64;
 static const uint16_t READ_BUFFER_LENGTH = 128;
 static const int READ_BUFFER_COLLECTION_CAPACITY = 128;
 static const int SEND_BUFFER_COLLECTION_CAPACITY = 32;

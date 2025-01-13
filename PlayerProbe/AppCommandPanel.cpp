@@ -33,11 +33,9 @@ void AppCommandPanel::regist(AppCommand *command)
     _Command_Collection[_Command_Count] = command;
 
     // スプライト生成
-    auto sprite = new LGFX_Sprite( &_Display->Display );
-    _Sprites_Collection[_Command_Count] = sprite;
-    sprite->createSprite(_Width, _Height);
-    sprite->setColorDepth( _Display->Display.getColorDepth() );
+    auto sprite = _Display->createSprite(_Width, _Height);
     sprite->setFont(&fonts::Font2);
+    _Sprites_Collection[_Command_Count] = sprite;
 
     _Command_Count++;
 }

@@ -5,16 +5,18 @@
 #include "AppPlaycardSprites.h"
 #include "AppStatusPanel.h"
 #include "AppCardReader.h"
+#include "AppReporter.h"
 
 
 static UhfRfidDriver _UhfRfidDriver;
 static AppDisplay _Display;
 static AppCardReader _CardReader;
+static AppReporter *_Reporter = nullptr;
 
 // Interface.
 static AppCommandPanel _CommandPanel(&_Display);
 static AppPlaycardSprites _Playcards(&_Display);
-static AppStatusPanel _StatusPanel(&_Display, &_UhfRfidDriver);
+static AppStatusPanel _StatusPanel(&_Display);
 
 static int counter = 0;
 
@@ -22,9 +24,20 @@ static int counter = 0;
 // -------------------------------------------------------------------------------------
 // driver task
 // -------------------------------------------------------------------------------------
-void task_driver_process(void *param)
+static void task_rfid_driver_process(void *param)
 {
   _UhfRfidDriver.process();
+}
+
+static void task_reporter_driver_process(void *param)
+{
+  _Reporter->process();
+}
+
+static void start_process(void (*func)(void *), const char *name, int stack, int prio)
+{
+  auto result = xTaskCreatePinnedToCore(func, name, stack, NULL, prio, NULL, 0);
+  Serial.printf("start process %s stack %d prio %d: result %d\r\n", name, stack, prio, result);
 }
 
 
@@ -116,11 +129,15 @@ void setup()
   M5.begin();
   M5.Power.begin();
 
+  // LCD
+  _Display.init();
+
   // Serial
   Serial.begin(115200);
 
-  // LCD
-  _Display.init();
+  // Reporter
+  _Reporter = new AppReporter("PTV_PP_001", "cbaabb28-4e81-49c4-b775-aedfd27d8db0", "45f116ee-b087-4271-888d-a15eebebd2eb", &_CardReader);
+  _Reporter->setup();
 
   // UI セットアップ
   for(int index=0; index<__ARRAY_SIZE__(_command_list); ++index)
@@ -128,7 +145,7 @@ void setup()
     _CommandPanel.regist(_command_list + index);
   }
   _Playcards.init();
-  _StatusPanel.init();
+  _StatusPanel.setup();
   _TestGauge = new GuiGauge(&_Display.Display, 0, 30, 20, 4);
 
   // カードリーダーセットアップ
@@ -136,7 +153,16 @@ void setup()
   _UhfRfidDriver.begin(&Serial2, 115200, 33, 32);
   _UhfRfidDriver.regist(&_CardReader, UhfRfidCommand::UhfRfidCommand_SinglePollingInstruction);
   _UhfRfidDriver.commandTxPower(2600, true);
-  BaseType_t result = xTaskCreatePinnedToCore(task_driver_process, "t1", 4096, NULL, 1, NULL, 0);
+
+  // 紐付け
+  _StatusPanel.bind(&_UhfRfidDriver);
+  _StatusPanel.bind(_Reporter);
+
+  // スレッド
+  start_process(task_rfid_driver_process, "t1", 4096, 1);
+  start_process(task_reporter_driver_process, "t2", 4096, 2);
+
+  _StatusPanel.dumpMemoryStatus();
 }
 
 
@@ -174,6 +200,7 @@ static void application_update()
 
   _CommandPanel.update(touch_x, touch_y);
   _StatusPanel.update();
+  _Reporter->update();
 
   _TestGauge->setCurrentValue(counter % 30);
   _TestGauge->update();
@@ -185,7 +212,6 @@ static void applicatoin_draw()
 {
   _CommandPanel.draw();
   _CardReader.draw(&_Playcards);
-//  _Playcards.draw((counter % 52) + 1, 20, 110);
   _StatusPanel.draw(10, 10);
   _TestGauge->draw(200, 10);
 }

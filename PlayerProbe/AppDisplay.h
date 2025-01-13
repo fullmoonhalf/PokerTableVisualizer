@@ -8,6 +8,8 @@ class AppDisplay
 public:
     AppDisplay();
     void init();
+    LGFX_Sprite *createSprite(int width, int height);
+
 
 public:
     M5GFX Display;

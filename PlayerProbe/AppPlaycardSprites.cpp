@@ -66,12 +66,10 @@ void AppPlaycardSprites::init()
 {
     // 空白カード部分
     {
-        auto sprite = new LGFX_Sprite( &_Display->Display );
-        _Sprites_Collection[0] = sprite;
-        sprite->createSprite(16, 32);
-        sprite->setColorDepth( _Display->Display.getColorDepth() );
+        auto sprite = _Display->createSprite(16, 32);
         sprite->setFont(&fonts::Font2);
         sprite->fillRect(0, 0, 16, 32, TFT_BLACK);
+        _Sprites_Collection[0] = sprite;
     }    
 
     // カード部分
@@ -85,15 +83,13 @@ void AppPlaycardSprites::init()
         int suit = card_number / 13;
         int rank = card_number % 13;
 
-        auto sprite = new LGFX_Sprite( &_Display->Display );
-        _Sprites_Collection[index] = sprite;
-        sprite->createSprite(16, 32);
-        sprite->setColorDepth( _Display->Display.getColorDepth() );
+        auto sprite = _Display->createSprite(16, 32);
         sprite->setFont(&fonts::Font2);
         sprite->pushImage(5, 3, 8, 8, suit_bitmap[suit]);
         sprite->setTextColor(suit_color[suit]);
         sprite->drawString(rank_text[rank], 5, 15);
         sprite->drawRect(0, 0, 16, 32, suit_color[suit]);
+        _Sprites_Collection[index] = sprite;
     }
 }
 
