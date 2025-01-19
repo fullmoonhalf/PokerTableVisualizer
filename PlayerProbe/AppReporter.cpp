@@ -11,7 +11,7 @@ AppReporter::AppReporter(const char *identifier, const char *service_uuid, const
     , _BLEService( nullptr )
     , _BLECharacteristic( nullptr )
     , _BLEAdvertising( nullptr )
-    , _CardReader( nullptr )
+    , _CardReader( card_reader )
     , _FrameCount( 0 )
     , _Connected( false )
 {
@@ -21,7 +21,7 @@ AppReporter::AppReporter(const char *identifier, const char *service_uuid, const
     _BLEServer->setCallbacks(this);
 
     _BLEService = _BLEServer->createService(service_uuid);
-    _BLECharacteristic = _BLEService->createCharacteristic(characteristics_uuid, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+    _BLECharacteristic = _BLEService->createCharacteristic(characteristics_uuid, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY  );
     _BLECharacteristic->addDescriptor(new BLE2902());
     _BLECharacteristic->setValue("");
     _BLEService->start();
@@ -55,12 +55,11 @@ void AppReporter::process()
             char buffer[256];
             if(_CardReader->tryGetStatus(buffer))
             {
+                Serial.printf("[AppReporter] notify '%s'\r\n", buffer);
                 _BLECharacteristic->setValue(buffer);
                 _BLECharacteristic->notify();
-                Serial.printf("[AppReporter] notify '%s'\r\n", buffer);
             }
         }
-
         // ちょいまち
         delay(50);
     }

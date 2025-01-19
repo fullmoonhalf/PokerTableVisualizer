@@ -15,7 +15,6 @@ void AppCardReader::reset()
     _StatusUpdated = true;
     for(int index=0; index<__ARRAY_SIZE__(_RecognizedCards); ++index)
     {
-        Serial.printf("AppCardReader::reset %d - %d\r\n", index, _RecognizedCards[index]);
         _RecognizedCards[index] = false;
     }
 }
@@ -25,7 +24,6 @@ void AppCardReader::reset()
 /// @param card_index 
 void AppCardReader::recognize(int card_index)
 {
-    Serial.printf("AppCardReader::recognize %d\r\n", card_index);
     if(card_index >= 0 && card_index < __ARRAY_SIZE__(_RecognizedCards))
     {
         if(_RecognizedCards[card_index] != true)
@@ -73,7 +71,6 @@ void AppCardReader::draw(AppPlaycardSprites *sprites)
 /// @param frame 
 void AppCardReader::onReceive(UhfRfidFrame *frame)
 {
-    Serial.printf("AppCardReader::onReceive %d %d\r\n", frame->type, frame->command);
     switch(frame->type)
     {
         case UhfRfidFrameType::TypeNotify:
@@ -104,6 +101,7 @@ bool AppCardReader::tryGetStatus(char *buffer)
     }
 
     char *seek = buffer;
+    seek += sprintf(seek, "cards:");
     const char *delim = "";
     for(int index=1; index<__ARRAY_SIZE__(_RecognizedCards); ++index)
     {
