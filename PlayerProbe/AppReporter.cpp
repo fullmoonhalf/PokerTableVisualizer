@@ -15,6 +15,7 @@ AppReporter::AppReporter(const char *identifier, const char *service_uuid, const
     , _FrameCount( 0 )
     , _Connected( false )
 {
+    Serial.printf("[AppReporter] identifier=%s service_uuid=%s characteristics_uuid=%s\r\n", identifier, service_uuid, characteristics_uuid);
     BLEDevice::init(identifier);
 
     _BLEServer = BLEDevice::createServer();

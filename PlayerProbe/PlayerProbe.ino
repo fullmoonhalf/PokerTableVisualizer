@@ -1,4 +1,5 @@
 #include <M5Unified.h>
+#include "SD.h"
 #include "UhfRfidDriver.h"
 #include "AppDisplay.h"
 #include "AppCommandPanel.h"
@@ -6,12 +7,19 @@
 #include "AppStatusPanel.h"
 #include "AppCardReader.h"
 #include "AppReporter.h"
+#include "SysSetting.h"
 
 
 static UhfRfidDriver _UhfRfidDriver;
 static AppDisplay _Display;
 static AppCardReader _CardReader;
 static AppReporter *_Reporter = nullptr;
+
+// Settings
+static SysSetting _Setting;
+const char *SETTING_KEY_BLE_IDENTIFIER = "BLE_IDENTIFIER";
+const char *SETTING_KEY_BLE_SERVICE_UUID = "BLE_SERVICE_UUID";
+const char *SETTING_KEY_BLE_CHARACTERISTICS_UUID = "BLE_CHARACTERISTICS_UUID";
 
 // Interface.
 static AppCommandPanel _CommandPanel(&_Display);
@@ -123,20 +131,39 @@ static AppCommand _command_list[] =
 GuiGauge *_TestGauge = nullptr;
 
 
+
+
 void setup() 
 {
   // System
   M5.begin();
   M5.Power.begin();
+  Serial.begin(115200);
+
+  // Settings
+  _Setting.set(SETTING_KEY_BLE_IDENTIFIER, "PTV_PP_001");
+  _Setting.set(SETTING_KEY_BLE_SERVICE_UUID, "cbaabb28-4e81-49c4-b775-aedfd27d8db0");
+  _Setting.set(SETTING_KEY_BLE_CHARACTERISTICS_UUID, "45f116ee-b087-4271-888d-a15eebebd2eb");
+  if(SD.begin(GPIO_NUM_4, SPI, 15000000))
+  {
+    Serial.println("SD initialize success.");
+    _Setting.load();
+  }
+  else
+  {
+    Serial.println("SD initialize failure.");
+  }
 
   // LCD
   _Display.init();
 
-  // Serial
-  Serial.begin(115200);
-
   // Reporter
-  _Reporter = new AppReporter("PTV_PP_001", "cbaabb28-4e81-49c4-b775-aedfd27d8db0", "45f116ee-b087-4271-888d-a15eebebd2eb", &_CardReader);
+  _Reporter = new AppReporter(
+    _Setting.get(SETTING_KEY_BLE_IDENTIFIER).c_str(), 
+    _Setting.get(SETTING_KEY_BLE_SERVICE_UUID).c_str(),
+    _Setting.get(SETTING_KEY_BLE_CHARACTERISTICS_UUID).c_str(),
+    &_CardReader
+  );
   _Reporter->setup();
 
   // UI セットアップ
