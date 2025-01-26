@@ -8,7 +8,7 @@
 #include "AppCardReader.h"
 #include "AppReporter.h"
 #include "SysSetting.h"
-
+#include "AppSetting.h"
 
 static UhfRfidDriver _UhfRfidDriver;
 static AppDisplay _Display;
@@ -17,9 +17,6 @@ static AppReporter *_Reporter = nullptr;
 
 // Settings
 static SysSetting _Setting;
-const char *SETTING_KEY_BLE_IDENTIFIER = "BLE_IDENTIFIER";
-const char *SETTING_KEY_BLE_SERVICE_UUID = "BLE_SERVICE_UUID";
-const char *SETTING_KEY_BLE_CHARACTERISTICS_UUID = "BLE_CHARACTERISTICS_UUID";
 
 // Interface.
 static AppCommandPanel _CommandPanel(&_Display);
@@ -128,11 +125,6 @@ static AppCommand _command_list[] =
 // -------------------------------------------------------------------------------------
 // setup
 // -------------------------------------------------------------------------------------
-GuiGauge *_TestGauge = nullptr;
-
-
-
-
 void setup() 
 {
   // System
@@ -173,17 +165,17 @@ void setup()
   }
   _Playcards.init();
   _StatusPanel.setup();
-  _TestGauge = new GuiGauge(&_Display.Display, 0, 30, 20, 4);
 
   // カードリーダーセットアップ
   _UhfRfidDriver.setVerbose(false);
   _UhfRfidDriver.begin(&Serial2, 115200, 33, 32);
   _UhfRfidDriver.regist(&_CardReader, UhfRfidCommand::UhfRfidCommand_SinglePollingInstruction);
-  _UhfRfidDriver.commandTxPower(2600, true);
+  _UhfRfidDriver.commandTxPower(1000, true);
 
   // 紐付け
   _StatusPanel.bind(&_UhfRfidDriver);
   _StatusPanel.bind(_Reporter);
+  _StatusPanel.bind(&_Setting);
 
   // スレッド
   start_process(task_rfid_driver_process, "t1", 4096, 1);
@@ -228,9 +220,6 @@ static void application_update()
   _CommandPanel.update(touch_x, touch_y);
   _StatusPanel.update();
   _Reporter->update();
-
-  _TestGauge->setCurrentValue(counter % 30);
-  _TestGauge->update();
 }
 
 
@@ -240,7 +229,6 @@ static void applicatoin_draw()
   _CommandPanel.draw();
   _CardReader.draw(&_Playcards);
   _StatusPanel.draw(10, 10);
-  _TestGauge->draw(200, 10);
 }
 
 

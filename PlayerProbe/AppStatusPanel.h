@@ -5,6 +5,7 @@
 #include "UhfRfidDriver.h"
 #include "GuiGauge.h"
 #include "AppReporter.h"
+#include "SysSetting.h"
 
 
 class AppStatusPanel
@@ -18,15 +19,18 @@ public:
 
     void bind(UhfRfidDriver *rfid_driver);
     void bind(AppReporter *reporter);
+    void bind(SysSetting *setting);
 
 private:
     AppDisplay *_Display;
     UhfRfidDriver *_RfidDriver;
     AppReporter *_Reporter;
+    SysSetting *_Setting;
 
     GuiGauge *_GaugeBattery;
     LGFX_Sprite *_SpriteRfid;
     LGFX_Sprite *_SpriteReporter;
+    LGFX_Sprite *_SpriteSetting;
 };
 
 

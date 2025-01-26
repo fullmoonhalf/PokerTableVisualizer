@@ -1,4 +1,5 @@
 #include "AppStatusPanel.h"
+#include "AppSetting.h"
 
 
 
@@ -6,10 +7,12 @@ AppStatusPanel::AppStatusPanel(AppDisplay *display)
     : _Display(display)
     , _RfidDriver(nullptr)
     , _Reporter(nullptr)
+    , _Setting(nullptr)
 {
     _GaugeBattery = new GuiGauge(&_Display->Display, 100, 100, 25, 5);
-    _SpriteRfid = display->createSprite(100, 10);
-    _SpriteReporter = display->createSprite(100, 10);
+    _SpriteRfid = display->createSprite(128, 16);
+    _SpriteReporter = display->createSprite(128, 16);
+    _SpriteSetting = display->createSprite(128, 16);
 }
 
 
@@ -22,6 +25,12 @@ void AppStatusPanel::bind(UhfRfidDriver *rfid_driver)
 void AppStatusPanel::bind(AppReporter *reporter)
 {
     _Reporter = reporter;
+}
+
+
+void AppStatusPanel::bind(SysSetting *setting)
+{
+    _Setting = setting;
 }
 
 
@@ -62,6 +71,12 @@ void AppStatusPanel::update()
     {
         _SpriteReporter->drawString("Reporter: disable", 0, 0);   
     }
+
+    // 設定まわりの状況
+    if(_Setting != nullptr)
+    {
+        _SpriteSetting->drawString(_Setting->get(SETTING_KEY_BLE_IDENTIFIER).c_str(), 0, 0);
+    }
 }
 
 
@@ -72,7 +87,8 @@ void AppStatusPanel::draw(int x, int y)
 {
     _GaugeBattery->draw(x, y);
     _SpriteRfid->pushSprite(x, y+7);
-    _SpriteReporter->pushSprite(x + 100, y+7);
+    _SpriteReporter->pushSprite(x, y+14);
+    _SpriteSetting->pushSprite(x+128, y);
 }
 
 

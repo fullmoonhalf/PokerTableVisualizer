@@ -3,7 +3,6 @@
 
 
 
-
 /// @brief コンストラクタ
 /// @param card_reader 
 AppReporter::AppReporter(const char *identifier, const char *service_uuid, const char *characteristics_uuid, AppCardReader *card_reader)
