@@ -9,11 +9,12 @@
 class AppReporter : public BLEServerCallbacks
 {
 public:
-    AppReporter(const char *identifier, const char *service_uuid, const char *characteristics_uuid, AppCardReader *card_reader);
+    AppReporter(const char *identifier, const char *service_uuid, const char *characteristics_uuid);
 
     void setup();
     void update();
     void process();
+    void bind(AppCardReader *argCardReader);
 
     int getFrameCount();
 

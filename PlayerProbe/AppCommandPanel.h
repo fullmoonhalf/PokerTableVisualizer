@@ -4,12 +4,13 @@
 #include "AppDisplay.h"
 
 
-struct AppCommand
-{
-    const char *name;
-    void (*func)();
-};
 
+class AppCommand
+{
+public:
+    virtual const char *getName() = 0;
+    virtual void execute() = 0;
+};
 
 
 class AppCommandPanel

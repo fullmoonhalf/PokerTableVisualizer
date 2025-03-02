@@ -1,16 +1,14 @@
-// reference: https://qiita.com/Teach/items/629c338da05a3134a1eb
 #include "AppReporter.h"
-
 
 
 /// @brief コンストラクタ
 /// @param card_reader 
-AppReporter::AppReporter(const char *identifier, const char *service_uuid, const char *characteristics_uuid, AppCardReader *card_reader)
+AppReporter::AppReporter(const char *identifier, const char *service_uuid, const char *characteristics_uuid)
     : _BLEServer( nullptr )
     , _BLEService( nullptr )
     , _BLECharacteristic( nullptr )
     , _BLEAdvertising( nullptr )
-    , _CardReader( card_reader )
+    , _CardReader( nullptr )
     , _FrameCount( 0 )
     , _Connected( false )
 {
@@ -45,23 +43,39 @@ void AppReporter::update()
 }
 
 
+/// @brief 
+/// @param argCardreader 
+void AppReporter::bind(AppCardReader *argCardReader)
+{
+    _CardReader = argCardReader;
+}
+
+
+
 /// @brief スレッドドライバ
 void AppReporter::process()
 {
+    char buffer[256];
+
     for(_FrameCount = 0;;++_FrameCount)
     {
-        if(_Connected)
-        {
-            char buffer[256];
-            if(_CardReader->tryGetStatus(buffer))
-            {
-                Serial.printf("[AppReporter] notify '%s'\r\n", buffer);
-                _BLECharacteristic->setValue(buffer);
-                _BLECharacteristic->notify();
-            }
-        }
         // ちょいまち
         delay(50);
+
+        if(_Connected == false)
+        {
+            continue;
+        }
+        if(_CardReader == nullptr)
+        {
+            continue;
+        }
+        if(_CardReader->tryGetStatus(buffer))
+        {
+            Serial.printf("[AppReporter] notify '%s'\r\n", buffer);
+            _BLECharacteristic->setValue(buffer);
+            _BLECharacteristic->notify();
+        }
     }
 }
 

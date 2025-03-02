@@ -1,10 +1,12 @@
 #include "UhfRfidFrameParser.h"
 #include "AppCardReader.h"
+#include "SysUtils.h"
 
 
 /// @brief コンストラクタ
 AppCardReader::AppCardReader()
     : _StatusUpdated(true)
+    , _LastDrawCount(0)
 {
     reset();
 }
@@ -17,6 +19,7 @@ void AppCardReader::reset()
     {
         _RecognizedCards[index] = false;
     }
+
 }
 
 
@@ -43,7 +46,7 @@ void AppCardReader::draw(AppPlaycardSprites *sprites)
     const int baseX = 20;
     const int baseY = 165;
     const int colnum = 16;
-    
+
     int draw_count = 0;
     for(int index=1; index<__ARRAY_SIZE__(_RecognizedCards); ++index)
     {

@@ -1,6 +1,6 @@
 #include <M5Unified.h>
 #include "AppCommandPanel.h"
-
+#include "SysUtils.h"
 
 
 static const int WIDTH = 70;
@@ -18,15 +18,15 @@ AppCommandPanel::AppCommandPanel(AppDisplay *display)
     _Width = WIDTH;
     _Height = HEIGHT;
     _ColNumPerLine = COL_MAX;
+    _Command_Count = 0;
     _OffsetX = OFFSET_X;
     _OffsetY = OFFSET_Y;
     resetSelected();
 }
 
 
-/// @brief 
-/// @param name 
-/// @param func 
+/// @brief コマンド登録
+/// @param command 
 void AppCommandPanel::regist(AppCommand *command)
 {
     // コマンド登録
@@ -109,7 +109,7 @@ void AppCommandPanel::draw()
                 sprite->fillRect(0, 0, _Width, _Height, TFT_BLACK);
                 sprite->drawRect(0, 0, _Width, _Height, TFT_WHITE);
             }
-            sprite->drawString(_Command_Collection[index]->name, 3, 20);
+            sprite->drawString(_Command_Collection[index]->getName(), 3, 20);
         }
 
         // 描画
