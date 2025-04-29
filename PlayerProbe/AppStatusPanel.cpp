@@ -9,10 +9,11 @@ AppStatusPanel::AppStatusPanel(AppDisplay *display)
     , _Reporter(nullptr)
     , _Setting(nullptr)
 {
-    _GaugeBattery = new GuiGauge(&_Display->Display, 100, 100, 25, 5);
+    _GaugeBattery = new GuiGauge(&_Display->Display, 100, 100, 50, 5);
     _SpriteRfid = display->createSprite(128, 16);
     _SpriteReporter = display->createSprite(128, 16);
-    _SpriteSetting = display->createSprite(128, 16);
+    _SpriteSetting = display->createSprite(64, 16);
+    _SpriteMode = display->createSprite(64, 16);
 }
 
 
@@ -76,6 +77,7 @@ void AppStatusPanel::update()
     if(_Setting != nullptr)
     {
         _SpriteSetting->drawString(_Setting->get(SETTING_KEY_BLE_IDENTIFIER).c_str(), 0, 0);
+        _SpriteMode->drawString(_Setting->get(SETTING_KEY_MODE).c_str(), 0, 0);
     }
 }
 
@@ -88,7 +90,8 @@ void AppStatusPanel::draw(int x, int y)
     _GaugeBattery->draw(x, y);
     _SpriteRfid->pushSprite(x, y+7);
     _SpriteReporter->pushSprite(x, y+14);
-    _SpriteSetting->pushSprite(x+128, y);
+    _SpriteSetting->pushSprite(x+96, y);
+    _SpriteMode->pushSprite(x+160, y);
 }
 
 

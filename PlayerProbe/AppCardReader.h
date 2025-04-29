@@ -1,10 +1,11 @@
 #ifndef APP_CARDREADER
 #define APP_CARDREADER
 #include "UhfRfidDriver.h"
+#include "AppReporter.h"
 #include "AppPlaycardSprites.h"
 
 
-class AppCardReader : public UhfRfidFrameReceivable
+class AppCardReader : public UhfRfidFrameReceivable, public AppReportSourceable
 {
 public:
     AppCardReader();
@@ -12,7 +13,8 @@ public:
     void reset();
     void recognize(int card_index);
     void draw(AppPlaycardSprites *sprites);
-    bool tryGetStatus(char *buffer);
+    virtual int tryGetStatus(char *buffer);
+    virtual void flushSource();
 
 private:
     bool _StatusUpdated = false;

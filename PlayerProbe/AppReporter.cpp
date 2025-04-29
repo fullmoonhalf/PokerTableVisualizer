@@ -45,7 +45,7 @@ void AppReporter::update()
 
 /// @brief 
 /// @param argCardreader 
-void AppReporter::bind(AppCardReader *argCardReader)
+void AppReporter::bind(AppReportSourceable *argCardReader)
 {
     _CardReader = argCardReader;
 }
@@ -70,8 +70,11 @@ void AppReporter::process()
         {
             continue;
         }
-        if(_CardReader->tryGetStatus(buffer))
+
+        int length = _CardReader->tryGetStatus(buffer);
+        if(length > 0)
         {
+            _CardReader->flushSource();
             Serial.printf("[AppReporter] notify '%s'\r\n", buffer);
             _BLECharacteristic->setValue(buffer);
             _BLECharacteristic->notify();

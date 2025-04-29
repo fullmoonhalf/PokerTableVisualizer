@@ -23,6 +23,12 @@ void AppCardReader::reset()
 }
 
 
+void AppCardReader::flushSource()
+{
+    reset();
+}
+
+
 /// @brief 
 /// @param card_index 
 void AppCardReader::recognize(int card_index)
@@ -96,11 +102,11 @@ void AppCardReader::onReceive(UhfRfidFrame *frame)
 /// @brief ステータス取得する
 /// @param buffer 
 /// @return 
-bool AppCardReader::tryGetStatus(char *buffer)
+int AppCardReader::tryGetStatus(char *buffer)
 {
     if(_StatusUpdated == false)
     {
-        return false;
+        return 0;
     }
 
     char *seek = buffer;
@@ -116,5 +122,5 @@ bool AppCardReader::tryGetStatus(char *buffer)
     }
 
     _StatusUpdated = false;
-    return true;
+    return seek - buffer;
 }

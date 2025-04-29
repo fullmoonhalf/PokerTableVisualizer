@@ -70,7 +70,7 @@ void AppModeDevelop::update()
 
     if(_Context.polling_enable)
     {
-        if(_Context.counter % 5)
+        if(_Context.counter % 5 == 0)
         {
             _Context._RefUhfRfidDriver->commandSinglePollingInstruction();
         }
@@ -141,7 +141,16 @@ void AppModeDevelop_Command_GetInformations::execute()
 
 void AppModeDevelop_Command_EpcTest::execute()
 {
-    uint8_t stream[] = {0x30, 0x08, 0x33, 0xb2, 0xdd, 0xd9, 0x01, 0x40, 0xAA, 0x23, 0x01, _Context.argument_value, };
+    uint8_t stream[] = {
+        // maker code.
+        0x30, 0x08, 0x33, 0xb2, 0xdd, 0xd9, 0x01, 0x40, 
+        // reserved.
+        0xAA, 0x23, 
+        // deck index
+        0x01, 
+        // card index
+        _Context.argument_value, 
+    };
     _Context._RefUhfRfidDriver->commandWriteTheLabelDataStore(0, UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_EPC, stream, sizeof(stream), 2);
 }
 

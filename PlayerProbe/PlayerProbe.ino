@@ -5,6 +5,7 @@
 #include "SysSetting.h"
 #include "AppSetting.h"
 #include "AppModeDevelop.h"
+#include "AppModeProbe.h"
 #include "AppReporter.h"
 #include "SysUtils.h"
 
@@ -50,6 +51,9 @@ void setup()
   Serial.begin(115200);
 
   // Settings
+  _Setting.set(SETTING_KEY_MODE, "Develop");
+  _Setting.set(SETTING_KEY_PROBE_NAME, "Seat01");
+  _Setting.set(SETTING_KEY_PROBE_CARD_CAPACITY, "2");  
   _Setting.set(SETTING_KEY_BLE_IDENTIFIER, "PTV_PP_001");
   _Setting.set(SETTING_KEY_BLE_SERVICE_UUID, "cbaabb28-4e81-49c4-b775-aedfd27d8db0");
   _Setting.set(SETTING_KEY_BLE_CHARACTERISTICS_UUID, "45f116ee-b087-4271-888d-a15eebebd2eb");
@@ -81,14 +85,28 @@ void setup()
   __DUMP_FL__
 
   // モードのセットアップ
-  auto mode_develop = new AppModeDevelop();
-  mode_develop->init(
-    &_UhfRfidDriver, 
-    &_Display,
-    &_Setting, 
-    _Reporter
-  );
-  _AppMode = mode_develop;
+  auto execute_mode = _Setting.get(SETTING_KEY_MODE);
+  if(execute_mode == "Probe")
+  {
+    auto mode_probe = new AppModeProbe();
+    mode_probe->init(
+      &_UhfRfidDriver, 
+      &_Display,
+      _Reporter
+    );
+    _AppMode = mode_probe;
+  }
+  if(_AppMode == nullptr)
+  {
+    auto mode_develop = new AppModeDevelop();
+    mode_develop->init(
+      &_UhfRfidDriver, 
+      &_Display,
+      &_Setting, 
+      _Reporter
+    );
+    _AppMode = mode_develop;
+  }
 
   // スレッド
   start_process(task_rfid_driver_process, "t1", 4096, 1);

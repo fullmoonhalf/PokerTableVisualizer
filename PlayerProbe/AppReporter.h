@@ -3,7 +3,14 @@
 #include <M5Unified.h>
 #include <BLEDevice.h>
 #include <BLE2902.h>
-#include "AppCardReader.h"
+
+
+class AppReportSourceable
+{
+public:
+    virtual int tryGetStatus(char *buffer) = 0;
+    virtual void flushSource() = 0;
+};
 
 
 class AppReporter : public BLEServerCallbacks
@@ -14,7 +21,7 @@ public:
     void setup();
     void update();
     void process();
-    void bind(AppCardReader *argCardReader);
+    void bind(AppReportSourceable *argCardReader);
 
     int getFrameCount();
 
@@ -28,7 +35,7 @@ private:
     BLECharacteristic *_BLECharacteristic;
     BLEAdvertising *_BLEAdvertising;
 
-    AppCardReader *_CardReader;
+    AppReportSourceable *_CardReader;
     int _FrameCount;
     bool _Connected;
 };

@@ -31,6 +31,7 @@ private:
     LGFX_Sprite *_SpriteRfid;
     LGFX_Sprite *_SpriteReporter;
     LGFX_Sprite *_SpriteSetting;
+    LGFX_Sprite *_SpriteMode;
 };
 
 
