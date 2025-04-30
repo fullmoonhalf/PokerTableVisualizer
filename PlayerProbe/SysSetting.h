@@ -9,6 +9,7 @@ public:
     SysSetting();
     void set(const char *key, const char *value);
     String get(const char *key);
+    int getAsInt(const char *key);
     bool load();
     void dump();
 

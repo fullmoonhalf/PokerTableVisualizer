@@ -33,6 +33,17 @@ String SysSetting::get(const char *key)
 }
 
 
+/// @brief 
+/// @param key 
+/// @return 
+int SysSetting::getAsInt(const char *key)
+{
+    String value = get(key);
+    int result = atoi(value.c_str());
+    return result;
+}
+
+
 /// @brief 設定ファイルをロードする
 /// @return 成否
 bool SysSetting::load()

@@ -92,7 +92,9 @@ void setup()
     mode_probe->init(
       &_UhfRfidDriver, 
       &_Display,
-      _Reporter
+      _Reporter,
+      _Setting.get(SETTING_KEY_PROBE_NAME).c_str(),
+      _Setting.getAsInt(SETTING_KEY_PROBE_CARD_CAPACITY)
     );
     _AppMode = mode_probe;
   }
