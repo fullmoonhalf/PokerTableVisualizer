@@ -1,20 +1,37 @@
-.all
+#all
+{
+    background-color:white;
+}
+
+#sector_command
 {
     background-color:aquamarine;
+    padding: 4px;
+    margin: 4px;
 }
 
-.test_card
+#sector_player
 {
-    width: 32px;
-    height: auto;
+    background-color: forestgreen;
+    padding: 4px;
+    margin: 4px;
 }
 
-.test_card_unselected
+.panel_player
 {
-    opacity: 0.2;
+    background-color: white;
+    border: 1px solid black;
+    padding: 4px;
+    margin: 4px;
+    width: 100px;
 }
 
-.test_card_selected
+.panel_player_name_value
 {
-    opacity: 1.0;
+    background-color: gray;
+}
+
+.panel_player_hand_value
+{
+    background-color: gray;
 }

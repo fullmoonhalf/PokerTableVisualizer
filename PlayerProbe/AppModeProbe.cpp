@@ -45,6 +45,7 @@ void AppModeProbe::update()
         auto info = _Context.SendInfo + _Context.CurrentRecvIndex;
         info->CurrentNum = 0;
 
+#if 0
         {
             char buffer[256];
             auto length = tryGetStatus(buffer);
@@ -53,6 +54,7 @@ void AppModeProbe::update()
                 Serial.printf("AppModeProbe::update: %s\r\n", buffer);
             }
         }
+#endif
 
         // ポーリング命令を送出。
         _Context._RefUhfRfidDriver->commandSinglePollingInstruction();
@@ -104,14 +106,14 @@ int AppModeProbe::tryGetStatus(char *buffer)
 
 
     auto seek = buffer;
-    seek += sprintf(seek, "{probe: \"%s\",cards:[", _Context.ProbeName);
+    seek += sprintf(seek, "{\"probe\":\"%s\",\"cards\":[", _Context.ProbeName);
 
     auto info = _Context.SendInfo + _Context.CurrentSendIndex;
     for(int index=0; index<info->CurrentNum; ++index)
     {
         auto slot = info->CardInfoList + index;
         const char *delim = index < info->CurrentNum - 1 ? ",": ""; 
-        seek += sprintf(seek, "{deck:%d, card:%d}%s", slot->DeckIndex, slot->CardIndex, delim);
+        seek += sprintf(seek, "{\"deck\":%d,\"card\":%d}%s", slot->DeckIndex, slot->CardIndex, delim);
     }
 
     seek += sprintf(seek, "]}");
