@@ -12,6 +12,7 @@ PokerTableMonitor.engine = (function(){{
 	var HTML_CLASS_PANEL_PLAYER = "panel_player";
 	var HTML_CLASS_PANEL_PLAYER_NAME_VALUE = "panel_player_name_value";
 	var HTML_CLASS_PANEL_PLAYER_HAND_VALUE = "panel_player_hand_value";
+	var HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE = "panel_player_hand_image_style";
 	var ASSET_ROOT = "../Assets/UI";
 
 	//
@@ -21,7 +22,8 @@ PokerTableMonitor.engine = (function(){{
 	{
 		this.ProbeName = "";
 		this.BLECharacteristic = argBLECharacteristic;
-		this.ViewPanel = argViewPanel
+		this.ViewPanel = argViewPanel;
+		this.Cards = [];
 	}
 	cProbe.prototype.onCharacteristicValueChanged = function(event)
 	{
@@ -34,12 +36,27 @@ PokerTableMonitor.engine = (function(){{
 			this.ProbeName = json.probe;
 			this.ViewPanel.setName(this.ProbeName);
 
-			let value = "";
+			let cards_updated = false;
 			for(const card of json.cards)
 			{
-				value += "<img src='" + ASSET_ROOT + "/cards_pc-" + card.card + ".png'>";
+				if(this.Cards.includes(card.card))
+				{
+					continue;
+				}
+				this.LastDeckIndex = card.deck;
+				this.Cards.push(card.card);
+				cards_updated = true;
 			}
-			this.ViewPanel.setCard(value);
+			if(cards_updated)
+			{
+				this.Cards.sort((a,b) => a - b);
+				let value = "";
+				for(const index of this.Cards)
+				{
+					value += "<img class='" + HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE + "' src='" + ASSET_ROOT + "/cards_pc-" + index + ".png'>";
+				}
+				this.ViewPanel.setCard(value);
+			}
 		}
 		catch(e){
 			console.log("[cProbe] onCharacteristicValueChanged error ", this.ProbeName, e);

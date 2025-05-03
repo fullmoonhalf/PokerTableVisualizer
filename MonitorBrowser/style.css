@@ -35,3 +35,9 @@
 {
     background-color: gray;
 }
+
+.panel_player_hand_image_style
+{
+    width: 32px;
+    height: 64px;
+}
