@@ -1,12 +1,18 @@
 var PokerTableMonitor = PokerTableMonitor || {};
 PokerTableMonitor.engine = (function(){{
 	var version = 0.00;
+
+	// BLEデバイス関係
 	var BLE_DEVICE_NAME_PREFIX = "PTV_PP_";
 	var UUID_SERVICE = "cbaabb28-4e81-49c4-b775-aedfd27d8db0";
 	var UUID_CHARACTERISTIC = "45f116ee-b087-4271-888d-a15eebebd2eb";
+
+	// 操作関係
 	var HTML_ID_COMMAND_ADD_PROBE = "command_add_probe";
 	var HTML_ID_COMMAND_DUMP_STATUS = "command_dump_status";
 	var HTML_ID_COMMAND_TEST = "command_test";
+
+	// HTML の構造まわり
 	var HTML_ID_SECTOR_PLAYER = "sector_player";
 	var HTML_ID_PLAYER_VIEEPANEL_PREFIX = "view_panel_player_";
 	var HTML_CLASS_PANEL_PLAYER = "panel_player";
@@ -170,7 +176,10 @@ PokerTableMonitor.engine = (function(){{
 		console.log("test");
 		const view_panel = this.createPlayerPanelView();
 		view_panel.setName("aaaaaaaaaaaaa");
+		view_panel.setCard("<img class='" + HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE + "' src='" + ASSET_ROOT + "/cards_pc-" + 1 + ".png'>");
+
 	}
+	// プレイヤー向けパネルを生成する
 	cManager.prototype.createPlayerPanelView = function()
 	{
 		this.PanelCount += 1;
