@@ -15,6 +15,7 @@ struct AppModeProbeCardInfo
 {
     int DeckIndex = -1;
     int CardIndex = -1;
+    int RSSI = -1;
 };
 
 struct AppModeProbeSendInfo
@@ -34,6 +35,7 @@ public:
     AppModeProbeSendInfo SendInfo[2];
     int CurrentRecvIndex = 0;
     int CurrentSendIndex = -1;
+    int SendCapacity = 0;
 
     UhfRfidDriver *_RefUhfRfidDriver = nullptr;
     AppDisplay *_RefDisplay = nullptr;
@@ -42,6 +44,7 @@ public:
     AppStatusPanel *_StatusPanel = nullptr;
     LGFX_Sprite *_SpriteProbeName;
     LGFX_Sprite *_SpriteProbeMode;
+    LGFX_Sprite *_SpriteSendView;
 };
 
 

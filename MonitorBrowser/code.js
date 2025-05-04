@@ -58,39 +58,13 @@ PokerTableMonitor.engine = (function(){{
 			this.ProbeName = json.probe;
 			this.ViewPanel.setName(this.ProbeName);
 
-			let cards_updated = false;
+			let value = "";
 			for(const card of json.cards)
 			{
-				const result = this.Cards.find(x => x.Card == card.card);
-				if(result)
-				{
-					result.Count += 1;
-				}
-				else
-				{
-					const info = new cCard(card.deck, card.card);
-					this.Cards.push(info);
-				}
-				cards_updated = true;
+				//value += "card:"+card.card+", deck:"+card.deck+", rssi"+card.rssi+"<br>";
+				value += "<img class='" + HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE + "' src='" + ASSET_ROOT + "/cards_pc-" + card.card + ".png'>";
 			}
-			if(cards_updated)
-			{
-				this.Cards.sort((a,b) => a.Count - b.Count);
-				const length = Math.min(2, this.Cards.length);
-				let view_list = []
-				for(let index=0; index<length; ++index)
-				{
-					view_list.push(this.Cards[index]);
-				}
-				view_list.sort((a,b) => a.Card - b.Card);
-
-				let value = "";
-				for(const info of view_list)
-				{
-					value += "<img class='" + HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE + "' src='" + ASSET_ROOT + "/cards_pc-" + info.Card + ".png'>";
-				}
-				this.ViewPanel.setCard(value);
-			}
+			this.ViewPanel.setCard(value);
 		}
 		catch(e){
 			console.log("[cProbe] onCharacteristicValueChanged error ", this.ProbeName, e);
