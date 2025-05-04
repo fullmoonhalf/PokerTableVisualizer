@@ -1,5 +1,7 @@
 #ifndef __APP_SETTING_H__
 #define __APP_SETTING_H__
+#include <M5Unified.h>
+
 
 #define SETTING_KEY_MODE "MODE"
 #define SETTING_KEY_PROBE_NAME "PROBE_NAME"
@@ -7,5 +9,11 @@
 #define SETTING_KEY_BLE_IDENTIFIER "BLE_IDENTIFIER"
 #define SETTING_KEY_BLE_SERVICE_UUID "BLE_SERVICE_UUID"
 #define SETTING_KEY_BLE_CHARACTERISTICS_UUID "BLE_CHARACTERISTICS_UUID"
+
+
+
+bool AppEPCCheck(const uint8_t *buffer);
+int AppEPCWrite(uint8_t *buffer);
+
 
 #endif /* __APP_SETTING_H__ */

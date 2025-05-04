@@ -1,4 +1,5 @@
 #include "AppModeDevelop.h"
+#include "AppSetting.h"
 #include "SysUtils.h"
 
 /// @brief 
@@ -151,6 +152,7 @@ void AppModeDevelop_Command_EpcTest::execute()
         // card index
         _Context.argument_value, 
     };
+    AppEPCWrite(stream);
     _Context._RefUhfRfidDriver->commandWriteTheLabelDataStore(0, UhfRfidSelectSelParamMembank::UhfRfidSelectSelParamMembank_EPC, stream, sizeof(stream), 2);
 }
 

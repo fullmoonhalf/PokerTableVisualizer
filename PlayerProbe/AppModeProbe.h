@@ -1,5 +1,6 @@
 #ifndef APP_MODE_PROBE_H
 #define APP_MODE_PROBE_H
+#include <M5Unified.h>
 #include "AppMode.h"
 #include "UhfRfidDriver.h"
 #include "AppDisplay.h"
@@ -39,6 +40,8 @@ public:
     AppReporter *_RefReporter = nullptr;
 
     AppStatusPanel *_StatusPanel = nullptr;
+    LGFX_Sprite *_SpriteProbeName;
+    LGFX_Sprite *_SpriteProbeMode;
 };
 
 

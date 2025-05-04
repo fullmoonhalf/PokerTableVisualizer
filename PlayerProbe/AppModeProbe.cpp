@@ -1,5 +1,6 @@
 #include "SysUtils.h"
 #include "AppModeProbe.h"
+#include "AppSetting.h"
 #include "UhfRfidFrameParser.h"
 
 
@@ -30,6 +31,12 @@ void AppModeProbe::init(UhfRfidDriver *argUhfRfidDriver, AppDisplay *argDisplay,
     _Context._StatusPanel->bind(_Context._RefUhfRfidDriver);
     _Context._StatusPanel->bind(_Context._RefReporter);
     _Context._StatusPanel->dumpMemoryStatus();
+
+    _Context._SpriteProbeName = _Context._RefDisplay->createSprite(64, 16);
+    _Context._SpriteProbeName->drawString(_Context.ProbeName, 0, 0);
+
+    _Context._SpriteProbeMode = _Context._RefDisplay->createSprite(64, 16);
+    _Context._SpriteProbeMode->drawString("Probe", 0, 0);
 }
 
 
@@ -69,6 +76,8 @@ void AppModeProbe::update()
 void AppModeProbe::draw()
 {
     _Context._StatusPanel->draw(10, 10);
+    _Context._SpriteProbeMode->pushSprite(128, 10);
+    _Context._SpriteProbeName->pushSprite(128, 20);
 }
 
 
@@ -81,15 +90,18 @@ void AppModeProbe::onReceive(UhfRfidFrame *frame)
     uint8_t deck_index = epc[10];
     uint8_t card_index = epc[11];
 
-    auto info = _Context.SendInfo + _Context.CurrentRecvIndex;
-    if(info->CurrentNum < info->Capacity)
+    if(AppEPCCheck(epc))
     {
-        auto slot = info->CardInfoList + info->CurrentNum;
-        slot->DeckIndex = deck_index;
-        slot->CardIndex = card_index;
-        info->CurrentNum++;
+        auto info = _Context.SendInfo + _Context.CurrentRecvIndex;
+        if(info->CurrentNum < info->Capacity)
+        {
+            auto slot = info->CardInfoList + info->CurrentNum;
+            slot->DeckIndex = deck_index;
+            slot->CardIndex = card_index;
+            info->CurrentNum++;
+        }
+        Serial.printf("AppModeProbe::onReceive deck=%d card=%d - recv %d %d/%d\r\n", deck_index, card_index, _Context.CurrentRecvIndex, info->CurrentNum, info->Capacity);
     }
-    Serial.printf("AppModeProbe::onReceive deck=%d card=%d - recv %d %d/%d\r\n", deck_index, card_index, _Context.CurrentRecvIndex, info->CurrentNum, info->Capacity);
 }
 
 

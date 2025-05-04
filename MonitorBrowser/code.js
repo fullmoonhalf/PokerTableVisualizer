@@ -21,6 +21,22 @@ PokerTableMonitor.engine = (function(){{
 	var HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE = "panel_player_hand_image_style";
 	var ASSET_ROOT = "../Assets/UI";
 
+
+	//
+	// カード情報
+	//
+	function cCard(argDeck, argCard)
+	{
+		this.Deck = argDeck
+		this.Card = argCard
+		this.Count = 0
+	}
+	cCard.prototype.dumpStatus = function()
+	{
+		console.log("[cCard] deck:" + this.Deck + " card:" + this.Card);
+	}
+
+
 	//
 	// 各プローブの状況管理
 	//
@@ -45,21 +61,33 @@ PokerTableMonitor.engine = (function(){{
 			let cards_updated = false;
 			for(const card of json.cards)
 			{
-				if(this.Cards.includes(card.card))
+				const result = this.Cards.find(x => x.Card == card.card);
+				if(result)
 				{
-					continue;
+					result.Count += 1;
 				}
-				this.LastDeckIndex = card.deck;
-				this.Cards.push(card.card);
+				else
+				{
+					const info = new cCard(card.deck, card.card);
+					this.Cards.push(info);
+				}
 				cards_updated = true;
 			}
 			if(cards_updated)
 			{
-				this.Cards.sort((a,b) => a - b);
-				let value = "";
-				for(const index of this.Cards)
+				this.Cards.sort((a,b) => a.Count - b.Count);
+				const length = Math.min(2, this.Cards.length);
+				let view_list = []
+				for(let index=0; index<length; ++index)
 				{
-					value += "<img class='" + HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE + "' src='" + ASSET_ROOT + "/cards_pc-" + index + ".png'>";
+					view_list.push(this.Cards[index]);
+				}
+				view_list.sort((a,b) => a.Card - b.Card);
+
+				let value = "";
+				for(const info of view_list)
+				{
+					value += "<img class='" + HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE + "' src='" + ASSET_ROOT + "/cards_pc-" + info.Card + ".png'>";
 				}
 				this.ViewPanel.setCard(value);
 			}
