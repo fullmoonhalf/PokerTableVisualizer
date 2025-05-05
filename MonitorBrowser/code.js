@@ -9,6 +9,7 @@ PokerTableMonitor.engine = (function(){{
 
 	// 操作関係
 	var HTML_ID_COMMAND_ADD_PROBE = "command_add_probe";
+	var HTML_ID_COMMAND_NEXT_HAND = "command_next_hand";
 	var HTML_ID_COMMAND_DUMP_STATUS = "command_dump_status";
 	var HTML_ID_COMMAND_TEST = "command_test";
 
@@ -21,6 +22,25 @@ PokerTableMonitor.engine = (function(){{
 	var HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE = "panel_player_hand_image_style";
 	var ASSET_ROOT = "../Assets/UI";
 
+
+	// 配列内の要素を出現回数でカウントし、多い順に上位N個を返す関数
+	function getTopNFrequentItems(array, n) 
+	{
+		const countMap = {};
+
+		// 出現回数をカウント
+		array.forEach(item => {
+			countMap[item] = (countMap[item] || 0) + 1;
+		});
+
+		// 出現回数の降順に並べて上位N個を抽出
+		const sorted = Object.entries(countMap)
+		.sort((a, b) => b[1] - a[1])
+		.slice(0, n);
+
+		// 値（キー）だけ取り出す
+		return sorted.map(entry => isNaN(entry[0]) ? entry[0] : Number(entry[0]));
+	}
 
 	//
 	// カード情報
@@ -40,13 +60,14 @@ PokerTableMonitor.engine = (function(){{
 	//
 	// 各プローブの状況管理
 	//
-	function cProbe(argBLECharacteristic, argViewPanel)
+	function cProbe(argBLECharacteristic)
 	{
 		this.ProbeName = "";
 		this.BLECharacteristic = argBLECharacteristic;
-		this.ViewPanel = argViewPanel;
-		this.Cards = [];
+		this.ViewPanel = null;
+		this.ReceiveCards = [];
 	}
+	// 各プローブからのデータ受信時の処理
 	cProbe.prototype.onCharacteristicValueChanged = function(event)
 	{
 		try {
@@ -55,20 +76,52 @@ PokerTableMonitor.engine = (function(){{
 			const str = decoder.decode(characteristic.value);
 			const json = JSON.parse(str);
 			//console.log(json);
-			this.ProbeName = json.probe;
-			this.ViewPanel.setName(this.ProbeName);
 
-			let value = "";
-			for(const card of json.cards)
+			let need_to_update = false;
+			if(json.cards.length >= 2)
 			{
-				//value += "card:"+card.card+", deck:"+card.deck+", rssi"+card.rssi+"<br>";
-				value += "<img class='" + HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE + "' src='" + ASSET_ROOT + "/cards_pc-" + card.card + ".png'>";
+				for(const card of json.cards)
+				{
+					if(card.rssi > 210)
+					{
+						this.ReceiveCards.push(card.card);
+						if(this.ReceiveCards.length > 16)
+						{
+							this.ReceiveCards.shift();
+						}
+						need_to_update = true;
+					}
+				}
 			}
-			this.ViewPanel.setCard(value);
+
+			if(this.ViewPanel == null)
+			{
+				this.ProbeName = json.probe;
+				this.ViewPanel = engine.Manager.createPlayerPanelView(json.probe);
+			}
+			if(this.ViewPanel != null)
+			{
+				this.drawHand();
+			}
 		}
 		catch(e){
 			console.log("[cProbe] onCharacteristicValueChanged error ", this.ProbeName, e);
 		}
+	}
+	cProbe.prototype.clearHand = function()
+	{
+		this.ReceiveCards = [];
+	}
+	cProbe.prototype.drawHand = function()
+	{
+		const items = getTopNFrequentItems(this.ReceiveCards, 2);
+		let value = "";
+		for(const card of items)
+		{
+			value += "<img class='" + HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE + "' src='" + ASSET_ROOT + "/cards_pc-" + card + ".png'>";
+		}
+
+		this.ViewPanel.setCard(value);
 	}
 	// 開発向けに現在の状態を出力する
 	cProbe.prototype.dumpStatus = function()
@@ -115,7 +168,7 @@ PokerTableMonitor.engine = (function(){{
 	{
 		console.log("cManager: called.");
 		this.Probes = [];
-		this.PanelCount = 0;
+		this.ViewPanel = {};
 
 		var panel_player_elements = document.getElementsByClassName(HTML_CLASS_PANEL_PLAYER);
 		if(panel_player_elements)
@@ -153,8 +206,7 @@ PokerTableMonitor.engine = (function(){{
 			const characteristic = await service.getCharacteristic(UUID_CHARACTERISTIC);
 
 			// 管理オブジェクトとの紐付けを行ない引き渡す
-			const view_panel = this.createPlayerPanelView();
-			const probe = new cProbe(characteristic, view_panel);
+			const probe = new cProbe(characteristic);
 			characteristic.addEventListener('characteristicvaluechanged', probe.onCharacteristicValueChanged.bind(probe));
 			characteristic.startNotifications();
 			this.Probes.push(probe);
@@ -171,26 +223,41 @@ PokerTableMonitor.engine = (function(){{
 			probe.dumpStatus();
 		}
 	}
+	// 
+	cManager.prototype.onCommandNextHand = function()
+	{
+		for(const probe of this.Probes)
+		{
+			probe.clearHand();
+			probe.drawHand();
+		}
+	}
 	cManager.prototype.onCommandTest = function()
 	{
-		this.Count += 1;
-
 		console.log("test");
-		const view_panel = this.createPlayerPanelView();
-		view_panel.setName("aaaaaaaaaaaaa");
+		const name = "test" + Object.keys(this.ViewPanel).length;
+		const view_panel = this.createPlayerPanelView(name);
 		view_panel.setCard("<img class='" + HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE + "' src='" + ASSET_ROOT + "/cards_pc-" + 1 + ".png'>");
 
 	}
 	// プレイヤー向けパネルを生成する
-	cManager.prototype.createPlayerPanelView = function()
+	cManager.prototype.createPlayerPanelView = function(name)
 	{
-		this.PanelCount += 1;
+		// すでに生成されているのならば、それを返す。
+		if(name in this.ViewPanel)
+		{
+			return this.ViewPanel[name];
+		}
 
+		// HTML 部分を生成する
 		const clone = this.PlayerPanelTemplate.cloneNode(true);
 		clone.id = HTML_ID_PLAYER_VIEEPANEL_PREFIX + this.PanelCount; 
 		this.SectorPlayerRoot.appendChild(clone);
 		
+		// オブジェクトで wrapping する。また必要な紐付けを行なう。
 		const view_panel = new cPlayerViewPanel(clone);
+		view_panel.setName(name);
+		this.ViewPanel[name] = view_panel;
 		return view_panel;
 	}
 
@@ -199,27 +266,34 @@ PokerTableMonitor.engine = (function(){{
 	// engine オブジェクト
 	//
 	var engine = {
+		Manager: null,
 		init : function()
 		{
 			console.log("PokerTableMonitor init");
-			this.Manager = new cManager();
+			engine.Manager = new cManager();
 
 			const element_command_add_probe = document.getElementById(HTML_ID_COMMAND_ADD_PROBE);
 			if(element_command_add_probe)
 			{
-				element_command_add_probe.addEventListener('click', this.Manager.onCommandAddProbe.bind(this.Manager));
+				element_command_add_probe.addEventListener('click', engine.Manager.onCommandAddProbe.bind(engine.Manager));
 			}
 
+			const element_command_next_hand = document.getElementById(HTML_ID_COMMAND_NEXT_HAND);
+			if(element_command_next_hand)
+			{
+				element_command_next_hand.addEventListener('click', engine.Manager.onCommandNextHand.bind(engine.Manager));
+			}
+			
 			const element_command_dump_status = document.getElementById(HTML_ID_COMMAND_DUMP_STATUS);
 			if(element_command_dump_status)
 			{
-				element_command_dump_status.addEventListener('click', this.Manager.onCommandDumpStatus.bind(this.Manager));
+				element_command_dump_status.addEventListener('click', engine.Manager.onCommandDumpStatus.bind(engine.Manager));
 			}
 
 			const element_command_test = document.getElementById(HTML_ID_COMMAND_TEST);
 			if(element_command_test)
 			{
-				element_command_test.addEventListener('click', this.Manager.onCommandTest.bind(this.Manager));
+				element_command_test.addEventListener('click', engine.Manager.onCommandTest.bind(engine.Manager));
 			}
 		},
 	};
