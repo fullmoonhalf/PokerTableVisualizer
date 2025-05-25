@@ -18,7 +18,6 @@
     margin: 4px;
 }
 
-/* 全体関連 */
 #sector_global
 {
     display: flex;
@@ -27,7 +26,8 @@
     margin: 4px;
 }
 
-.global_forced_bet_group
+/* 共通フォーマット */
+.common_frame
 {
     color: white;
     border: 2px solid #00ff88;
@@ -36,6 +36,12 @@
     border-radius: 15px;
     box-shadow: 0 0 12px #00ff88;
     background-color: #111;
+}
+
+
+/* 全体関連 */
+.global_forced_bet_group
+{
     width: 96px;
 }
 
@@ -56,16 +62,8 @@
     text-align: center;
 }
 
-
 .global_hand_count_value
 {
-    color: white;
-    border: 2px solid #00ff88;
-    padding: 10px 12px;
-    margin: 2px 2px;
-    border-radius: 15px;
-    box-shadow: 0 0 12px #00ff88;
-    background-color: #111;
     width: 48px;
 }
 .global_hand_count_label
@@ -87,12 +85,6 @@
 }
 .global_community_cards_value
 {
-    color: white;
-    border: 2px solid #00ff88;
-    padding: 5px 12px;
-    border-radius: 15px;
-    box-shadow: 0 0 12px #00ff88;
-    background-color: #111;
     width: 224px;
 }
 .global_community_cards_label
@@ -117,27 +109,13 @@
     justify-content: center;
 }
 
-.global_community_cards_flop
+.global_deck_group
 {
-}
-.global_community_cards_turn
-{
-
-}
-.global_community_cards_river
-{
-
 }
 
 /* プレイヤー関連 */
 .panel_player
 {
-    border: 2px solid #00ff88;
-    padding: 10px 12px;
-    margin: 2px 2px;
-    border-radius: 15px;
-    box-shadow: 0 0 12px #00ff88;
-    background-color: #111;
     width: 128px;
 }
 

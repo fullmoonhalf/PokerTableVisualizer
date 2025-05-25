@@ -9,13 +9,13 @@
     <body>
         <div id="all">
             <div id="sector_global">
-                <div class="global_hand_count_value">
+                <div class="global_hand_count_value common_frame">
                     <div class="global_hand_count_label">Hand</div>
                     <div class="global_hand_count_contents">
                         <div class="global_hand_count_number">1</div>
                     </div>
                 </div>
-                <div class="global_forced_bet_group">
+                <div class="global_forced_bet_group common_frame">
                     <div class="global_forced_bet_blind">
                         <div class="global_forced_bet_blind_label">Blind</div>
                         <div class="global_forced_bet_blind_value">50/100</div>
@@ -25,7 +25,7 @@
                         <div class="global_forced_bet_anti_value">100</div>
                     </div>
                 </div>
-                <div class="global_community_cards_value">
+                <div class="global_community_cards_value common_frame">
                     <div class="global_community_cards_label">
                         Community Cards
                     </div>
@@ -41,6 +41,13 @@
                         <div class="global_community_cards_river global_community_cards_base">
                             <img class="panel_player_hand_image_style" src="../Assets/UI/cards_pc-0.png">
                         </div>
+                    </div>
+                </div>
+                <div class="global_deck_group common_frame">
+                    <div class="global_deck_label">
+                        Deck
+                    </div>
+                    <div class="global_deck_contents">
                     </div>
                 </div>
             </div>
@@ -60,7 +67,7 @@
                     <button id="command_dev_flop">DevFlop</button>
                 </p>
                 <p>
-                    <div class="panel_player">
+                    <div class="panel_player common_frame">
                         <div class="panel_player_name_value">test</div>
                         <div class="panel_player_position_value">
                             <button class="panel_player_position_exist panel_player_position_exist_seat_open"></button>
@@ -104,48 +111,6 @@
                     </div>
                 </p>
             </div>
-            <div id="output">
-            </div>
-            <script>
-            var output = document.getElementById('output');
-
-            var deck = WinRate.genDeck();
-            var cards = [];
-
-            // １枚抽選
-            function pick()
-            {
-                var r = Math.floor(Math.random() * deck.length);
-                return deck.splice(r, 1)[0];
-            }
-            // 表示
-            function log(mes)
-            {
-                output.innerText += mes + "\n";
-            }
-
-            // ボード
-            var board = [pick(), pick(), pick()];
-            log("board: " + WinRate.dispCards(board));
-
-            // 計算
-            var calced = WinRate.calc(
-                // ハンド
-                [
-                    [pick(), pick()],
-                    [pick(), pick()],
-                    [pick(), pick()],
-                ],
-                // ボード
-                board);
-
-            for(var i=0; i<calced.infos.length; i++)
-            {
-                var info = calced.infos[i];
-                log(WinRate.dispCards(info.hand) + " win:" + info.win + "/" + info.comb);
-            }
-
-            </script>
         </div>
     </body>
 </html>
