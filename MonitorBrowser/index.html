@@ -2,7 +2,8 @@
 <html>
     <head>
         <link type="text/css" rel="stylesheet" href="./style.css">
-        <script src="./code.js" type="text/javascript"></script>
+        <script src="./winrate.js" type="text/javascript"></script>
+        <script src="./PokerTableMonitor.js" type="text/javascript"></script>
         <title>Poker Table Monitor Browser</title>
     </head>
     <body>
@@ -44,6 +45,48 @@
                     </div>
                 </p>
             </div>
+            <div id="output">
+            </div>
+            <script>
+            var output = document.getElementById('output');
+
+            var deck = WinRate.genDeck();
+            var cards = [];
+
+            // １枚抽選
+            function pick()
+            {
+                var r = Math.floor(Math.random() * deck.length);
+                return deck.splice(r, 1)[0];
+            }
+            // 表示
+            function log(mes)
+            {
+                output.innerText += mes + "\n";
+            }
+
+            // ボード
+            var board = [pick(), pick(), pick()];
+            log("board: " + WinRate.dispCards(board));
+
+            // 計算
+            var calced = WinRate.calc(
+                // ハンド
+                [
+                    [pick(), pick()],
+                    [pick(), pick()],
+                    [pick(), pick()],
+                ],
+                // ボード
+                board);
+
+            for(var i=0; i<calced.infos.length; i++)
+            {
+                var info = calced.infos[i];
+                log(WinRate.dispCards(info.hand) + " win:" + info.win + "/" + info.comb);
+            }
+
+            </script>
         </div>
     </body>
 </html>
