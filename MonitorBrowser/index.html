@@ -13,15 +13,16 @@
                     <div class="global_hand_count_label">Hand</div>
                     <div class="global_hand_count_contents">
                         <div class="global_hand_count_number">1</div>
+                        <div class="global_hand_count_phase">PreFlop</div>
                     </div>
                 </div>
                 <div class="global_forced_bet_group common_frame">
                     <div class="global_forced_bet_blind">
-                        <div class="global_forced_bet_blind_label">Blind</div>
+                        <div class="global_forced_bet_blind_label">Blinds</div>
                         <div class="global_forced_bet_blind_value">50/100</div>
                     </div>
                     <div class="global_forced_bet_anti">
-                        <div class="global_forced_bet_anti_label">Anti</div>
+                        <div class="global_forced_bet_anti_label">Antis</div>
                         <div class="global_forced_bet_anti_value">100</div>
                     </div>
                 </div>
@@ -57,6 +58,12 @@
                 <p>
                     管理コマンド
                     <button id="command_add_probe">Add Probe</button>
+                </p>
+                <p>
+                    進行コマンド
+                    <button id="command_to_flop">to Flop</button>
+                    <button id="command_to_turn">to Turn</button>
+                    <button id="command_to_river">to River</button>
                     <button id="command_next_hand">Next Hand</button>
                 </p>
                 <p>
@@ -82,32 +89,40 @@
                             <div class="panel_player_winrate_value">
                             </div>
                         </div>
-                        <div class="panel_player_action_input">
-                            <div class="aaa">
-                                <div class="panel_player_log_action">
-                                    p: raise<br>
-                                    f: check - raise<br>
-                                    t: check<br>
-                                    r: check
+                        <div class="panel_player_command_group">
+                            <button class="panel_player_command_fold panel_player_command_button_view">Fold</button>
+                            <button class="panel_player_command_call panel_player_command_button_view">Call</button>
+                            <button class="panel_player_command_aggressive_action panel_player_command_button_view">Bet</button>
+                            <input class="panel_player_input_bet panel_player_command_input_view">
+                        </div>
+                        <div class="common_dev_hide">
+                            <div class="panel_player_action_input">
+                                <div class="aaa">
+                                    <div class="panel_player_log_action">
+                                        p: raise<br>
+                                        f: check - raise<br>
+                                        t: check<br>
+                                        r: check
+                                    </div>
                                 </div>
-                            </div>
-                        </div>                        
-                        <div class="panel_player_log_value">
-                            <div class="panel_player_log_unit">
-                                <div class="panel_player_log_count">1</div>
-                                <div class="panel_player_log_hand">
-                                    <img class="panel_player_log_hand_image_style" src="../Assets/UI/cards_pc-11.png">
-                                    <img class="panel_player_log_hand_image_style" src="../Assets/UI/cards_pc-11.png">
+                            </div>                        
+                            <div class="panel_player_log_value">
+                                <div class="panel_player_log_unit">
+                                    <div class="panel_player_log_count">1</div>
+                                    <div class="panel_player_log_hand">
+                                        <img class="panel_player_log_hand_image_style" src="../Assets/UI/cards_pc-11.png">
+                                        <img class="panel_player_log_hand_image_style" src="../Assets/UI/cards_pc-11.png">
+                                    </div>
+                                    <div class="panel_player_log_action">
+                                        BB<br>
+                                        p: raise<br>
+                                        f: check - raise<br>
+                                        t: check<br>
+                                        r: check
+                                    </div>
                                 </div>
-                                <div class="panel_player_log_action">
-                                    BB<br>
-                                    p: raise<br>
-                                    f: check - raise<br>
-                                    t: check<br>
-                                    r: check
-                                </div>
-                            </div>
-                        </div>                        
+                            </div>                        
+                        </div>
                     </div>
                 </p>
             </div>

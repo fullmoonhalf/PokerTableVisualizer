@@ -31,13 +31,17 @@
 {
     color: white;
     border: 2px solid #00ff88;
-    padding: 10px 12px;
+    padding: 5px 12px;
     margin: 2px 2px;
     border-radius: 15px;
     box-shadow: 0 0 12px #00ff88;
     background-color: #111;
 }
 
+.common_dev_hide
+{
+    display: none;    
+}
 
 /* 全体関連 */
 .global_forced_bet_group
@@ -72,9 +76,6 @@
 }
 .global_hand_count_contents
 {
-    display: flex;
-    align-items: center;     /* ← 縦方向の中央揃え */
-    height: 70px;           /* 高さは必須 */
     justify-content: center; /* ← 横方向中央（任意） */
 }
 .global_hand_count_number
@@ -83,6 +84,14 @@
     font-weight: bold;
     font-size: xx-large;
 }
+.global_hand_count_phase
+{
+    text-align: center;
+    font-weight: bold;
+    font-size: xx-small;
+}
+
+
 .global_community_cards_value
 {
     width: 224px;
@@ -109,10 +118,6 @@
     justify-content: center;
 }
 
-.global_deck_group
-{
-}
-
 /* プレイヤー関連 */
 .panel_player
 {
@@ -133,7 +138,7 @@
 
 .panel_player_winrate_value
 {
-    color: #777;
+    color: #bb7;
     text-align: center;
     font-size: xx-small;
     height: 15px;
@@ -260,3 +265,45 @@
     font-size: x-small;
     margin-top: 4px;
 }
+
+.panel_player_command_group
+{
+    display: flex;
+    justify-content: center; /* ← 横方向の中央寄せ */
+}
+
+.panel_player_command_button_view
+{
+    margin-right: 3px;
+    padding: 1px 1px;
+    background-color: #333;
+    color: #999;
+    border: none;
+    border-radius: 2px;
+    font-size: xx-small;
+    cursor: pointer;
+}
+.panel_player_command_button_view:hover 
+{
+    background-color: #555;
+    color: #aaa;
+}
+.panel_player_command_button_view:active 
+{
+    transform: scale(0.95);
+    background-color: #552;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.panel_player_command_input_view
+{
+    margin-right: 3px;
+    padding: 1px 1px;
+    border-radius: 2px;
+    border: none;
+    font-size: xx-small;
+    background-color: #333;
+    color: #999;
+    width: 64px;
+}
+

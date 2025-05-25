@@ -11,6 +11,9 @@ PokerTableMonitor.engine = (function(){{
 	var HTML_ID_COMMAND_ADD_PROBE = "command_add_probe";
 	var HTML_ID_COMMAND_NEXT_HAND = "command_next_hand";
 	var HTML_ID_COMMAND_DUMP_STATUS = "command_dump_status";
+	var HTML_ID_COMMAND_TO_FLOP = "command_to_flop";
+	var HTML_ID_COMMAND_TO_TURN = "command_to_turn";
+	var HTML_ID_COMMAND_TO_RIVER = "command_to_river";
 	var HTML_ID_COMMAND_TEST = "command_test";
 	var HTML_ID_COMMAND_DEV_DEAL_HAND = "command_dev_deal_hand";
 	var HTML_ID_COMMAND_DEV_FLOP = "command_dev_flop";
@@ -38,9 +41,13 @@ PokerTableMonitor.engine = (function(){{
 	var HTML_CLASS_PANEL_PLAYER_POSITION_DEALER = "panel_player_position_dealer_button";
 	var HTML_CLASS_PANEL_PLAYER_POSITION_DEALER_HAVE = "panel_player_position_dealer_button_have";
 	var HTML_CLASS_PANEL_PLAYER_WINRATE_VALUE = "panel_player_winrate_value";
+	var HTML_CLASS_PANEL_PLAYER_COMMAND_FOLD = "panel_player_command_fold";
+	var HTML_CLASS_PANEL_PLAYER_COMMAND_CALL = "panel_player_command_call";
+	var HTML_CLASS_PANEL_PLAYER_COMMAND_AGGRESSIVE_ACTION = "panel_player_command_aggressive_action";
 
 	var HTML_CLASS_PANEL_GLOBAL_HAND = "global_hand_count_value";
 	var HTML_CLASS_PANEL_GLOBAL_HAND_NUMBER = "global_hand_count_number";
+	var HTML_CLASS_PANEL_GLOBAL_HAND_PHASE = "global_hand_count_phase";
 	var HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS = "global_community_cards_value";
 	var HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS_FLOP = "global_community_cards_flop";
 	var HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS_TURN = "global_community_cards_turn";
@@ -83,6 +90,12 @@ PokerTableMonitor.engine = (function(){{
 		// 10 名
 		[POKER_POSITION_SB, POKER_POSITION_BB, POKER_POSITION_UTG, POKER_POSITION_UTGp1, POKER_POSITION_UTGp2, POKER_POSITION_MIDDLE, POKER_POSITION_MIDDLEp1, POKER_POSITION_HIJACK, POKER_POSITION_CUTOFF, POKER_POSITION_DEALER],
 	];
+
+	// フェイズ
+	var POKER_PHASE_PREFLOP = "PreFlop";
+	var POKER_PHASE_FLOP = "Flop";
+	var POKER_PHASE_TURN = "Turn";
+	var POKER_PHASE_RIVER = "River";
 
 	// リソースまわり
 	var ASSET_ROOT = "../Assets/UI";
@@ -200,7 +213,8 @@ PokerTableMonitor.engine = (function(){{
 				}
 				if(this.ViewPanel != null)
 				{
-					this.drawHand();
+					const items = getTopNFrequentItems(this.ReceiveCards, 2);
+					this.ViewPanel.setCurrentHand(items);
 				}
 			}
 		}
@@ -208,19 +222,9 @@ PokerTableMonitor.engine = (function(){{
 			console.log("[cProbe] onCharacteristicValueChanged error ", this.ProbeName, e);
 		}
 	}
-	cProbe.prototype.proceedNextHand = function(argHandCount)
+	cProbe.prototype.proceedNextHand = function()
 	{
-		this.ViewPanel.proceedNextHand(argHandCount);
 		this.ReceiveCards = [];
-	}
-	cProbe.prototype.draw = function()
-	{
-		this.ViewPanel.draw();
-	}
-	cProbe.prototype.drawHand = function()
-	{
-		const items = getTopNFrequentItems(this.ReceiveCards, 2);
-		this.ViewPanel.setCurrentHand(items);
 	}
 	// 開発向けに現在の状態を出力する
 	cProbe.prototype.dumpStatus = function()
@@ -244,9 +248,15 @@ PokerTableMonitor.engine = (function(){{
 		this.ElementPositionNameValue = searchNodeByClassNameFromChildren(this.ElementPositionValue, HTML_CLASS_PANEL_PLAYER_POSITION_NAME);
 		this.ElementPositionDealerValue = searchNodeByClassNameFromChildren(this.ElementPositionValue, HTML_CLASS_PANEL_PLAYER_POSITION_DEALER);
 		this.ElementWinRateValue = searchNodeByClassNameFromChildren(argCloneHtmlNode, HTML_CLASS_PANEL_PLAYER_WINRATE_VALUE);
+		this.ElementCommandFold = searchNodeByClassNameFromChildren(argCloneHtmlNode, HTML_CLASS_PANEL_PLAYER_COMMAND_FOLD);
+		this.ElementCommandCall = searchNodeByClassNameFromChildren(argCloneHtmlNode, HTML_CLASS_PANEL_PLAYER_COMMAND_CALL);
+		this.ElementCommandAggressiveAction = searchNodeByClassNameFromChildren(argCloneHtmlNode, HTML_CLASS_PANEL_PLAYER_COMMAND_AGGRESSIVE_ACTION);
 
 		addEventListenerToElement(this.ElementPositionExistValue, 'click', this.onClickExistButton.bind(this) );
 		addEventListenerToElement(this.ElementPositionDealerValue, 'click', this.onClickExistDealerButton.bind(this) );
+		addEventListenerToElement(this.ElementCommandFold, 'click', this.onClickCommandFold.bind(this) );
+		addEventListenerToElement(this.ElementCommandCall, 'click', this.onClickCommandCall.bind(this) );
+		addEventListenerToElement(this.ElementCommandAggressiveAction, 'click', this.onClickCommandAggresiveAction.bind(this) );
 
 		this.CurrentHand = [];
 		this.HandHistory = [];
@@ -256,6 +266,7 @@ PokerTableMonitor.engine = (function(){{
 		this.BackPlayerCount = 0;
 		this.Button = false;
 		this.WinRate = "";
+		this.Active = true;
 	}
 	// 名前の設定
 	cPlayerViewPanel.prototype.setName = function(argName)
@@ -293,9 +304,20 @@ PokerTableMonitor.engine = (function(){{
 		this.Position = argPosition;
 		this.ElementPositionNameValue.innerHTML = argPosition;
 	}
+	// 勝率の設定
 	cPlayerViewPanel.prototype.setWinRate = function(argWinRate)
 	{
 		this.WinRate = argWinRate;
+	}
+	// アクティブなプレイヤーかどうかの設定
+	cPlayerViewPanel.prototype.setActive = function(argActive)
+	{
+		this.Active = argActive;
+	}
+	// アクティブプレイヤーかどうかを取得する
+	cPlayerViewPanel.prototype.isActive = function()
+	{
+		return this.Alive && this.Active;
 	}
 	// いるかどうかの設定ボタン押されたときの動作
 	cPlayerViewPanel.prototype.onClickExistButton = function(argEvent)
@@ -319,8 +341,20 @@ PokerTableMonitor.engine = (function(){{
 	{
 		engine.Manager.setButton(this.Name);
 	}
+	cPlayerViewPanel.prototype.onClickCommandFold = function(argEvent)
+	{
+		this.setActive(false);
+		engine.Manager.updateWinRate();
+	}
+	cPlayerViewPanel.prototype.onClickCommandCall = function(argEvent)
+	{
+	}
+	cPlayerViewPanel.prototype.onClickCommandAggresiveAction = function(argEvent)
+	{
+	}
 	cPlayerViewPanel.prototype.proceedNextHand = function(argHandCount)
 	{
+		// ログの追加
 		if(this.CurrentHand.length > 0)
 		{
 			this.HandHistory.push({count: argHandCount, hand: this.CurrentHand});
@@ -331,8 +365,10 @@ PokerTableMonitor.engine = (function(){{
 			node_hand.innerHTML = createCardImageListHTML(this.CurrentHand, HTML_CLASS_PANEL_PLAYER_LOG_HAND_IMG_STYLE);
 			this.ElementLogValue.appendChild(clone);
 		}
+		// コンテキストのクリア
 		this.CurrentHand = [];
 		this.WinRate = "";
+		this.Active = true;
 	}
 	cPlayerViewPanel.prototype.draw = function()
 	{
@@ -342,7 +378,7 @@ PokerTableMonitor.engine = (function(){{
 	}
 	cPlayerViewPanel.prototype.drawHand = function()
 	{
-		this.ElementHandValue.innerHTML = createCardImageListHTML(this.CurrentHand, HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE);
+		this.ElementHandValue.innerHTML = createCardImageListHTML(this.CurrentHand, HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE, 2);
 	}
 	cPlayerViewPanel.prototype.drawHistory = function()
 	{
@@ -359,7 +395,8 @@ PokerTableMonitor.engine = (function(){{
 	{
 		this.RootElement = root_element;
 		this.ElementHandCount = searchNodeByClassNameFromChildren(this.RootElement, HTML_CLASS_PANEL_GLOBAL_HAND);
-		this.ElementHandNumber = searchNodeByClassNameFromChildren(this.ElementHandCount, HTML_CLASS_PANEL_GLOBAL_HAND_NUMBER);		
+		this.ElementHandNumber = searchNodeByClassNameFromChildren(this.ElementHandCount, HTML_CLASS_PANEL_GLOBAL_HAND_NUMBER);
+		this.ElementHandPhase = searchNodeByClassNameFromChildren(this.ElementHandCount, HTML_CLASS_PANEL_GLOBAL_HAND_PHASE);
 		this.ElementCommunityCards = searchNodeByClassNameFromChildren(this.RootElement, HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS);
 		this.ElementCommunityCardsFlop = searchNodeByClassNameFromChildren(this.ElementCommunityCards, HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS_FLOP);
 		this.ElementCommunityCardsTurn = searchNodeByClassNameFromChildren(this.ElementCommunityCards, HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS_TURN);
@@ -377,6 +414,7 @@ PokerTableMonitor.engine = (function(){{
 		this.ElementCommunityCardsFlop.innerHTML = createCardImageListHTML(this.Model.CommunityCardsFlop, HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE, 3);
 		this.ElementCommunityCardsTurn.innerHTML = createCardImageListHTML(this.Model.CommunityCardsTurn, HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE, 1);
 		this.ElementCommunityCardsRiver.innerHTML = createCardImageListHTML(this.Model.CommunityCardsRiver, HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE, 1);
+		this.ElementHandPhase.innerHTML = this.Model.HandPhase;
 	}
 
 	// ---------------------------------------------------------------------
@@ -389,6 +427,7 @@ PokerTableMonitor.engine = (function(){{
 		this.CommunityCardsTurn = [];
 		this.CommunityCardsRiver = [];
 		this.HandCount = 1;
+		this.HandPhase = POKER_PHASE_PREFLOP;
 		this.shuffle();
 	}
 	cGlobalStatusModel.prototype.shuffle = function()
@@ -414,7 +453,12 @@ PokerTableMonitor.engine = (function(){{
 		this.CommunityCardsFlop = [];
 		this.CommunityCardsTurn = [];
 		this.CommunityCardsRiver = [];
+		this.HandPhase = POKER_PHASE_PREFLOP;
 		this.HandCount++;
+	}
+	cGlobalStatusModel.prototype.setPhase = function(argPhase)
+	{
+		this.HandPhase = argPhase;
 	}
 	cGlobalStatusModel.prototype.setFlop = function(argFlop)
 	{
@@ -490,15 +534,33 @@ PokerTableMonitor.engine = (function(){{
 			console.error('BLE読み取りエラー:', error);
 		}
 	}
+
+	cManager.prototype.onCommandToFlop = function()
+	{
+		this.GlobalStatusModel.setPhase(POKER_PHASE_FLOP);
+		this.GlobalStatusViewPanel.draw();
+	}
+	cManager.prototype.onCommandToTurn = function()
+	{
+		this.GlobalStatusModel.setPhase(POKER_PHASE_TURN);
+		this.GlobalStatusViewPanel.draw();
+	}
+	cManager.prototype.onCommandToRiver = function()
+	{
+		this.GlobalStatusModel.setPhase(POKER_PHASE_RIVER);
+		this.GlobalStatusViewPanel.draw();
+	}
+
 	// 次のハンドに進める
 	cManager.prototype.onCommandNextHand = function()
 	{
-		for(const probe of this.Probes)
-		{
-			probe.proceedNextHand(this.HandCount);
-			probe.draw();
-		}
-
+		this.Probes.forEach((x,index) => {
+			x.proceedNextHand()
+		});
+		this.PlayerViewPanelCollection.forEach((x, index) => {
+			x.proceedNextHand(this.HandCount);
+			x.draw();
+		});
 		this.GlobalStatusModel.proceedNextHand();
 		this.GlobalStatusViewPanel.draw();
 	}
@@ -518,7 +580,7 @@ PokerTableMonitor.engine = (function(){{
 		{
 			const panel = this.PlayerViewPanelCollection[index];
 			panel.setWinRate("");
-			if(!panel.Alive)
+			if(!panel.isActive())
 			{
 				continue;
 			}
@@ -537,7 +599,7 @@ PokerTableMonitor.engine = (function(){{
 			const panel = this.PlayerViewPanelCollection[index_table[result_index]];
 			const result_unit = result.infos[result_index];
 			const rate = Math.round((result_unit.win / result_unit.comb) * 100);
-			panel.setWinRate( "" + rate + "% (" + result_unit.win + "/" + result_unit.comb + ")");
+			panel.setWinRate( "" + rate + " %");
 		}
 
 		// 計算表示
@@ -681,6 +743,9 @@ PokerTableMonitor.engine = (function(){{
 			console.log("PokerTableMonitor init");
 			engine.Manager = new cManager();
 			add_button_event_listener(HTML_ID_COMMAND_ADD_PROBE, engine.Manager.onCommandAddProbe.bind(engine.Manager));
+			add_button_event_listener(HTML_ID_COMMAND_TO_FLOP, engine.Manager.onCommandToFlop.bind(engine.Manager));
+			add_button_event_listener(HTML_ID_COMMAND_TO_TURN, engine.Manager.onCommandToTurn.bind(engine.Manager));
+			add_button_event_listener(HTML_ID_COMMAND_TO_RIVER, engine.Manager.onCommandToRiver.bind(engine.Manager));
 			add_button_event_listener(HTML_ID_COMMAND_NEXT_HAND, engine.Manager.onCommandNextHand.bind(engine.Manager));
 			add_button_event_listener(HTML_ID_COMMAND_DUMP_STATUS, engine.Manager.onCommandDumpStatus.bind(engine.Manager));
 			add_button_event_listener(HTML_ID_COMMAND_TEST, engine.Manager.onCommandTest.bind(engine.Manager));
