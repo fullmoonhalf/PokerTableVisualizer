@@ -12,6 +12,8 @@ PokerTableMonitor.engine = (function(){{
 	var HTML_ID_COMMAND_NEXT_HAND = "command_next_hand";
 	var HTML_ID_COMMAND_DUMP_STATUS = "command_dump_status";
 	var HTML_ID_COMMAND_TEST = "command_test";
+	var HTML_ID_COMMAND_DEV_DEAL_HAND = "command_dev_deal_hand";
+	var HTML_ID_COMMAND_DEV_FLOP = "command_dev_flop";
 
 	// HTML の構造まわり
 	var HTML_ID_SECTOR_PLAYER = "sector_player";
@@ -35,6 +37,13 @@ PokerTableMonitor.engine = (function(){{
 	var HTML_CLASS_PANEL_PLAYER_POSITION_NAME = "panel_player_position_name";
 	var HTML_CLASS_PANEL_PLAYER_POSITION_DEALER = "panel_player_position_dealer_button";
 	var HTML_CLASS_PANEL_PLAYER_POSITION_DEALER_HAVE = "panel_player_position_dealer_button_have";
+
+	var HTML_CLASS_PANEL_GLOBAL_HAND = "global_hand_count_value";
+	var HTML_CLASS_PANEL_GLOBAL_HAND_NUMBER = "global_hand_count_number";
+	var HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS = "global_community_cards_value";
+	var HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS_FLOP = "global_community_cards_flop";
+	var HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS_TURN = "global_community_cards_turn";
+	var HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS_RIVER = "global_community_cards_river";
 
 	// ポジション名
 	var POKER_POSITION_DEALER = "D";
@@ -78,6 +87,9 @@ PokerTableMonitor.engine = (function(){{
 	var ASSET_ROOT = "../Assets/UI";
 
 
+	// ---------------------------------------------------------------------
+	// ユーティリティ関数
+	// ---------------------------------------------------------------------
 	// 配列内の要素を出現回数でカウントし、多い順に上位N個を返す関数
 	function getTopNFrequentItems(array, n) 
 	{
@@ -122,6 +134,23 @@ PokerTableMonitor.engine = (function(){{
 		{
 			element.addEventListener(name, event);
 		}
+	}
+
+	// カードのリストから画像 HTML を生成する
+	function createCardImageListHTML(argCardsList, argCssClassName, argCapacityCount = 0)
+	{
+		let value = "";
+		let count = 0;
+		for(const card of argCardsList)
+		{
+			value += "<img class='" + argCssClassName + "' src='" + ASSET_ROOT + "/cards_pc-" + card + ".png'>";
+			count++;
+		}
+		for(;count<argCapacityCount;++count)
+		{
+			value += "<img class='" + argCssClassName + "' src='" + ASSET_ROOT + "/cards_pc-0.png'>";
+		}
+		return value;
 	}
 
 	// ---------------------------------------------------------------------
@@ -292,13 +321,7 @@ PokerTableMonitor.engine = (function(){{
 			searchNodeByClassNameFromChildren(clone, HTML_CLASS_PANEL_PLAYER_LOG_COUNT, `${argHandCount}`);
 			searchNodeByClassNameFromChildren(clone, HTML_CLASS_PANEL_PLAYER_LOG_ACTION, "");
 			const node_hand = searchNodeByClassNameFromChildren(clone, HTML_CLASS_PANEL_PLAYER_LOG_HAND)
-
-			let value = "";
-			for(const card of this.CurrentHand)
-			{
-				value += "<img class='" + HTML_CLASS_PANEL_PLAYER_LOG_HAND_IMG_STYLE + "' src='" + ASSET_ROOT + "/cards_pc-" + card + ".png'>";
-			}
-			node_hand.innerHTML = value;
+			node_hand.innerHTML = createCardImageListHTML(this.CurrentHand, HTML_CLASS_PANEL_PLAYER_LOG_HAND_IMG_STYLE);
 			this.ElementLogValue.appendChild(clone);
 		}
 		this.CurrentHand = [];
@@ -310,24 +333,25 @@ PokerTableMonitor.engine = (function(){{
 	}
 	cPlayerViewPanel.prototype.drawHand = function()
 	{
-		let value = "";
-		for(const card of this.CurrentHand)
-		{
-			value += "<img class='" + HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE + "' src='" + ASSET_ROOT + "/cards_pc-" + card + ".png'>";
-		}
-		this.ElementHandValue.innerHTML = value;
+		this.ElementHandValue.innerHTML = createCardImageListHTML(this.CurrentHand, HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE);
 	}
 	cPlayerViewPanel.prototype.drawHistory = function()
 	{
 	}
 
 	// ---------------------------------------------------------------------
-	// 全体状況
+	// 全体状況表示
 	// ---------------------------------------------------------------------
-	function cGlobalStatusViewPanel(root_element)
+	function cGlobalStatusViewPanel(root_element, argModel)
 	{
 		this.RootElement = root_element;
-		this.HandCount = 1;
+		this.ElementHandCount = searchNodeByClassNameFromChildren(this.RootElement, HTML_CLASS_PANEL_GLOBAL_HAND);
+		this.ElementHandNumber = searchNodeByClassNameFromChildren(this.ElementHandCount, HTML_CLASS_PANEL_GLOBAL_HAND_NUMBER);		
+		this.ElementCommunityCards = searchNodeByClassNameFromChildren(this.RootElement, HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS);
+		this.ElementCommunityCardsFlop = searchNodeByClassNameFromChildren(this.ElementCommunityCards, HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS_FLOP);
+		this.ElementCommunityCardsTurn = searchNodeByClassNameFromChildren(this.ElementCommunityCards, HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS_TURN);
+		this.ElementCommunityCardsRiver = searchNodeByClassNameFromChildren(this.ElementCommunityCards, HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS_RIVER);
+		this.Model = argModel;
 	}
 	cGlobalStatusViewPanel.prototype.setHandCount = function(count)
 	{
@@ -335,11 +359,66 @@ PokerTableMonitor.engine = (function(){{
 	}
 	cGlobalStatusViewPanel.prototype.draw = function()
 	{
-		let contents = "";
-		contents += "<p>Hand: " + this.HandCount;
-		this.RootElement.innerHTML = contents;
+		let contents = "" + this.Model.HandCount;
+		this.ElementHandNumber.innerHTML = contents;0
+		this.ElementCommunityCardsFlop.innerHTML = createCardImageListHTML(this.Model.CommunityCardsFlop, HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE, 3);
+		this.ElementCommunityCardsTurn.innerHTML = createCardImageListHTML(this.Model.CommunityCardsTurn, HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE, 1);
+		this.ElementCommunityCardsRiver.innerHTML = createCardImageListHTML(this.Model.CommunityCardsRiver, HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE, 1);
 	}
 
+	// ---------------------------------------------------------------------
+	// 全体状況の論理状況
+	// ---------------------------------------------------------------------
+	function cGlobalStatusModel()
+	{
+		this.Deck = [];
+		this.CommunityCardsFlop = [];
+		this.CommunityCardsTurn = [];
+		this.CommunityCardsRiver = [];
+		this.HandCount = 1;
+		this.shuffle();
+	}
+	cGlobalStatusModel.prototype.shuffle = function()
+	{
+		// 1〜52の数列を作る
+		const deck = Array.from({ length: 52 }, (_, i) => i + 1);
+
+		// シャッフル関数（Fisher-Yatesアルゴリズム）
+		for (let i = deck.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1)); // 0〜i のランダムな整数
+			[deck[i], deck[j]] = [deck[j], deck[i]];   // 要素を交換
+		}
+
+		this.Deck = deck;
+	}
+	cGlobalStatusModel.prototype.drawCard = function()
+	{
+		return this.Deck.pop();
+	}
+	cGlobalStatusModel.prototype.proceedNextHand = function()
+	{
+		this.shuffle();
+		this.CommunityCardsFlop = [];
+		this.CommunityCardsTurn = [];
+		this.CommunityCardsRiver = [];
+		this.HandCount++;
+	}
+	cGlobalStatusModel.prototype.setFlop = function(argFlop)
+	{
+		this.CommunityCardsFlop = argFlop;
+	}
+	cGlobalStatusModel.prototype.setTurn = function(argFlop)
+	{
+		this.CommunityCardsTurn = argFlop;
+	}
+	cGlobalStatusModel.prototype.setRiver = function(argFlop)
+	{
+		this.CommunityCardsRiver = argFlop;
+	}
+	cGlobalStatusModel.prototype.getCurrentCommunityCards = function()
+	{
+		return this.CommunityCardsFlop.concat(this.CommunityCardsTurn, this.CommunityCardsRiver);
+	}
 
 	// ---------------------------------------------------------------------
 	// マネージャー
@@ -349,7 +428,6 @@ PokerTableMonitor.engine = (function(){{
 		console.log("cManager: called.");
 		this.Probes = [];
 		this.PlayerViewPanelCollection = [];
-		this.HandCount = 1;
 		this.ActivePlayerCount = 0;
 
 		var panel_player_elements = document.getElementsByClassName(HTML_CLASS_PANEL_PLAYER);
@@ -361,8 +439,9 @@ PokerTableMonitor.engine = (function(){{
 
 		this.SectorPlayerRoot = document.getElementById(HTML_ID_SECTOR_PLAYER);
 
+		this.GlobalStatusModel = new cGlobalStatusModel();
 		const sector_global_root = document.getElementById(HTML_ID_SECTOR_GLOBAL);
-		this.GlobalStatusViewPanel = new cGlobalStatusViewPanel(sector_global_root)
+		this.GlobalStatusViewPanel = new cGlobalStatusViewPanel(sector_global_root, this.GlobalStatusModel)
 		this.GlobalStatusViewPanel.draw();
 	}
 	// プローブ追加処理
@@ -414,8 +493,7 @@ PokerTableMonitor.engine = (function(){{
 			probe.draw();
 		}
 
-		this.HandCount += 1;
-		this.GlobalStatusViewPanel.setHandCount(this.HandCount);
+		this.GlobalStatusModel.proceedNextHand();
 		this.GlobalStatusViewPanel.draw();
 	}
 	// デバッグ用テストコマンド
@@ -423,8 +501,34 @@ PokerTableMonitor.engine = (function(){{
 	{
 		const name = "test_" + Object.keys(this.PlayerViewPanelCollection).length;
 		const view_panel = this.createPlayerPanelView(name);
-		view_panel.setCurrentHand([1, 2]);
+		view_panel.setCurrentHand([0, 0]);
 	}
+	// [開発コマンド] テストのハンド配り
+	cManager.prototype.onDevDealHand = function()
+	{
+		// 配布
+		this.GlobalStatusModel.shuffle();
+		const view_count = this.PlayerViewPanelCollection.length;
+		for(let index=0; index<view_count; ++index)
+		{
+			const panel = this.PlayerViewPanelCollection[index];
+			if(panel.Alive)
+			{
+				panel.setCurrentHand([this.GlobalStatusModel.drawCard(), this.GlobalStatusModel.drawCard()]);
+			}
+			else
+			{
+				panel.setCurrentHand([0, 0]);
+			}
+		}
+	}
+	// [開発コマンド] フロップの配布
+	cManager.prototype.onDevFlop = function()
+	{
+		this.GlobalStatusModel.setFlop([this.GlobalStatusModel.drawCard(), this.GlobalStatusModel.drawCard(), this.GlobalStatusModel.drawCard()]);
+		this.GlobalStatusViewPanel.draw();
+	}
+
 	// プレイヤー向けパネルを生成する
 	cManager.prototype.createPlayerPanelView = function(name)
 	{
@@ -518,6 +622,8 @@ PokerTableMonitor.engine = (function(){{
 			add_button_event_listener(HTML_ID_COMMAND_NEXT_HAND, engine.Manager.onCommandNextHand.bind(engine.Manager));
 			add_button_event_listener(HTML_ID_COMMAND_DUMP_STATUS, engine.Manager.onCommandDumpStatus.bind(engine.Manager));
 			add_button_event_listener(HTML_ID_COMMAND_TEST, engine.Manager.onCommandTest.bind(engine.Manager));
+			add_button_event_listener(HTML_ID_COMMAND_DEV_DEAL_HAND, engine.Manager.onDevDealHand.bind(engine.Manager));
+			add_button_event_listener(HTML_ID_COMMAND_DEV_FLOP, engine.Manager.onDevFlop.bind(engine.Manager));
 		},
 	};
 	

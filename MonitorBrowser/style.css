@@ -18,6 +18,7 @@
     margin: 4px;
 }
 
+/* 全体関連 */
 #sector_global
 {
     display: flex;
@@ -26,6 +27,109 @@
     margin: 4px;
 }
 
+.global_forced_bet_group
+{
+    color: white;
+    border: 2px solid #00ff88;
+    padding: 10px 12px;
+    margin: 2px 2px;
+    border-radius: 15px;
+    box-shadow: 0 0 12px #00ff88;
+    background-color: #111;
+    width: 96px;
+}
+
+.global_forced_bet_blind_label
+{
+    font-size: xx-small;
+}
+.global_forced_bet_blind_value
+{
+    text-align: center;
+}
+.global_forced_bet_anti_label
+{
+    font-size: xx-small;
+}
+.global_forced_bet_anti_value
+{
+    text-align: center;
+}
+
+
+.global_hand_count_value
+{
+    color: white;
+    border: 2px solid #00ff88;
+    padding: 10px 12px;
+    margin: 2px 2px;
+    border-radius: 15px;
+    box-shadow: 0 0 12px #00ff88;
+    background-color: #111;
+    width: 48px;
+}
+.global_hand_count_label
+{
+    font-size: xx-small;
+}
+.global_hand_count_contents
+{
+    display: flex;
+    align-items: center;     /* ← 縦方向の中央揃え */
+    height: 70px;           /* 高さは必須 */
+    justify-content: center; /* ← 横方向中央（任意） */
+}
+.global_hand_count_number
+{
+    text-align: center;
+    font-weight: bold;
+    font-size: xx-large;
+}
+.global_community_cards_value
+{
+    color: white;
+    border: 2px solid #00ff88;
+    padding: 5px 12px;
+    border-radius: 15px;
+    box-shadow: 0 0 12px #00ff88;
+    background-color: #111;
+    width: 224px;
+}
+.global_community_cards_label
+{
+    font-size: xx-small;
+}
+.global_community_cards_contents
+{
+    display: flex;
+}
+.global_community_cards_base
+{
+    background: #222;
+    border-radius: 8px;
+    margin-top: 4px;
+    margin-left: 5px;
+    display: flex;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+    font-size: 20px;
+    font-weight: bold;
+    padding: 2px 5px;
+    justify-content: center;
+}
+
+.global_community_cards_flop
+{
+}
+.global_community_cards_turn
+{
+
+}
+.global_community_cards_river
+{
+
+}
+
+/* プレイヤー関連 */
 .panel_player
 {
     border: 2px solid #00ff88;

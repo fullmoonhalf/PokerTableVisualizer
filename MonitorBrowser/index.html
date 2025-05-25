@@ -9,15 +9,55 @@
     <body>
         <div id="all">
             <div id="sector_global">
+                <div class="global_hand_count_value">
+                    <div class="global_hand_count_label">Hand</div>
+                    <div class="global_hand_count_contents">
+                        <div class="global_hand_count_number">1</div>
+                    </div>
+                </div>
+                <div class="global_forced_bet_group">
+                    <div class="global_forced_bet_blind">
+                        <div class="global_forced_bet_blind_label">Blind</div>
+                        <div class="global_forced_bet_blind_value">50/100</div>
+                    </div>
+                    <div class="global_forced_bet_anti">
+                        <div class="global_forced_bet_anti_label">Anti</div>
+                        <div class="global_forced_bet_anti_value">100</div>
+                    </div>
+                </div>
+                <div class="global_community_cards_value">
+                    <div class="global_community_cards_label">
+                        Community Cards
+                    </div>
+                    <div class="global_community_cards_contents">
+                        <div class="global_community_cards_flop global_community_cards_base">
+                            <img class="panel_player_hand_image_style" src="../Assets/UI/cards_pc-0.png">
+                            <img class="panel_player_hand_image_style" src="../Assets/UI/cards_pc-0.png">
+                            <img class="panel_player_hand_image_style" src="../Assets/UI/cards_pc-0.png">
+                        </div>
+                        <div class="global_community_cards_turn global_community_cards_base">
+                            <img class="panel_player_hand_image_style" src="../Assets/UI/cards_pc-0.png">
+                        </div>
+                        <div class="global_community_cards_river global_community_cards_base">
+                            <img class="panel_player_hand_image_style" src="../Assets/UI/cards_pc-0.png">
+                        </div>
+                    </div>
+                </div>
             </div>
             <div id="sector_player">
             </div>
             <div id="sector_command">
                 <p>
+                    管理コマンド
                     <button id="command_add_probe">Add Probe</button>
                     <button id="command_next_hand">Next Hand</button>
+                </p>
+                <p>
+                    開発コマンド
                     <button id="command_dump_status">Dump Status</button>
                     <button id="command_test">Test</button>
+                    <button id="command_dev_deal_hand">DevDealHand</button>
+                    <button id="command_dev_flop">DevFlop</button>
                 </p>
                 <p>
                     <div class="panel_player">
@@ -28,8 +68,8 @@
                             <button class="panel_player_position_dealer_button"></button>
                         </div>
                         <div class="panel_player_hand_value">
-                            <img class="panel_player_hand_image_style" src="../Assets/UI/cards_pc-10.png">
-                            <img class="panel_player_hand_image_style" src="../Assets/UI/cards_pc-11.png">
+                            <img class="panel_player_hand_image_style" src="../Assets/UI/cards_pc-0.png">
+                            <img class="panel_player_hand_image_style" src="../Assets/UI/cards_pc-0.png">
                         </div>
                         <div class="panel_player_action_input">
                             <div class="aaa">
