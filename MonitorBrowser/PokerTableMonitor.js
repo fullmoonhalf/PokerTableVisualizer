@@ -470,7 +470,7 @@ PokerTableMonitor.engine = (function(){{
 		this.ActivePlayerCount = 0;
 		for(let index=0; index<view_count; ++index)
 		{
-			const access_index = (index + button_index) % view_count;
+			const access_index = (view_count + button_index - index) % view_count;
 			const panel = this.PlayerViewPanelCollection[access_index];
 			if(panel.Alive)
 			{
