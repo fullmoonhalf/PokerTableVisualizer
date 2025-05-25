@@ -37,6 +37,7 @@ PokerTableMonitor.engine = (function(){{
 	var HTML_CLASS_PANEL_PLAYER_POSITION_NAME = "panel_player_position_name";
 	var HTML_CLASS_PANEL_PLAYER_POSITION_DEALER = "panel_player_position_dealer_button";
 	var HTML_CLASS_PANEL_PLAYER_POSITION_DEALER_HAVE = "panel_player_position_dealer_button_have";
+	var HTML_CLASS_PANEL_PLAYER_WINRATE_VALUE = "panel_player_winrate_value";
 
 	var HTML_CLASS_PANEL_GLOBAL_HAND = "global_hand_count_value";
 	var HTML_CLASS_PANEL_GLOBAL_HAND_NUMBER = "global_hand_count_number";
@@ -242,6 +243,7 @@ PokerTableMonitor.engine = (function(){{
 		this.ElementPositionExistValue = searchNodeByClassNameFromChildren(this.ElementPositionValue, HTML_CLASS_PANEL_PLAYER_POSITION_EXIST);
 		this.ElementPositionNameValue = searchNodeByClassNameFromChildren(this.ElementPositionValue, HTML_CLASS_PANEL_PLAYER_POSITION_NAME);
 		this.ElementPositionDealerValue = searchNodeByClassNameFromChildren(this.ElementPositionValue, HTML_CLASS_PANEL_PLAYER_POSITION_DEALER);
+		this.ElementWinRateValue = searchNodeByClassNameFromChildren(argCloneHtmlNode, HTML_CLASS_PANEL_PLAYER_WINRATE_VALUE);
 
 		addEventListenerToElement(this.ElementPositionExistValue, 'click', this.onClickExistButton.bind(this) );
 		addEventListenerToElement(this.ElementPositionDealerValue, 'click', this.onClickExistDealerButton.bind(this) );
@@ -253,6 +255,7 @@ PokerTableMonitor.engine = (function(){{
 		this.Position = null;
 		this.BackPlayerCount = 0;
 		this.Button = false;
+		this.WinRate = "";
 	}
 	// 名前の設定
 	cPlayerViewPanel.prototype.setName = function(argName)
@@ -290,6 +293,10 @@ PokerTableMonitor.engine = (function(){{
 		this.Position = argPosition;
 		this.ElementPositionNameValue.innerHTML = argPosition;
 	}
+	cPlayerViewPanel.prototype.setWinRate = function(argWinRate)
+	{
+		this.WinRate = argWinRate;
+	}
 	// いるかどうかの設定ボタン押されたときの動作
 	cPlayerViewPanel.prototype.onClickExistButton = function(argEvent)
 	{
@@ -325,11 +332,13 @@ PokerTableMonitor.engine = (function(){{
 			this.ElementLogValue.appendChild(clone);
 		}
 		this.CurrentHand = [];
+		this.WinRate = "";
 	}
 	cPlayerViewPanel.prototype.draw = function()
 	{
 		this.drawHand();
 		this.drawHistory();
+		this.drawWinRate();
 	}
 	cPlayerViewPanel.prototype.drawHand = function()
 	{
@@ -337,6 +346,10 @@ PokerTableMonitor.engine = (function(){{
 	}
 	cPlayerViewPanel.prototype.drawHistory = function()
 	{
+	}
+	cPlayerViewPanel.prototype.drawWinRate = function()
+	{
+		this.ElementWinRateValue.innerHTML = this.WinRate;
 	}
 
 	// ---------------------------------------------------------------------
@@ -406,6 +419,7 @@ PokerTableMonitor.engine = (function(){{
 	cGlobalStatusModel.prototype.setFlop = function(argFlop)
 	{
 		this.CommunityCardsFlop = argFlop;
+		engine.Manager.onUpdateFlop();
 	}
 	cGlobalStatusModel.prototype.setTurn = function(argFlop)
 	{
@@ -476,14 +490,6 @@ PokerTableMonitor.engine = (function(){{
 			console.error('BLE読み取りエラー:', error);
 		}
 	}
-	// 開発向けに現在の状態を出力する
-	cManager.prototype.onCommandDumpStatus = function()
-	{
-		for(const probe of this.Probes)
-		{
-			probe.dumpStatus();
-		}
-	}
 	// 次のハンドに進める
 	cManager.prototype.onCommandNextHand = function()
 	{
@@ -496,39 +502,56 @@ PokerTableMonitor.engine = (function(){{
 		this.GlobalStatusModel.proceedNextHand();
 		this.GlobalStatusViewPanel.draw();
 	}
-	// デバッグ用テストコマンド
-	cManager.prototype.onCommandTest = function()
+	cManager.prototype.updateWinRate = function()
 	{
-		const name = "test_" + Object.keys(this.PlayerViewPanelCollection).length;
-		const view_panel = this.createPlayerPanelView(name);
-		view_panel.setCurrentHand([0, 0]);
-	}
-	// [開発コマンド] テストのハンド配り
-	cManager.prototype.onDevDealHand = function()
-	{
-		// 配布
-		this.GlobalStatusModel.shuffle();
+		const community_cards = this.GlobalStatusModel.getCurrentCommunityCards();
+		if(community_cards.length < 3)
+		{
+			return;
+		}
+
+		// 勝率計算処理に食わせられるようにする
+		let index_table = [];
+		let hand_info = [];
 		const view_count = this.PlayerViewPanelCollection.length;
 		for(let index=0; index<view_count; ++index)
 		{
 			const panel = this.PlayerViewPanelCollection[index];
-			if(panel.Alive)
+			panel.setWinRate("");
+			if(!panel.Alive)
 			{
-				panel.setCurrentHand([this.GlobalStatusModel.drawCard(), this.GlobalStatusModel.drawCard()]);
+				continue;
 			}
-			else
+			if(panel.CurrentHand.length != 2)
 			{
-				panel.setCurrentHand([0, 0]);
+				continue;
 			}
+			index_table.push(index);
+			hand_info.push(panel.CurrentHand);
+		}
+
+		// 勝率計算
+		const result = WinRate.calc(hand_info, community_cards, [])
+		for(let result_index=0; result_index<result.infos.length; ++result_index)
+		{
+			const panel = this.PlayerViewPanelCollection[index_table[result_index]];
+			const result_unit = result.infos[result_index];
+			const rate = Math.round((result_unit.win / result_unit.comb) * 100);
+			panel.setWinRate( "" + rate + "% (" + result_unit.win + "/" + result_unit.comb + ")");
+		}
+
+		// 計算表示
+		for(let index=0; index<view_count; ++index)
+		{
+			const panel = this.PlayerViewPanelCollection[index];
+			panel.drawWinRate();
 		}
 	}
-	// [開発コマンド] フロップの配布
-	cManager.prototype.onDevFlop = function()
+	// フロップが更新された
+	cManager.prototype.onUpdateFlop = function()
 	{
-		this.GlobalStatusModel.setFlop([this.GlobalStatusModel.drawCard(), this.GlobalStatusModel.drawCard(), this.GlobalStatusModel.drawCard()]);
-		this.GlobalStatusViewPanel.draw();
+		this.updateWinRate();
 	}
-
 	// プレイヤー向けパネルを生成する
 	cManager.prototype.createPlayerPanelView = function(name)
 	{
@@ -550,7 +573,6 @@ PokerTableMonitor.engine = (function(){{
 		this.PlayerViewPanelCollection.push(view_panel);
 		return view_panel;
 	}
-
 	// ボタンをセットする
 	cManager.prototype.setButton = function(name)
 	{
@@ -601,6 +623,46 @@ PokerTableMonitor.engine = (function(){{
 				panel.setPosition(POKER_POSITION_OPENSEAT);
 			}
 		}
+	}
+	// 開発向けに現在の状態を出力する
+	cManager.prototype.onCommandDumpStatus = function()
+	{
+		for(const probe of this.Probes)
+		{
+			probe.dumpStatus();
+		}
+	}
+	// デバッグ用テストコマンド
+	cManager.prototype.onCommandTest = function()
+	{
+		const name = "test_" + Object.keys(this.PlayerViewPanelCollection).length;
+		const view_panel = this.createPlayerPanelView(name);
+		view_panel.setCurrentHand([0, 0]);
+	}
+	// [開発コマンド] テストのハンド配り
+	cManager.prototype.onDevDealHand = function()
+	{
+		// 配布
+		this.GlobalStatusModel.shuffle();
+		const view_count = this.PlayerViewPanelCollection.length;
+		for(let index=0; index<view_count; ++index)
+		{
+			const panel = this.PlayerViewPanelCollection[index];
+			if(panel.Alive)
+			{
+				panel.setCurrentHand([this.GlobalStatusModel.drawCard(), this.GlobalStatusModel.drawCard()]);
+			}
+			else
+			{
+				panel.setCurrentHand([0, 0]);
+			}
+		}
+	}
+	// [開発コマンド] フロップの配布
+	cManager.prototype.onDevFlop = function()
+	{
+		this.GlobalStatusModel.setFlop([this.GlobalStatusModel.drawCard(), this.GlobalStatusModel.drawCard(), this.GlobalStatusModel.drawCard()]);
+		this.GlobalStatusViewPanel.draw();
 	}
 
 	// ---------------------------------------------------------------------

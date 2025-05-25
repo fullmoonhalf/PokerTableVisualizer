@@ -153,6 +153,14 @@
     box-shadow: inset 0 0 4px #000;
 }
 
+.panel_player_winrate_value
+{
+    color: #777;
+    text-align: center;
+    font-size: xx-small;
+    height: 15px;
+}
+
 .panel_player_hand_value
 {
     background: #222;
