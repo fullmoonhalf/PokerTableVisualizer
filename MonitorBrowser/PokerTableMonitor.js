@@ -185,8 +185,16 @@ PokerTableMonitor.engine = (function(){{
 			const decoder = new TextDecoder('utf-8');
 			const str = decoder.decode(characteristic.value);
 			const json = JSON.parse(str);
-			//console.log(json);
 
+			// パネルがない場合は追加する
+			if(this.ViewPanel == null)
+			{
+				this.ProbeName = json.probe;
+				this.ViewPanel = engine.Manager.createPlayerPanelView(json.probe);
+				this.ViewPanel.setAlive(true);
+			}
+
+			// カードの更新
 			let need_to_update = false;
 			if(json.cards.length >= 2)
 			{
@@ -203,18 +211,11 @@ PokerTableMonitor.engine = (function(){{
 					}
 				}
 			}
-
 			if(need_to_update)
 			{
-				if(this.ViewPanel == null)
-				{
-					this.ProbeName = json.probe;
-					this.ViewPanel = engine.Manager.createPlayerPanelView(json.probe);
-				}
 				if(this.ViewPanel != null)
 				{
-					const items = getTopNFrequentItems(this.ReceiveCards, 2);
-					this.ViewPanel.setCurrentHand(items);
+					this.ViewPanel.scanCards(this.ReceiveCards);
 				}
 			}
 		}
@@ -274,6 +275,12 @@ PokerTableMonitor.engine = (function(){{
 		this.Name = argName;
 		this.ElementNameValue.innerHTML = argName;
 	}
+	// カードスキャナ経由でのハンド設定
+	cPlayerViewPanel.prototype.scanCards = function(argCandidateList)
+	{
+		const items = getTopNFrequentItems(argCandidateList, 2);
+		this.setCurrentHand(items);
+	}
 	// ハンドの設定
 	cPlayerViewPanel.prototype.setCurrentHand = function(argHand)
 	{
@@ -314,6 +321,21 @@ PokerTableMonitor.engine = (function(){{
 	{
 		this.Active = argActive;
 	}
+	cPlayerViewPanel.prototype.setAlive = function(argAlive)
+	{
+		this.Alive = argAlive;
+		if(argAlive)
+		{
+			this.ElementPositionExistValue.classList.remove(HTML_CLASS_PANEL_PLAYER_POSITION_EXIST_FALSE);
+			this.ElementPositionExistValue.classList.add(HTML_CLASS_PANEL_PLAYER_POSITION_EXIST_TRUE);
+		}
+		else
+		{
+			this.ElementPositionExistValue.classList.remove(HTML_CLASS_PANEL_PLAYER_POSITION_EXIST_TRUE);
+			this.ElementPositionExistValue.classList.add(HTML_CLASS_PANEL_PLAYER_POSITION_EXIST_FALSE);
+		}
+		engine.Manager.updatePosition();
+	}
 	// アクティブプレイヤーかどうかを取得する
 	cPlayerViewPanel.prototype.isActive = function()
 	{
@@ -324,15 +346,11 @@ PokerTableMonitor.engine = (function(){{
 	{
 		if(this.Alive)
 		{
-			this.Alive = false;
-			this.ElementPositionExistValue.classList.remove(HTML_CLASS_PANEL_PLAYER_POSITION_EXIST_TRUE);
-			this.ElementPositionExistValue.classList.add(HTML_CLASS_PANEL_PLAYER_POSITION_EXIST_FALSE);
+			this.setAlive(false);
 		}
 		else
 		{
-			this.Alive = true;
-			this.ElementPositionExistValue.classList.remove(HTML_CLASS_PANEL_PLAYER_POSITION_EXIST_FALSE);
-			this.ElementPositionExistValue.classList.add(HTML_CLASS_PANEL_PLAYER_POSITION_EXIST_TRUE);
+			this.setAlive(true);
 		}
 		engine.Manager.updatePosition();
 	}
@@ -632,6 +650,7 @@ PokerTableMonitor.engine = (function(){{
 		// オブジェクトで wrapping する。また必要な紐付けを行なう。
 		const view_panel = new cPlayerViewPanel(clone, this.PlayerPanelLogUnitTemplate);
 		view_panel.setName(name);
+		view_panel.draw();
 		this.PlayerViewPanelCollection.push(view_panel);
 		return view_panel;
 	}
