@@ -3,71 +3,72 @@ PokerTableMonitor.engine = (function(){{
 	var version = 0.00;
 
 	// BLEデバイス関係
-	var BLE_DEVICE_NAME_PREFIX = "PTV_PP_";
-	var UUID_SERVICE = "cbaabb28-4e81-49c4-b775-aedfd27d8db0";
-	var UUID_CHARACTERISTIC = "45f116ee-b087-4271-888d-a15eebebd2eb";
+	const BLE_DEVICE_NAME_PREFIX = "PTV_PP_";
+	const BLE_DEVICE_PROBE_NAME_DEALER_PREFIX = "Dealer";
+	const UUID_SERVICE = "cbaabb28-4e81-49c4-b775-aedfd27d8db0";
+	const UUID_CHARACTERISTIC = "45f116ee-b087-4271-888d-a15eebebd2eb";
 
 	// 操作関係
-	var HTML_ID_COMMAND_ADD_PROBE = "command_add_probe";
-	var HTML_ID_COMMAND_NEXT_HAND = "command_next_hand";
-	var HTML_ID_COMMAND_DUMP_STATUS = "command_dump_status";
-	var HTML_ID_COMMAND_TO_FLOP = "command_to_flop";
-	var HTML_ID_COMMAND_TO_TURN = "command_to_turn";
-	var HTML_ID_COMMAND_TO_RIVER = "command_to_river";
-	var HTML_ID_COMMAND_TEST = "command_test";
-	var HTML_ID_COMMAND_DEV_DEAL_HAND = "command_dev_deal_hand";
-	var HTML_ID_COMMAND_DEV_FLOP = "command_dev_flop";
+	const HTML_ID_COMMAND_ADD_PROBE = "command_add_probe";
+	const HTML_ID_COMMAND_NEXT_HAND = "command_next_hand";
+	const HTML_ID_COMMAND_DUMP_STATUS = "command_dump_status";
+	const HTML_ID_COMMAND_TO_FLOP = "command_to_flop";
+	const HTML_ID_COMMAND_TO_TURN = "command_to_turn";
+	const HTML_ID_COMMAND_TO_RIVER = "command_to_river";
+	const HTML_ID_COMMAND_TEST = "command_test";
+	const HTML_ID_COMMAND_DEV_DEAL_HAND = "command_dev_deal_hand";
+	const HTML_ID_COMMAND_DEV_FLOP = "command_dev_flop";
 
 	// HTML の構造まわり
-	var HTML_ID_SECTOR_PLAYER = "sector_player";
-	var HTML_ID_PLAYER_VIEEPANEL_PREFIX = "view_panel_player_";
-	var HTML_ID_SECTOR_GLOBAL = "sector_global";
-	var HTML_CLASS_PANEL_PLAYER = "panel_player";
+	const HTML_ID_SECTOR_PLAYER = "sector_player";
+	const HTML_ID_PLAYER_VIEEPANEL_PREFIX = "view_panel_player_";
+	const HTML_ID_SECTOR_GLOBAL = "sector_global";
+	const HTML_CLASS_PANEL_PLAYER = "panel_player";
 
-	var HTML_CLASS_PANEL_PLAYER_NAME_VALUE = "panel_player_name_value";
-	var HTML_CLASS_PANEL_PLAYER_HAND_VALUE = "panel_player_hand_value";
-	var HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE = "panel_player_hand_image_style";
-	var HTML_CLASS_PANEL_PLAYER_LOG_VALUE = "panel_player_log_value";
-	var HTML_CLASS_PANEL_PLAYER_LOG_UNIT = "panel_player_log_unit";
-	var HTML_CLASS_PANEL_PLAYER_LOG_COUNT = "panel_player_log_count";
-	var HTML_CLASS_PANEL_PLAYER_LOG_HAND = "panel_player_log_hand";
-	var HTML_CLASS_PANEL_PLAYER_LOG_ACTION = "panel_player_log_action";
-	var HTML_CLASS_PANEL_PLAYER_LOG_HAND_IMG_STYLE = "panel_player_log_hand_image_style";
-	var HTML_CLASS_PANEL_PLAYER_POSITION_VALUE = "panel_player_position_value";
-	var HTML_CLASS_PANEL_PLAYER_POSITION_EXIST = "panel_player_position_exist";
-	var HTML_CLASS_PANEL_PLAYER_POSITION_EXIST_TRUE = "panel_player_position_exist_alive";
-	var HTML_CLASS_PANEL_PLAYER_POSITION_EXIST_FALSE = "panel_player_position_exist_seat_open";
-	var HTML_CLASS_PANEL_PLAYER_POSITION_NAME = "panel_player_position_name";
-	var HTML_CLASS_PANEL_PLAYER_POSITION_DEALER = "panel_player_position_dealer_button";
-	var HTML_CLASS_PANEL_PLAYER_POSITION_DEALER_HAVE = "panel_player_position_dealer_button_have";
-	var HTML_CLASS_PANEL_PLAYER_WINRATE_VALUE = "panel_player_winrate_value";
-	var HTML_CLASS_PANEL_PLAYER_COMMAND_FOLD = "panel_player_command_fold";
-	var HTML_CLASS_PANEL_PLAYER_COMMAND_CALL = "panel_player_command_call";
-	var HTML_CLASS_PANEL_PLAYER_COMMAND_AGGRESSIVE_ACTION = "panel_player_command_aggressive_action";
+	const HTML_CLASS_PANEL_PLAYER_NAME_VALUE = "panel_player_name_value";
+	const HTML_CLASS_PANEL_PLAYER_HAND_VALUE = "panel_player_hand_value";
+	const HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE = "panel_player_hand_image_style";
+	const HTML_CLASS_PANEL_PLAYER_LOG_VALUE = "panel_player_log_value";
+	const HTML_CLASS_PANEL_PLAYER_LOG_UNIT = "panel_player_log_unit";
+	const HTML_CLASS_PANEL_PLAYER_LOG_COUNT = "panel_player_log_count";
+	const HTML_CLASS_PANEL_PLAYER_LOG_HAND = "panel_player_log_hand";
+	const HTML_CLASS_PANEL_PLAYER_LOG_ACTION = "panel_player_log_action";
+	const HTML_CLASS_PANEL_PLAYER_LOG_HAND_IMG_STYLE = "panel_player_log_hand_image_style";
+	const HTML_CLASS_PANEL_PLAYER_POSITION_VALUE = "panel_player_position_value";
+	const HTML_CLASS_PANEL_PLAYER_POSITION_EXIST = "panel_player_position_exist";
+	const HTML_CLASS_PANEL_PLAYER_POSITION_EXIST_TRUE = "panel_player_position_exist_alive";
+	const HTML_CLASS_PANEL_PLAYER_POSITION_EXIST_FALSE = "panel_player_position_exist_seat_open";
+	const HTML_CLASS_PANEL_PLAYER_POSITION_NAME = "panel_player_position_name";
+	const HTML_CLASS_PANEL_PLAYER_POSITION_DEALER = "panel_player_position_dealer_button";
+	const HTML_CLASS_PANEL_PLAYER_POSITION_DEALER_HAVE = "panel_player_position_dealer_button_have";
+	const HTML_CLASS_PANEL_PLAYER_WINRATE_VALUE = "panel_player_winrate_value";
+	const HTML_CLASS_PANEL_PLAYER_COMMAND_FOLD = "panel_player_command_fold";
+	const HTML_CLASS_PANEL_PLAYER_COMMAND_CALL = "panel_player_command_call";
+	const HTML_CLASS_PANEL_PLAYER_COMMAND_AGGRESSIVE_ACTION = "panel_player_command_aggressive_action";
 
-	var HTML_CLASS_PANEL_GLOBAL_HAND = "global_hand_count_value";
-	var HTML_CLASS_PANEL_GLOBAL_HAND_NUMBER = "global_hand_count_number";
-	var HTML_CLASS_PANEL_GLOBAL_HAND_PHASE = "global_hand_count_phase";
-	var HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS = "global_community_cards_value";
-	var HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS_FLOP = "global_community_cards_flop";
-	var HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS_TURN = "global_community_cards_turn";
-	var HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS_RIVER = "global_community_cards_river";
+	const HTML_CLASS_PANEL_GLOBAL_HAND = "global_hand_count_value";
+	const HTML_CLASS_PANEL_GLOBAL_HAND_NUMBER = "global_hand_count_number";
+	const HTML_CLASS_PANEL_GLOBAL_HAND_PHASE = "global_hand_count_phase";
+	const HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS = "global_community_cards_value";
+	const HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS_FLOP = "global_community_cards_flop";
+	const HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS_TURN = "global_community_cards_turn";
+	const HTML_CLASS_PANEL_GLOBAL_COMMUNITY_CARDS_RIVER = "global_community_cards_river";
 
 	// ポジション名
-	var POKER_POSITION_DEALER = "D";
-	var POKER_POSITION_CUTOFF = "CO";
-	var POKER_POSITION_HIJACK = "HJ";
-	var POKER_POSITION_MIDDLEp1 = "MP+1";
-	var POKER_POSITION_MIDDLE = "MP";
-	var POKER_POSITION_UTGp2 = "UTG+2";
-	var POKER_POSITION_UTGp1 = "UTG+1";
-	var POKER_POSITION_UTG = "UTG";
-	var POKER_POSITION_BB = "BB";
-	var POKER_POSITION_SB = "SB";
-	var POKER_POSITION_OPENSEAT = "-";
+	const POKER_POSITION_DEALER = "D";
+	const POKER_POSITION_CUTOFF = "CO";
+	const POKER_POSITION_HIJACK = "HJ";
+	const POKER_POSITION_MIDDLEp1 = "MP+1";
+	const POKER_POSITION_MIDDLE = "MP";
+	const POKER_POSITION_UTGp2 = "UTG+2";
+	const POKER_POSITION_UTGp1 = "UTG+1";
+	const POKER_POSITION_UTG = "UTG";
+	const POKER_POSITION_BB = "BB";
+	const POKER_POSITION_SB = "SB";
+	const POKER_POSITION_OPENSEAT = "-";
 
 	// ポジションリスト。ポジションの悪い方から
-	var POKER_POSITION_TABLE = [
+	const POKER_POSITION_TABLE = [
 		// あると便利なので定義してるだけ
 		[POKER_POSITION_OPENSEAT],
 		[POKER_POSITION_DEALER],
@@ -92,13 +93,13 @@ PokerTableMonitor.engine = (function(){{
 	];
 
 	// フェイズ
-	var POKER_PHASE_PREFLOP = "PreFlop";
-	var POKER_PHASE_FLOP = "Flop";
-	var POKER_PHASE_TURN = "Turn";
-	var POKER_PHASE_RIVER = "River";
+	const POKER_PHASE_PREFLOP = "PreFlop";
+	const POKER_PHASE_FLOP = "Flop";
+	const POKER_PHASE_TURN = "Turn";
+	const POKER_PHASE_RIVER = "River";
 
 	// リソースまわり
-	var ASSET_ROOT = "../Assets/UI";
+	const ASSET_ROOT = "../Assets/UI";
 
 
 	// ---------------------------------------------------------------------
@@ -176,6 +177,7 @@ PokerTableMonitor.engine = (function(){{
 		this.BLECharacteristic = argBLECharacteristic;
 		this.ViewPanel = null;
 		this.ReceiveCards = [];
+		this.DealerProbe = false;
 	}
 	// 各プローブからのデータ受信時の処理
 	cProbe.prototype.onCharacteristicValueChanged = function(event)
@@ -190,13 +192,22 @@ PokerTableMonitor.engine = (function(){{
 			if(this.ViewPanel == null)
 			{
 				this.ProbeName = json.probe;
-				this.ViewPanel = engine.Manager.createPlayerPanelView(json.probe);
-				this.ViewPanel.setAlive(true);
+				console.log("cProbe.prototype.onCharacteristicValueChanged add " + this.ProbeName);
+				if(this.ProbeName.startsWith(BLE_DEVICE_PROBE_NAME_DEALER_PREFIX))
+				{
+					this.ViewPanel = engine.Manager.GlobalStatusModel;
+					this.DealerProbe = true;
+				}
+				else
+				{
+					this.ViewPanel = engine.Manager.createPlayerPanelView(json.probe);
+					this.ViewPanel.setAlive(true);
+				}
 			}
 
 			// カードの更新
 			let need_to_update = false;
-			if(json.cards.length >= 2)
+			if(json.cards.length >= 1)
 			{
 				for(const card of json.cards)
 				{
@@ -223,6 +234,15 @@ PokerTableMonitor.engine = (function(){{
 			console.log("[cProbe] onCharacteristicValueChanged error ", this.ProbeName, e);
 		}
 	}
+	// 次のベッティングラウンドに移行するときの処理
+	cProbe.prototype.proceedNextPhase = function()
+	{
+		if(this.DealerProbe)
+		{
+			this.ReceiveCards = [];
+		}
+	}
+	// 次のハンドに移行するときの処理
 	cProbe.prototype.proceedNextHand = function()
 	{
 		this.ReceiveCards = [];
@@ -486,14 +506,41 @@ PokerTableMonitor.engine = (function(){{
 	cGlobalStatusModel.prototype.setTurn = function(argFlop)
 	{
 		this.CommunityCardsTurn = argFlop;
+		engine.Manager.onUpdateTurn();
 	}
 	cGlobalStatusModel.prototype.setRiver = function(argFlop)
 	{
 		this.CommunityCardsRiver = argFlop;
+		engine.Manager.onUpdateRiver();
 	}
 	cGlobalStatusModel.prototype.getCurrentCommunityCards = function()
 	{
 		return this.CommunityCardsFlop.concat(this.CommunityCardsTurn, this.CommunityCardsRiver);
+	}
+	cGlobalStatusModel.prototype.scanCards = function(argCandidateList)
+	{
+		switch(this.HandPhase)
+		{
+			case POKER_PHASE_PREFLOP:
+			case POKER_PHASE_FLOP:
+				{
+					const items = getTopNFrequentItems(argCandidateList, 3);
+					this.setFlop(items);
+				}
+				break;
+			case POKER_PHASE_TURN:
+				{
+					const items = getTopNFrequentItems(argCandidateList, 1);
+					this.setTurn(items);
+				}
+				break;
+			case POKER_PHASE_RIVER:
+				{
+					const items = getTopNFrequentItems(argCandidateList, 1);
+					this.setRiver(items);
+				}
+				break;
+		}
 	}
 
 	// ---------------------------------------------------------------------
@@ -555,20 +602,23 @@ PokerTableMonitor.engine = (function(){{
 
 	cManager.prototype.onCommandToFlop = function()
 	{
-		this.GlobalStatusModel.setPhase(POKER_PHASE_FLOP);
-		this.GlobalStatusViewPanel.draw();
+		this.proceedNextPhase(POKER_PHASE_FLOP);
 	}
 	cManager.prototype.onCommandToTurn = function()
 	{
-		this.GlobalStatusModel.setPhase(POKER_PHASE_TURN);
-		this.GlobalStatusViewPanel.draw();
+		this.proceedNextPhase(POKER_PHASE_TURN);
 	}
 	cManager.prototype.onCommandToRiver = function()
 	{
-		this.GlobalStatusModel.setPhase(POKER_PHASE_RIVER);
+		this.proceedNextPhase(POKER_PHASE_RIVER);
+	}
+	// 次のフェイズに進める
+	cManager.prototype.proceedNextPhase = function(argNextPhase)
+	{
+		this.GlobalStatusModel.setPhase(argNextPhase);
+		this.Probes.forEach((x,index) => x.proceedNextPhase());
 		this.GlobalStatusViewPanel.draw();
 	}
-
 	// 次のハンドに進める
 	cManager.prototype.onCommandNextHand = function()
 	{
@@ -582,6 +632,7 @@ PokerTableMonitor.engine = (function(){{
 		this.GlobalStatusModel.proceedNextHand();
 		this.GlobalStatusViewPanel.draw();
 	}
+	// 勝率更新
 	cManager.prototype.updateWinRate = function()
 	{
 		const community_cards = this.GlobalStatusModel.getCurrentCommunityCards();
@@ -627,10 +678,26 @@ PokerTableMonitor.engine = (function(){{
 			panel.drawWinRate();
 		}
 	}
+	// コミュニティカード更新
+	cManager.prototype.updateCommunityCards = function()
+	{
+		this.updateWinRate();
+		this.GlobalStatusViewPanel.draw();
+	}
 	// フロップが更新された
 	cManager.prototype.onUpdateFlop = function()
 	{
-		this.updateWinRate();
+		this.updateCommunityCards();
+	}
+	// ターンが更新された
+	cManager.prototype.onUpdateTurn = function()
+	{
+		this.updateCommunityCards();
+	}
+	// リバーが更新された
+	cManager.prototype.onUpdateRiver = function()
+	{
+		this.updateCommunityCards();
 	}
 	// プレイヤー向けパネルを生成する
 	cManager.prototype.createPlayerPanelView = function(name)
