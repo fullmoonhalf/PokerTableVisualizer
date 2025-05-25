@@ -42,7 +42,7 @@
     background: #222;
     color: white;
     padding: 6px 0;
-    margin-bottom: 8px;
+    margin-bottom: 2px;
     text-align: center;
     font-weight: bold;
     border-radius: 8px;
@@ -110,4 +110,63 @@
 .panel_player_log_action
 {
     font-size: xx-small;
+}
+
+.panel_player_position_value
+{
+    background: #222;
+    color: #ddd;
+    margin-top: 2px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    box-shadow: inset 0 0 4px #000;
+    display: flex;
+}
+
+.panel_player_position_name
+{
+    width: 80%;
+    text-align: center;
+    font-weight: bold;
+}
+
+.panel_player_position_dealer_button
+{
+    width: 10%;
+    background: #222;
+}
+
+.panel_player_position_dealer_button_have
+{
+    background-image: url("../Assets/UI/dealer_button.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.panel_player_position_exist
+{
+    width: 10%;
+    background: #222;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.panel_player_position_exist_alive
+{
+    background-image: url("../Assets/UI/player_alive.png");
+}
+
+.panel_player_position_exist_seat_open
+{
+    background-image: url("../Assets/UI/player_seatopen.png");
+}
+
+.panel_player_action_input
+{
+    color: #999;
+    background: #333;
+    font-size: x-small;
+    margin-top: 4px;
 }
