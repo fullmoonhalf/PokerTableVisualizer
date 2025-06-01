@@ -307,3 +307,37 @@
     width: 64px;
 }
 
+
+/* probe informations */
+.panel_probe_information_group
+{
+}
+
+.panel_probe_information_rssi_group
+{
+    display: flex;
+    font-size: xx-small;
+    color: #999;
+}
+.panel_probe_information_rssi_label
+{
+    color: #999;
+    font-size: xx-small;
+}
+.panel_probe_information_rssi_value
+{
+    color: #999;
+    font-size: xx-small;
+}
+.panel_probe_information_threshold
+{
+    margin-top: 2px;
+    margin-bottom: 2px;
+    padding: 1px 1px;
+    border-radius: 2px;
+    border: none;
+    background-color: #333;
+    width: 20px;
+    color: #999;
+    font-size: xx-small;
+}

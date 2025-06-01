@@ -25,6 +25,7 @@
                         <div class="global_forced_bet_anti_label">Antis</div>
                         <div class="global_forced_bet_anti_value">100</div>
                     </div>
+                    <div class="panel_dealer_probe_connector"></div>
                 </div>
                 <div class="global_community_cards_value common_frame">
                     <div class="global_community_cards_label">
@@ -72,40 +73,37 @@
                     <button id="command_test">Test</button>
                     <button id="command_dev_deal_hand">DevDealHand</button>
                     <button id="command_dev_flop">DevFlop</button>
+                    <button id="command_dev_turn">DevTurn</button>
+                    <button id="command_dev_river">DevRiver</button>
                 </p>
                 <p>
-                    <div class="panel_player common_frame">
-                        <div class="panel_player_name_value">test</div>
-                        <div class="panel_player_position_value">
-                            <button class="panel_player_position_exist panel_player_position_exist_seat_open"></button>
-                            <div class="panel_player_position_name">-</div>
-                            <button class="panel_player_position_dealer_button"></button>
-                        </div>
-                        <div class="panel_player_hand_value">
-                            <img class="panel_player_hand_image_style" src="../Assets/UI/cards_pc-0.png">
-                            <img class="panel_player_hand_image_style" src="../Assets/UI/cards_pc-0.png">
-                        </div>
-                        <div class="panel_player_winrate_group">
-                            <div class="panel_player_winrate_value">
+                    <div class="panel_player">
+                        <div class="panel_player_info common_frame">
+                            <div class="panel_player_name_value">test</div>
+                            <div class="panel_player_position_value">
+                                <button class="panel_player_position_exist panel_player_position_exist_seat_open"></button>
+                                <div class="panel_player_position_name">-</div>
+                                <button class="panel_player_position_dealer_button"></button>
+                            </div>
+                            <div class="panel_player_hand_value">
+                                <img class="panel_player_hand_image_style" src="../Assets/UI/cards_pc-0.png">
+                                <img class="panel_player_hand_image_style" src="../Assets/UI/cards_pc-0.png">
+                            </div>
+                            <div class="panel_player_winrate_group">
+                                <div class="panel_player_winrate_value">
+                                </div>
                             </div>
                         </div>
-                        <div class="panel_player_command_group">
-                            <button class="panel_player_command_fold panel_player_command_button_view">Fold</button>
-                            <button class="panel_player_command_call panel_player_command_button_view">Call</button>
-                            <button class="panel_player_command_aggressive_action panel_player_command_button_view">Bet</button>
-                            <input class="panel_player_input_bet panel_player_command_input_view">
+                        <div class="panel_player_control common_frame">
+                            <div class="panel_player_command_group">
+                                <button class="panel_player_command_fold panel_player_command_button_view">Fold</button>
+                                <button class="panel_player_command_call panel_player_command_button_view">Call</button>
+                                <button class="panel_player_command_aggressive_action panel_player_command_button_view">Bet</button>
+                                <input class="panel_player_input_bet panel_player_command_input_view">
+                            </div>
+                            <div class="panel_player_probe_connector"></div>
                         </div>
                         <div class="common_dev_hide">
-                            <div class="panel_player_action_input">
-                                <div class="aaa">
-                                    <div class="panel_player_log_action">
-                                        p: raise<br>
-                                        f: check - raise<br>
-                                        t: check<br>
-                                        r: check
-                                    </div>
-                                </div>
-                            </div>                        
                             <div class="panel_player_log_value">
                                 <div class="panel_player_log_unit">
                                     <div class="panel_player_log_count">1</div>
@@ -122,6 +120,25 @@
                                     </div>
                                 </div>
                             </div>                        
+                            <div class="panel_player_action_input">
+                                <div class="aaa">
+                                    <div class="panel_player_log_action">
+                                        p: raise<br>
+                                        f: check - raise<br>
+                                        t: check<br>
+                                        r: check
+                                    </div>
+                                </div>
+                            </div>                        
+                        </div>
+                    </div>
+                    <div class="common_frame" style="width: 128px; margin: 0px;">
+                        <div class="panel_probe_information_group">
+                            <div class="panel_probe_information_rssi_group">
+                                <div class="panel_probe_information_rssi_label">RSSI: </div>
+                                <div class="panel_probe_information_rssi_value">---</div>/
+                                <input class="panel_probe_information_threshold" value="190">
+                            </div>
                         </div>
                     </div>
                 </p>
