@@ -247,12 +247,15 @@ PokerTableMonitor.engine = (function(){{
 				{
 					if(card.rssi >= rssi_threshold)
 					{
-						this.ReceiveCards.push(card.card);
-						if(this.ReceiveCards.length > 16)
+						if(engine.Manager.GlobalStatusModel.Deck.isUsed(card.card) == false)
 						{
-							this.ReceiveCards.shift();
+							this.ReceiveCards.push(card.card);
+							if(this.ReceiveCards.length > 16)
+							{
+								this.ReceiveCards.shift();
+							}
+							need_to_update = true;
 						}
-						need_to_update = true;
 					}
 					if(card.rssi > max_rssi)
 					{
