@@ -45,9 +45,9 @@ var WinRate = {};
 
 		// デッキの残りから引ける組み合わせ
 		var comb;
-		if (board.length == 5)
+		if (board.length >= 5)
 		{
-			comb = [board];
+			comb = [[]];
 		}
 		else
 		{
