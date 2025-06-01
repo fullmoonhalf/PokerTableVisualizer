@@ -91,7 +91,6 @@
     font-size: xx-small;
 }
 
-
 .global_community_cards_value
 {
     width: 224px;
@@ -117,6 +116,28 @@
     padding: 2px 5px;
     justify-content: center;
 }
+.global_deck_label
+{
+    font-size: xx-small;
+}
+.global_community_cards_suit
+{
+}
+.global_community_cards_card
+{
+    vertical-align: middle;
+    width: 8px;
+}
+.global_community_cards_card_used
+{
+    margin-left: 1px;
+    filter: brightness(50%); /* 数値を下げるほど暗くなる */
+}
+.global_community_cards_card_in_deck
+{
+    margin-left: 1px;
+}
+
 
 /* プレイヤー関連 */
 .panel_player
@@ -309,10 +330,6 @@
 
 
 /* probe informations */
-.panel_probe_information_group
-{
-}
-
 .panel_probe_information_rssi_group
 {
     display: flex;
