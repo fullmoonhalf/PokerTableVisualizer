@@ -1,4 +1,5 @@
 #include "SysUtils.h"
+#include "SysLog.h"
 #include "SysBLEControl.h"
 
 
@@ -13,7 +14,7 @@ SysBLEControl::SysBLEControl(const char *identifier, const char *service_uuid, c
     , _FrameCount( 0 )
     , _Connected( false )
 {
-//    Serial.printf("[SysBLEControl] identifier=%s service_uuid=%s characteristics_uuid=%s\r\n", identifier, service_uuid, characteristics_uuid);
+    SysLog::printf(__NAMEOF__(SysBLEControl), "identifier=%s service_uuid=%s characteristics_uuid=%s\r\n", identifier, service_uuid, characteristics_uuid);
     BLEDevice::init(identifier);
 
     _BLEServer = BLEDevice::createServer();
@@ -59,7 +60,7 @@ void SysBLEControl::process()
         {
             if(_CharacteristicValueSourceable->tryGetBLECharacteristicValue(buffer, sizeof(buffer)))
             {
-    //            Serial.printf("[AppReporter] notify '%s'\r\n", buffer);
+                SysLog::printf(__NAMEOF__(SysBLEControl), "notify '%s'\r\n", buffer);
                 _BLECharacteristic->setValue(buffer);
                 _BLECharacteristic->notify();
             }
@@ -79,7 +80,7 @@ int SysBLEControl::getFrameCount()
 /// @param pServer 
 void SysBLEControl::onConnect(BLEServer *pServer)
 {
-//    Serial.println("[SysBLEControl] Connected.");
+    SysLog::printf(__NAMEOF__(SysBLEControl), "Connected.");
     _Connected = true;
 }
 
@@ -88,6 +89,6 @@ void SysBLEControl::onConnect(BLEServer *pServer)
 /// @param pServer 
 void SysBLEControl::onDisconnect(BLEServer *pServer)
 {
-//    Serial.println("[SysBLEControl] Disconnected.");
+    SysLog::printf(__NAMEOF__(SysBLEControl), "Disconnected.");
     _Connected = false;
 }
