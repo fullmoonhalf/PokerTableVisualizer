@@ -14,7 +14,7 @@ SysBLEControl::SysBLEControl(const char *identifier, const char *service_uuid, c
     , _FrameCount( 0 )
     , _Connected( false )
 {
-    SysLog::printf(__NAMEOF__(SysBLEControl), "identifier=%s service_uuid=%s characteristics_uuid=%s\r\n", identifier, service_uuid, characteristics_uuid);
+    SysLog::printf(__NAMEOF__(SysBLEControl), "identifier=%s service_uuid=%s characteristics_uuid=%s", identifier, service_uuid, characteristics_uuid);
     BLEDevice::init(identifier);
 
     _BLEServer = BLEDevice::createServer();
@@ -60,7 +60,7 @@ void SysBLEControl::process()
         {
             if(_CharacteristicValueSourceable->tryGetBLECharacteristicValue(buffer, sizeof(buffer)))
             {
-                SysLog::printf(__NAMEOF__(SysBLEControl), "notify '%s'\r\n", buffer);
+                SysLog::printf(__NAMEOF__(SysBLEControl), "notify '%s'", buffer);
                 _BLECharacteristic->setValue(buffer);
                 _BLECharacteristic->notify();
             }
