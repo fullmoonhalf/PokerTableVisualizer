@@ -1,3 +1,4 @@
+#include "SysUtils.h"
 #include "SysBLEControl.h"
 
 
@@ -8,6 +9,7 @@ SysBLEControl::SysBLEControl(const char *identifier, const char *service_uuid, c
     , _BLEService( nullptr )
     , _BLECharacteristic( nullptr )
     , _BLEAdvertising( nullptr )
+    , _CharacteristicValueSourceable( nullptr )
     , _FrameCount( 0 )
     , _Connected( false )
 {
@@ -30,6 +32,14 @@ SysBLEControl::SysBLEControl(const char *identifier, const char *service_uuid, c
 }
 
 
+/// @brief 
+/// @param source 
+void SysBLEControl::bind(SysBLECharacteristicValueSourceable *source)
+{
+    _CharacteristicValueSourceable = source;
+}
+
+
 /// @brief スレッドドライバ
 void SysBLEControl::process()
 {
@@ -45,12 +55,14 @@ void SysBLEControl::process()
             continue;
         }
 
-        int length = 0;
-        if(length > 0)
+        if(_CharacteristicValueSourceable != nullptr)
         {
-//            Serial.printf("[AppReporter] notify '%s'\r\n", buffer);
-            _BLECharacteristic->setValue(buffer);
-            _BLECharacteristic->notify();
+            if(_CharacteristicValueSourceable->tryGetBLECharacteristicValue(buffer, sizeof(buffer)))
+            {
+    //            Serial.printf("[AppReporter] notify '%s'\r\n", buffer);
+                _BLECharacteristic->setValue(buffer);
+                _BLECharacteristic->notify();
+            }
         }
     }
 }
