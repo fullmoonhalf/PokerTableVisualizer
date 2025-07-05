@@ -2,6 +2,8 @@
 #include <M5Unified.h>
 #include "SD.h"
 // アプリまわり
+#include "SysLog.h"
+#include "SysUtils.h"
 #include "SysSpriteManager.h"
 #include "AppSetting.h"
 #include "CardScanner.h"
@@ -17,6 +19,7 @@ void CardScanner::setup()
     M5.begin();
     M5.Power.begin();
     Serial.begin(115200);
+    delay(500);
 
     // Settings
     _Setting.set(SETTING_KEY_MODE, "Develop");
@@ -27,15 +30,15 @@ void CardScanner::setup()
     _Setting.set(SETTING_KEY_BLE_CHARACTERISTICS_UUID, "45f116ee-b087-4271-888d-a15eebebd2eb");
     if(SD.begin(GPIO_NUM_4, SPI, 15000000))
     {
-        Serial.println("SD initialize success.");
+        SysLog::printf(__NAMEOF__(CardScanner), "SD initialize success.");
         _Setting.load();
     }
     else
     {
-        Serial.println("SD initialize failure.");
+        SysLog::printf(__NAMEOF__(CardScanner), "SD initialize failure.");
     }
 
-    // LCD
+        // LCD
     _Display.init();
 
     // システムの初期化
@@ -48,7 +51,6 @@ void CardScanner::setup()
 void CardScanner::update()
 {
     _FrameCount++;
-    Serial.printf("%d\r\n", _FrameCount);
 
     Gauge->setCurrentValue(_FrameCount % 100);
     Gauge->update();
