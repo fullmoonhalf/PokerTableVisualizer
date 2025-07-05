@@ -12,6 +12,7 @@ public:
 private:
     SysDisplay _Display;
     SysSetting _Setting;
+    int _FrameCount = 0;
 };
 
 

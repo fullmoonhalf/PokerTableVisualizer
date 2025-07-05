@@ -7,6 +7,9 @@
 #include "CardScanner.h"
 
 
+SysGuiGauge *Gauge = nullptr;
+
+
 /// @brief 初期化処理
 void CardScanner::setup()
 {
@@ -37,10 +40,17 @@ void CardScanner::setup()
 
     // システムの初期化
     SysSpriteManager::getInstance().bind(&_Display);
+    Gauge = SysSpriteManager::getInstance().createGauge(128, 8, 0, 100);
 }
 
 
 /// @brief 更新処理
 void CardScanner::update()
 {
+    _FrameCount++;
+    Serial.printf("%d\r\n", _FrameCount);
+
+    Gauge->setCurrentValue(_FrameCount % 100);
+    Gauge->update();
+    Gauge->draw(10, 10);
 }
