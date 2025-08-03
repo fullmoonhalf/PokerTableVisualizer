@@ -1,5 +1,5 @@
 #include "CardScanner.h"
-
+#include "SysModeManager.h"
 
 CardScanner _CardScanner;
 
@@ -12,5 +12,6 @@ void setup()
 
 void loop() 
 {
-  _CardScanner.update();
+  SysModeManager::getInstance().update();
+  SysModeManager::getInstance().draw();
 }

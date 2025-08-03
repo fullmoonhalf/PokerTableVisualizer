@@ -1,10 +1,13 @@
 // M5stack 関連
 #include <M5Unified.h>
 #include "SD.h"
-// アプリまわり
+// システム関連
 #include "SysLog.h"
 #include "SysUtils.h"
+#include "SysModeManager.h"
 #include "SysSpriteManager.h"
+// アプリまわり
+#include "AppMode.h"
 #include "AppSetting.h"
 #include "CardScanner.h"
 
@@ -19,6 +22,8 @@ void CardScanner::setup()
     M5.begin();
     M5.Power.begin();
     Serial.begin(115200);
+    delay(500);
+    Wire.begin();
     delay(500);
 
     // Settings
@@ -38,14 +43,27 @@ void CardScanner::setup()
         SysLog::printf(__NAMEOF__(CardScanner), "SD initialize failure.");
     }
 
-        // LCD
+    // LCD
     _Display.init();
 
     // システムの初期化
     SysSpriteManager::getInstance().bind(&_Display);
     Gauge = SysSpriteManager::getInstance().createGauge(128, 8, 0, 100);
+
+    // モード関連
+    SysModeManager::getInstance().bind(APP_MODE_REGISTER_CARD_SCANNER, this);
+    SysModeManager::getInstance().transit(APP_MODE_REGISTER_CARD_SCANNER);
 }
 
+/// @brief モード開始時処理
+void CardScanner::start()
+{
+}
+
+/// @brief モード終了時処理
+void CardScanner::end()
+{
+}
 
 /// @brief 更新処理
 void CardScanner::update()
@@ -54,5 +72,10 @@ void CardScanner::update()
 
     Gauge->setCurrentValue(_FrameCount % 100);
     Gauge->update();
+}
+
+/// @brief 描画処理
+void CardScanner::draw()
+{
     Gauge->draw(10, 10);
 }

@@ -2,12 +2,16 @@
 #define _INCLUDED_CARD_SCANNER_H
 #include "SysDisplay.h"
 #include "SysSetting.h"
+#include "SysMode.h"
 
-class CardScanner
+class CardScanner : public SysMode
 {
 public:
     void setup();
-    void update();
+    virtual void start();
+    virtual void end();
+    virtual void update();
+    virtual void draw();
 
 private:
     SysDisplay _Display;
