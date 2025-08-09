@@ -4,6 +4,18 @@
 #include "SysSprite.h"
 
 
+
+
+class SysGuiButtonReaction
+{
+public:
+    virtual void onGuiButtonContacted(const char *label);
+    virtual void onGuiButtonPressing(const char *label);
+    virtual void onGUiButtonReleased(const char *label);
+};
+
+
+
 class SysGuiButton : public SysDrawable
 {
 public:
@@ -13,6 +25,7 @@ public:
     virtual void draw(int x, int y);
     void update();
     void setLabel(const char *label);
+    void bind(SysGuiButtonReaction *reaction);
 
 private:
     SysSprite *_Sprite;
@@ -24,6 +37,7 @@ private:
     int _Height;
     bool _NeedToUpdate;
     bool _Touched;
+    SysGuiButtonReaction *_Reaction;
 };
 
 

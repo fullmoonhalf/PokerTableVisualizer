@@ -3,8 +3,9 @@
 #include "SysDisplay.h"
 #include "SysSetting.h"
 #include "SysMode.h"
+#include "SysGuiButton.h"
 
-class CardScanner : public SysMode
+class CardScanner : public SysMode, public SysGuiButtonReaction
 {
 public:
     void setup();
@@ -12,11 +13,14 @@ public:
     virtual void end();
     virtual void update();
     virtual void draw();
+    virtual void onGUiButtonReleased(const char *label);
 
 private:
     SysSetting _Setting;
     int _FrameCount = 0;
 };
+
+
 
 
 

@@ -15,6 +15,7 @@ SysGuiButton::SysGuiButton(SysSprite *argSprite, int width, int height)
     , _Height(height)
     , _NeedToUpdate(false)
     , _Touched(false)
+    , _Reaction(nullptr)
 {
     _Label[0] = '\0';
     _LastDrawX = SysDisplay::getInstance().getWidth();
@@ -29,13 +30,33 @@ SysGuiButton::~SysGuiButton()
 /// @brief 更新処理
 void SysGuiButton::update()
 {
-    auto touched = SysTouchManager::getInstance().isTouched(_LastDrawX, _LastDrawY, _Width, _Height);
-    _NeedToUpdate |= touched != _Touched;
-#if VERBOSE
-    SysLog::printf(__NAMEOF__(SysGuiButton), "touched(%d, %d, %d, %d) %d > %d", _LastDrawX, _LastDrawY, _Width, _Height, _Touched, touched );
-#endif
-    _Touched = touched;
+    // 判定とイベント処理
+    auto touch_now = SysTouchManager::getInstance().isTouched(_LastDrawX, _LastDrawY, _Width, _Height);
+    if(_Reaction != nullptr)
+    {
+        if(touch_now)
+        {
+            if(_Touched)
+            {
+                _Reaction->onGuiButtonPressing(_Label);
+            }
+            else
+            {
+                _Reaction->onGuiButtonContacted(_Label);
+            }
+        }
+        else if(_Touched == true)
+        {
+            _Reaction->onGUiButtonReleased(_Label);
+        }
+    }
 
+    // コンテキストの更新
+    _NeedToUpdate |= touch_now != _Touched;
+#if VERBOSE
+    SysLog::printf(__NAMEOF__(SysGuiButton), "touch_now(%d, %d, %d, %d) %d > %d", _LastDrawX, _LastDrawY, _Width, _Height, _Touched, touch_now );
+#endif
+    _Touched = touch_now;
     _LastDrawX = SysDisplay::getInstance().getWidth();
     _LastDrawY = SysDisplay::getInstance().getHeight();
 }
@@ -65,4 +86,11 @@ void SysGuiButton::setLabel(const char *label)
     strncpy(_Label, label, sizeof(_Label));
     _Label[sizeof(_Label)-1] = '\0';
     _NeedToUpdate = true;
+}
+
+/// @brief リアクション処理との紐付け
+/// @param reaction 
+void SysGuiButton::bind(SysGuiButtonReaction *reaction)
+{
+    _Reaction = reaction;
 }

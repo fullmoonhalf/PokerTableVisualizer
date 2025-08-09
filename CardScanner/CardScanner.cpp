@@ -39,14 +39,15 @@ void CardScanner::setup()
     // LCD
     SysDisplay::getInstance().init();
 
-    // システムの初期化
-    Gauge = SysSpriteManager::getInstance().createGauge(128, 8, 0, 100);
-    Button = SysSpriteManager::getInstance().createButton(64, 32, "Test");
-
     // モード関連
     SysModeManager::getInstance().init(1);
     SysModeManager::getInstance().bind(APP_MODE_REGISTER_CARD_SCANNER, this);
     SysModeManager::getInstance().transit(APP_MODE_REGISTER_CARD_SCANNER);
+
+    // GUI のテスト
+    Gauge = SysSpriteManager::getInstance().createGauge(128, 8, 0, 100);
+    Button = SysSpriteManager::getInstance().createButton(64, 32, "Test");
+    Button->bind(this);
 }
 
 /// @brief モード開始時処理
@@ -74,4 +75,11 @@ void CardScanner::draw()
 {
     Gauge->draw(10, 10);
     Button->draw(100, 100);
+}
+
+/// @brief ボタン離したときの処理
+/// @param label 
+void CardScanner::onGUiButtonReleased(const char *label)
+{
+    SysLog::printf(__NAMEOF__(CardScanner), "onGUiButtonReleased(%s)", label);
 }
