@@ -1,3 +1,4 @@
+#include "SysLog.h"
 #include "SysModeManager.h"
 
 
@@ -49,11 +50,15 @@ void SysModeManager::update()
 {
     if(_NextMode != nullptr)
     {
+        SysLog::printf(__NAMEOF__(CardScanner), "change mode %p to %p", _CurrentMode, _NextMode);
         if(_CurrentMode != nullptr)
         {
             _CurrentMode->end();
-            _CurrentMode = _NextMode;
-            _NextMode = _CurrentMode;
+        }
+        _CurrentMode = _NextMode;
+        _NextMode = nullptr;
+        if(_CurrentMode != nullptr)
+        {
             _CurrentMode->start();
         }
     }

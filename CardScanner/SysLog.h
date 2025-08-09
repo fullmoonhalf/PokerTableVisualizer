@@ -1,6 +1,6 @@
 #ifndef _INCLUDED_SYS_LOG_H
 #define _INCLUDED_SYS_LOG_H
-
+#include "SysUtils.h"
 
 class SysLog
 {

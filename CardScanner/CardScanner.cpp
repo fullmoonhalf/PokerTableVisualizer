@@ -51,6 +51,7 @@ void CardScanner::setup()
     Gauge = SysSpriteManager::getInstance().createGauge(128, 8, 0, 100);
 
     // モード関連
+    SysModeManager::getInstance().init(1);
     SysModeManager::getInstance().bind(APP_MODE_REGISTER_CARD_SCANNER, this);
     SysModeManager::getInstance().transit(APP_MODE_REGISTER_CARD_SCANNER);
 }
