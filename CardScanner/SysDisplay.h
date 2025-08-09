@@ -1,18 +1,26 @@
 #ifndef _INCLUDED_SYS_DISPLAY
 #define _INCLUDED_SYS_DISPLAY
 #include <M5Unified.h>
+#include "SysSingleton.h"
 #include "SysSprite.h"
 
 
-class SysDisplay
+class SysDisplay : public SysSingletonBase<SysDisplay>
 {
-public:
-    SysDisplay();
-    void init();
-    SysSprite *createSprite(int width, int height);
+    friend class SysSingletonBase<SysDisplay>;
 
 public:
+    void init();
+    int getWidth();
+    int getHeight();
+    SysSprite *createSprite(int width, int height);
+
+private:
+    SysDisplay();
+
     M5GFX Display;
+    int _Width;
+    int _Height;
 };
 
 

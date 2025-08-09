@@ -1,5 +1,7 @@
 #include <M5Unified.h>
 #include "SD.h"
+#include "SysLog.h"
+#include "SysUtils.h"
 #include "SysSetting.h"
 
 
@@ -50,7 +52,7 @@ bool SysSetting::load()
 {
     if(!SD.exists(SETTING_FILEPATH)) 
     {
-        Serial.printf("[SysSetting] %s is not found.\r\n", SETTING_FILEPATH);
+        SysLog::printf(__NAMEOF__(SysSetting), "%s is not found.", SETTING_FILEPATH);
         return false;
     }
 
@@ -58,7 +60,7 @@ bool SysSetting::load()
     File fp = SD.open(SETTING_FILEPATH, FILE_READ); 
     if(!fp)
     {
-        Serial.printf("[SysSetting] %s can not open.\r\n", SETTING_FILEPATH);
+        SysLog::printf(__NAMEOF__(SysSetting), "%s can not open.", SETTING_FILEPATH);
         return false;
     }
 
@@ -101,6 +103,6 @@ void SysSetting::dump()
 {
     for (const auto& [key, value] : _Collection)
     {
-        Serial.printf("[SySetting] key=%s value=%s\r\n", key.c_str(), value.c_str());
+        SysLog::printf(__NAMEOF__(SysSetting), "key=%s value=%s", key.c_str(), value.c_str());
     }
 }

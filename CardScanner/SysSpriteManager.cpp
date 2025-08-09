@@ -1,3 +1,4 @@
+#include "SysDisplay.h"
 #include "SysSpriteManager.h"
 
 
@@ -7,21 +8,13 @@ SysSpriteManager::SysSpriteManager()
 }
 
 
-/// @brief ディスプレイとの紐付け
-/// @param argDisplay 
-void SysSpriteManager::bind(SysDisplay *argDisplay)
-{
-    _Display = argDisplay;
-}
-
-
 /// @brief スプライト生成
 /// @param width 
 /// @param height 
 /// @return スプライトの描画オブジェクト
 SysSprite *SysSpriteManager::createSprite(int width, int height)
 {
-    return _Display->createSprite(width, height);
+    return SysDisplay::getInstance().createSprite(width, height);
 }
 
 
@@ -36,4 +29,18 @@ SysGuiGauge *SysSpriteManager::createGauge(int width, int height, int current_va
     auto sprite = createSprite(width, height);
     auto gauge = new SysGuiGauge(sprite, current_value, max_value, width, height);
     return gauge;
+}
+
+
+/// @brief ボタン生成
+/// @param width 
+/// @param height 
+/// @param label 
+/// @return ボタンのオブジェクト
+SysGuiButton *SysSpriteManager::createButton(int width, int height, const char *label)
+{
+    auto sprite = createSprite(width, height);
+    auto button = new SysGuiButton(sprite, width, height);
+    button->setLabel(label);
+    return button;
 }

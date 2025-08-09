@@ -11,6 +11,7 @@ public:
     virtual void draw(int x, int y);
     void fillRect(int x, int y, int w, int h, int color);
     void drawRect(int x, int y, int w, int h, int color);
+    void drawText(int x, int y, const char *text);
 
 private:
     LGFX_Sprite *_Sprite;

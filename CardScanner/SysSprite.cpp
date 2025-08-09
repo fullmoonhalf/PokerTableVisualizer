@@ -40,3 +40,13 @@ void SysSprite::fillRect(int x, int y, int w, int h, int color)
 {
     _Sprite->fillRect(x, y, w, h, color);
 }
+
+
+/// @brief 
+/// @param x 
+/// @param y 
+/// @param text 
+void SysSprite::drawText(int x, int y, const char *text)
+{
+    _Sprite->drawString(text, x, y);
+}

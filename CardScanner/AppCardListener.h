@@ -1,0 +1,10 @@
+#ifndef _INCLUDED_APP_CARD_LISTENER
+#define _INCLUDED_APP_CARD_LISTENER
+
+
+class AppCardListener
+{
+};
+
+
+#endif // _INCLUDED_APP_CARD_LISTENER
