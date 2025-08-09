@@ -14,6 +14,7 @@ public:
     int getWidth();
     int getHeight();
     SysSprite *createSprite(int width, int height);
+    void destroySprite(SysSprite *sprite);
 
 private:
     SysDisplay();

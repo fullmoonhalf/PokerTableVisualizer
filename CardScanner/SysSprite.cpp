@@ -9,6 +9,12 @@ SysSprite::SysSprite(LGFX_Sprite *argSprite)
 }
 
 
+/// @brief デストラクタ
+SysSprite::~SysSprite()
+{
+    _Sprite->deleteSprite();
+}
+
 /// @brief 描画
 /// @param x 
 /// @param y 

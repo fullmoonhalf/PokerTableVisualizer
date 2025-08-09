@@ -17,6 +17,9 @@ public:
 
 private:
     SysSetting _Setting;
+    SysGuiButton *_ButtonReader;
+    SysGuiButton *_ButtonWriter;
+    SysGuiButton *_ButtonDevelop;
     int _FrameCount = 0;
 };
 

@@ -1,5 +1,6 @@
 #define VERBOSE (0)
 #include "SysDisplay.h"
+#include "SysSpriteManager.h"
 #include "SysTouchManager.h"
 #include "SysGuiButton.h"
 #include "SysLog.h"
@@ -25,6 +26,7 @@ SysGuiButton::SysGuiButton(SysSprite *argSprite, int width, int height)
 /// @brief デストラクタ
 SysGuiButton::~SysGuiButton()
 {
+    SysSpriteManager::getInstance().destroySprite(_Sprite);
 }
 
 /// @brief 更新処理

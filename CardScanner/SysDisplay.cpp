@@ -46,3 +46,12 @@ SysSprite *SysDisplay::createSprite(int width, int height)
     auto sprite = new SysSprite(device_sprite);
     return sprite;
 }
+
+
+/// @brief スプライトの破棄
+/// @param sprite 破棄対象となるsprite。delete も行なわれるので外側で delete しなくてよい。
+void SysDisplay::destroySprite(SysSprite *sprite)
+{
+    // SysSprite 側の方で VRAM/PSRAM の破棄を行なうので、ここでは delete のみとなっている。
+    delete sprite; 
+}

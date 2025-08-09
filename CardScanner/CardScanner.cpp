@@ -12,9 +12,6 @@
 #include "CardScanner.h"
 
 
-SysGuiGauge *Gauge = nullptr;
-SysGuiButton *Button = nullptr;
-
 
 /// @brief 初期化処理
 void CardScanner::setup()
@@ -44,37 +41,46 @@ void CardScanner::setup()
     SysModeManager::getInstance().bind(APP_MODE_REGISTER_CARD_SCANNER, this);
     SysModeManager::getInstance().transit(APP_MODE_REGISTER_CARD_SCANNER);
 
-    // GUI のテスト
-    Gauge = SysSpriteManager::getInstance().createGauge(128, 8, 0, 100);
-    Button = SysSpriteManager::getInstance().createButton(64, 32, "Test");
-    Button->bind(this);
 }
+
+
+#define BUTTON_WIDTH (96)
+#define BUTTON_HEIGHT (64)
+#define BUTTON_ANCHOR_X (32)
+#define BUTTON_ANCHOR_Y (64)
+#define BUTTON_MARGIN (32)
 
 /// @brief モード開始時処理
 void CardScanner::start()
 {
+    _ButtonReader = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, "Reader");
+    _ButtonWriter = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, "Write");
+    _ButtonDevelop = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, "Develop");
 }
 
 /// @brief モード終了時処理
 void CardScanner::end()
 {
+    SysSpriteManager::getInstance().destroyDrawable(_ButtonDevelop);
+    SysSpriteManager::getInstance().destroyDrawable(_ButtonWriter);
+    SysSpriteManager::getInstance().destroyDrawable(_ButtonReader);
 }
 
 /// @brief 更新処理
 void CardScanner::update()
 {
     _FrameCount++;
-
-    Gauge->setCurrentValue(_FrameCount % 100);
-    Gauge->update();
-    Button->update();
+    _ButtonReader->update();
+    _ButtonWriter->update();
+    _ButtonDevelop->update();
 }
 
 /// @brief 描画処理
 void CardScanner::draw()
 {
-    Gauge->draw(10, 10);
-    Button->draw(100, 100);
+    _ButtonReader->draw(BUTTON_ANCHOR_X, BUTTON_ANCHOR_Y);
+    _ButtonWriter->draw(BUTTON_ANCHOR_X+BUTTON_WIDTH+BUTTON_MARGIN, BUTTON_ANCHOR_Y);
+    _ButtonDevelop->draw(BUTTON_ANCHOR_X+BUTTON_WIDTH+BUTTON_MARGIN, BUTTON_ANCHOR_Y+BUTTON_HEIGHT+BUTTON_MARGIN);
 }
 
 /// @brief ボタン離したときの処理

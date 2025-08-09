@@ -18,6 +18,22 @@ SysSprite *SysSpriteManager::createSprite(int width, int height)
 }
 
 
+/// @brief スプライトの破棄
+/// @param sprite 破棄対象となるsprite。delete も行なわれるので外側で delete しなくてよい。
+void SysSpriteManager::destroySprite(SysSprite *sprite)
+{
+    SysDisplay::getInstance().destroySprite(sprite);
+}
+
+
+/// @brief 機能性を持つものに対する破棄処理。
+/// @param drawable 
+void SysSpriteManager::destroyDrawable(SysDrawable *drawable)
+{
+    delete drawable;
+}
+
+
 /// @brief ゲージ生成
 /// @param width 
 /// @param height 

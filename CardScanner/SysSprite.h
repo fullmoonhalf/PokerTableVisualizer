@@ -8,6 +8,8 @@ class SysSprite : public SysDrawable
 {
 public:
     SysSprite(LGFX_Sprite *argSprite);
+    ~SysSprite();
+
     virtual void draw(int x, int y);
     void fillRect(int x, int y, int w, int h, int color);
     void drawRect(int x, int y, int w, int h, int color);

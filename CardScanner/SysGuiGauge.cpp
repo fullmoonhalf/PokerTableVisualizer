@@ -1,3 +1,4 @@
+#include "SysSpriteManager.h"
 #include "SysGuiGauge.h"    
 
 
@@ -21,7 +22,7 @@ SysGuiGauge::SysGuiGauge(SysSprite *argSprite, int current_value, int max_value,
 /// @brief デストラクタ
 SysGuiGauge::~SysGuiGauge()
 {
-    delete _Sprite;
+    SysSpriteManager::getInstance().destroySprite(_Sprite);
 }
 
 
