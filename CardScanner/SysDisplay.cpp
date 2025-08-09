@@ -12,6 +12,24 @@ void SysDisplay::init()
 {
     Display.begin();
     Display.fillScreen(TFT_BLACK);
+    _Width = M5.Lcd.width();   // 横幅（ピクセル）
+    _Height = M5.Lcd.height();  // 高さ（ピクセル）
+}
+
+
+/// @brief ディスプレイの幅を取得する。
+/// @return 
+int SysDisplay::getWidth()
+{
+    return _Width;
+}
+
+
+/// @brief ディスプレイの高さを取得する
+/// @return 
+int SysDisplay::getHeight()
+{
+    return _Height;
 }
 
 

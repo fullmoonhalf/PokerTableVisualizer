@@ -13,19 +13,12 @@
 
 
 SysGuiGauge *Gauge = nullptr;
+SysGuiButton *Button = nullptr;
 
 
 /// @brief 初期化処理
 void CardScanner::setup()
 {
-    // System
-    M5.begin();
-    M5.Power.begin();
-    Serial.begin(115200);
-    delay(500);
-    Wire.begin();
-    delay(500);
-
     // Settings
     _Setting.set(SETTING_KEY_MODE, "Develop");
     _Setting.set(SETTING_KEY_PROBE_NAME, "Seat01");
@@ -44,11 +37,11 @@ void CardScanner::setup()
     }
 
     // LCD
-    _Display.init();
+    SysDisplay::getInstance().init();
 
     // システムの初期化
-    SysSpriteManager::getInstance().bind(&_Display);
     Gauge = SysSpriteManager::getInstance().createGauge(128, 8, 0, 100);
+    Button = SysSpriteManager::getInstance().createButton(64, 32, "Test");
 
     // モード関連
     SysModeManager::getInstance().init(1);
@@ -73,10 +66,12 @@ void CardScanner::update()
 
     Gauge->setCurrentValue(_FrameCount % 100);
     Gauge->update();
+    Button->update();
 }
 
 /// @brief 描画処理
 void CardScanner::draw()
 {
     Gauge->draw(10, 10);
+    Button->draw(100, 100);
 }
