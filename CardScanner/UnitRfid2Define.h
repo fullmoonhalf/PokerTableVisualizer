@@ -1,6 +1,8 @@
 #ifndef _INCLUDED_UNIT_RFID2_DEFINE
 #define _INCLUDED_UNIT_RFID2_DEFINE
 
+#define MFRC522_CHIP_ADDRESS (0x28)
+
 
 // MFRC522 registers. Productd in chapter 9 of the datasheet.
 enum MFRC522_Register {
@@ -60,9 +62,23 @@ enum MFRC522_Register {
     AnalogTestReg = 0x38,    // controls the pins AUX1 and AUX2
     TestDAC1Reg   = 0x39,    // defines the test value for TestDAC1
     TestDAC2Reg   = 0x3A,    // defines the test value for TestDAC2
-    TestADCReg    = 0x3B     // shows the value of ADC I and Q channels
+    TestADCReg    = 0x3B,     // shows the value of ADC I and Q channels
 };
 
+
+// MFRC522 commands. Productd in chapter 10 of the datasheet.
+enum MFRC522_Command {
+    PCD_Idle = 0x00,  // no action, cancels current command execution
+    PCD_Mem  = 0x01,  // stores 25 bytes into the internal buffer
+    PCD_GenerateRandomID = 0x02,  // generates a 10-byte random ID number
+    PCD_CalcCRC = 0x03,  // activates the CRC coprocessor or performs a self test
+    PCD_Transmit    = 0x04,  // transmits data from the FIFO buffer
+    PCD_NoCmdChange = 0x07,  // no command change, can be used to modify the CommandReg register bits without affecting　the command, for example, the PowerDown bit
+    PCD_Receive = 0x08,      // activates the receiver circuits
+    PCD_Transceive = 0x0C,  // transmits data from FIFO buffer to antenna and automatically activates the receiver after transmission
+    PCD_MFAuthent = 0x0E,  // performs the MIFARE standard authentication as a reader
+    PCD_SoftReset = 0x0F,  // resets the MFRC522
+};
 
 
 

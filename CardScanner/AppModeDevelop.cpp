@@ -5,13 +5,18 @@
 
 void AppModeDevelop::start()
 {
-    SysDisplay::getInstance().clear();
     _FrameCount = 0;
+    SysDisplay::getInstance().clear();
+ 
+    _RfidDriver = new UnitRfid2Driver(MFRC522_CHIP_ADDRESS);
+    _RfidDriver->init();
+
     _Gauge = SysSpriteManager::getInstance().createGauge(128, 8, 0, 200);
 }
 
 void AppModeDevelop::end()
 {
+    delete _RfidDriver;
     SysSpriteManager::getInstance().destroyDrawable(_Gauge);
 }
 

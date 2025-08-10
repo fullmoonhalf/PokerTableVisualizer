@@ -2,6 +2,8 @@
 #define _INCLUDED_APP_MODE_DEVELOP
 #include "SysMode.h"
 #include "SysGuiGauge.h"
+#include "UnitRfid2Driver.h"
+
 
 class AppModeDevelop : public SysMode
 {
@@ -13,6 +15,7 @@ public:
 
 private:
     SysGuiGauge *_Gauge;
+    UnitRfid2Driver *_RfidDriver;
     int _FrameCount;
 };
 
