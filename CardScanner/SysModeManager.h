@@ -11,7 +11,7 @@ class SysModeManager : public SysSingletonBase<SysModeManager>
 public:
     void init(int inRegistModeCapacity);
     void bind(int index, SysMode *inMode);
-    void transit(SysMode *inNextMode);
+    void transit(SysMode *inNextMode, bool destroy);
     void transit(int index);
     void update();
     void draw();
@@ -23,6 +23,8 @@ private:
     int _RegistedModeCapacity;
     SysMode *_CurrentMode;
     SysMode *_NextMode;
+    bool _DestroyCurrentModeOnTransit;
+    bool _DestroyNextModeOnTransit;
 };
 
 

@@ -8,6 +8,8 @@ SysModeManager::SysModeManager()
     , _NextMode(nullptr)
     , _RegistedModeCollection(nullptr)
     , _RegistedModeCapacity(0)
+    , _DestroyCurrentModeOnTransit(false)
+    , _DestroyNextModeOnTransit(false)
 {
 }
 
@@ -35,14 +37,15 @@ void SysModeManager::bind(int index, SysMode *inMode)
 /// @param index 次モード
 void SysModeManager::transit(int index)
 {
-    transit(_RegistedModeCollection[index]);
+    transit(_RegistedModeCollection[index], false);
 }
 
 /// @brief 遷移
 /// @param inNextMode 次モード
-void SysModeManager::transit(SysMode *inNextMode)
+void SysModeManager::transit(SysMode *inNextMode, bool destroy)
 {
     _NextMode = inNextMode;
+    _DestroyNextModeOnTransit = destroy;
 }
 
 /// @brief 更新処理
@@ -54,8 +57,13 @@ void SysModeManager::update()
         if(_CurrentMode != nullptr)
         {
             _CurrentMode->end();
+            if(_DestroyCurrentModeOnTransit)
+            {
+                delete _CurrentMode;
+            }
         }
         _CurrentMode = _NextMode;
+        _DestroyCurrentModeOnTransit = _DestroyNextModeOnTransit;
         _NextMode = nullptr;
         if(_CurrentMode != nullptr)
         {

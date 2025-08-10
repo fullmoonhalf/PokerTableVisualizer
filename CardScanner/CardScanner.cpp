@@ -9,8 +9,18 @@
 // アプリまわり
 #include "AppMode.h"
 #include "AppSetting.h"
+#include "AppModeDevelop.h"
 #include "CardScanner.h"
 
+
+#define BUTTON_WIDTH (96)
+#define BUTTON_HEIGHT (64)
+#define BUTTON_ANCHOR_X (32)
+#define BUTTON_ANCHOR_Y (64)
+#define BUTTON_MARGIN (16)
+#define BUTTON_LABEL_READER ("Reader")
+#define BUTTON_LABEL_WRITER ("Writer")
+#define BUTTON_LABEL_DEVELOP ("Develop")
 
 
 /// @brief 初期化処理
@@ -44,18 +54,12 @@ void CardScanner::setup()
 }
 
 
-#define BUTTON_WIDTH (96)
-#define BUTTON_HEIGHT (64)
-#define BUTTON_ANCHOR_X (32)
-#define BUTTON_ANCHOR_Y (64)
-#define BUTTON_MARGIN (32)
-
 /// @brief モード開始時処理
 void CardScanner::start()
 {
-    _ButtonReader = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, "Reader");
-    _ButtonWriter = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, "Write");
-    _ButtonDevelop = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, "Develop");
+    _ButtonReader = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_LABEL_READER, this);
+    _ButtonWriter = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_LABEL_WRITER, this);
+    _ButtonDevelop = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_LABEL_DEVELOP, this);
 }
 
 /// @brief モード終了時処理
@@ -88,4 +92,9 @@ void CardScanner::draw()
 void CardScanner::onGUiButtonReleased(const char *label)
 {
     SysLog::printf(__NAMEOF__(CardScanner), "onGUiButtonReleased(%s)", label);
+
+    if(strcmp(label, BUTTON_LABEL_DEVELOP) == 0)
+    {
+        SysModeManager::getInstance().transit(new AppModeDevelop(), true);
+    }
 }

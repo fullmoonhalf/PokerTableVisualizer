@@ -53,10 +53,14 @@ SysGuiGauge *SysSpriteManager::createGauge(int width, int height, int current_va
 /// @param height 
 /// @param label 
 /// @return ボタンのオブジェクト
-SysGuiButton *SysSpriteManager::createButton(int width, int height, const char *label)
+SysGuiButton *SysSpriteManager::createButton(int width, int height, const char *label, SysGuiButtonReaction *reaction)
 {
     auto sprite = createSprite(width, height);
     auto button = new SysGuiButton(sprite, width, height);
     button->setLabel(label);
+    if(reaction != nullptr)
+    {
+        button->bind(reaction);
+    }
     return button;
 }

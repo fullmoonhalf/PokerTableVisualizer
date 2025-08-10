@@ -13,6 +13,7 @@ public:
     void init();
     int getWidth();
     int getHeight();
+    void clear();
     SysSprite *createSprite(int width, int height);
     void destroySprite(SysSprite *sprite);
 

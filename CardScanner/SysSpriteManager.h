@@ -17,7 +17,7 @@ public:
 
     // 機能性を持つオブジェクトを返す。SysDrawable を継承している必要がある。
     SysGuiGauge *createGauge(int width, int height, int current_value, int max_value);
-    SysGuiButton *createButton(int width, int height, const char *label);
+    SysGuiButton *createButton(int width, int height, const char *label, SysGuiButtonReaction *reaction = nullptr);
 
 private:
     SysSpriteManager();

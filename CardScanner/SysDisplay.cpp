@@ -55,3 +55,10 @@ void SysDisplay::destroySprite(SysSprite *sprite)
     // SysSprite 側の方で VRAM/PSRAM の破棄を行なうので、ここでは delete のみとなっている。
     delete sprite; 
 }
+
+
+/// @brief 画面クリア
+void SysDisplay::clear()
+{
+    Display.fillScreen(TFT_BLACK);
+}
