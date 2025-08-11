@@ -54,5 +54,24 @@ void SysSprite::fillRect(int x, int y, int w, int h, int color)
 /// @param text 
 void SysSprite::drawText(int x, int y, const char *text)
 {
+    drawText(x, y, 1.0f, text);
+}
+
+
+/// @brief 
+/// @param x 
+/// @param y 
+/// @param size 
+/// @param text 
+void SysSprite::drawText(int x, int y, float size, const char *text)
+{
+    _Sprite->setTextSize(size);
     _Sprite->drawString(text, x, y);
+}
+
+
+
+void SysSprite::clear()
+{
+    _Sprite->clear();
 }

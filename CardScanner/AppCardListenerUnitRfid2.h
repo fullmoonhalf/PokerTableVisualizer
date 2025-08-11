@@ -15,12 +15,14 @@ public:
     bool scan();
     void dump();
     int encode(char *buffer);
+    bool write(int page, uint8_t *data, int size, int timeout);
 
 private:
     bool resetAntenna(MFRC522 *m);
     bool rescanAll(MFRC522 *m);
     bool readCards(MFRC522 *m, int span);
     bool readOneCardOnce(MFRC522 *m);
+    bool writeOnce(int page, uint8_t *data, int size);
 
     MFRC522 *_MFRC522;
     AppCardInfo _CardInfo[8];

@@ -113,6 +113,18 @@ bool AppCardListenerUnitRfid2::readOneCardOnce(MFRC522 *m)
     }
     slot.size = m->uid.size;
 
+    byte buffer[18];
+    byte size = sizeof(buffer);
+    auto read_status = m->MIFARE_Read(4, buffer, &size);
+    if(read_status != MFRC522::STATUS_OK)
+    {
+        SysLog::printf(__NAMEOF__(AppCardListenerUnitRfid2), "read fail. %d", read_status);
+    }
+    slot.info[0] = buffer[0];
+    slot.info[1] = buffer[1];
+    slot.info[2] = buffer[2];
+    slot.info[3] = buffer[3];
+
     m->PICC_HaltA();       // このカードを停止
     m->PCD_StopCrypto1();  // MIFARE Classic の暗号化セッション終了
     return true;
@@ -154,6 +166,45 @@ void AppCardListenerUnitRfid2::dump()
         {
             seek += sprintf(seek, "%02X", slot.uid[i]);
         }
+        seek += sprintf(seek, ": info %02X %02X %02X %02X", slot.info[0], slot.info[1], slot.info[2], slot.info[3]);
         SysLog::printf(__NAMEOF__(AppModeDevelop), buffer);
     }
+}
+
+
+/// @brief  ユーザー領域にかきこみ
+/// @param page 
+/// @param data 
+/// @param size 
+/// @return 
+bool AppCardListenerUnitRfid2::write(int page, uint8_t *data, int size, int timeout)
+{
+    uint32_t until = millis() + timeout;
+    for(;;)
+    {
+        if(millis() > until) 
+        {
+            break;
+        }
+        if(writeOnce(page, data, size))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+
+bool AppCardListenerUnitRfid2::writeOnce(int page, uint8_t *data, int size)
+{
+    if(page < 4) return false;
+    if (!_MFRC522->PICC_IsNewCardPresent()) return false;
+    if (!_MFRC522->PICC_ReadCardSerial())   return false;
+
+    auto status = _MFRC522->MIFARE_Ultralight_Write(page, data, 4);
+    _MFRC522->PICC_HaltA();
+
+    return (status == MFRC522::STATUS_OK);
 }

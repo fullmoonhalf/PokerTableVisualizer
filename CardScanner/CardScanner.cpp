@@ -10,6 +10,7 @@
 #include "AppSetting.h"
 #include "AppModeDevelop.h"
 #include "AppModeReader.h"
+#include "AppModeWriter.h"
 #include "CardScanner.h"
 
 
@@ -86,5 +87,9 @@ void CardScanner::onGUiButtonReleased(const char *label)
     else if(strcmp(label, BUTTON_LABEL_READER) == 0)
     {
         SysModeManager::getInstance().transit(new AppModeReader(), true);
+    }
+    else if(strcmp(label, BUTTON_LABEL_WRITER) == 0)
+    {
+        SysModeManager::getInstance().transit(new AppModeWriter(), true);
     }
 }

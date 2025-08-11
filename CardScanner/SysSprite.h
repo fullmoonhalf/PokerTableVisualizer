@@ -14,6 +14,8 @@ public:
     void fillRect(int x, int y, int w, int h, int color);
     void drawRect(int x, int y, int w, int h, int color);
     void drawText(int x, int y, const char *text);
+    void drawText(int x, int y, float size, const char *text);
+    void clear();
 
 private:
     LGFX_Sprite *_Sprite;
