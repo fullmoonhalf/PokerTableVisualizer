@@ -2,8 +2,7 @@
 #define _INCLUDED_APP_MODE_DEVELOP
 #include "SysMode.h"
 #include "SysGuiGauge.h"
-#include "UnitRfid2Driver.h"
-#include "MFRC522_I2C.h"
+#include "AppCardListenerUnitRfid2.h"
 
 
 class AppModeDevelop : public SysMode
@@ -15,10 +14,8 @@ public:
     virtual void draw();
 
 private:
-    bool readOneCardOnce(MFRC522 *m);
-
     SysGuiGauge *_Gauge;
-    MFRC522 *_MFRC522;
+    AppCardListenerUnitRfid2 *_CardReader;
     int _FrameCount;
 };
 

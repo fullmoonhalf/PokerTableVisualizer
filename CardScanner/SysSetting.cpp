@@ -103,6 +103,6 @@ void SysSetting::dump()
 {
     for (const auto& [key, value] : _Collection)
     {
-        SysLog::printf(__NAMEOF__(SysSetting), "key=%s value=%s", key.c_str(), value.c_str());
+        SysLog::printf(__NAMEOF__(SysSetting), "key='%s' value='%s'", key.c_str(), value.c_str());
     }
 }

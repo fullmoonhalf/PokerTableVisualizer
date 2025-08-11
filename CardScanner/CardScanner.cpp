@@ -1,6 +1,5 @@
 // M5stack 関連
 #include <M5Unified.h>
-#include "SD.h"
 // システム関連
 #include "SysLog.h"
 #include "SysUtils.h"
@@ -10,13 +9,14 @@
 #include "AppMode.h"
 #include "AppSetting.h"
 #include "AppModeDevelop.h"
+#include "AppModeReader.h"
 #include "CardScanner.h"
 
 
 #define BUTTON_WIDTH (96)
 #define BUTTON_HEIGHT (64)
 #define BUTTON_ANCHOR_X (32)
-#define BUTTON_ANCHOR_Y (64)
+#define BUTTON_ANCHOR_Y (48)
 #define BUTTON_MARGIN (16)
 #define BUTTON_LABEL_READER ("Reader")
 #define BUTTON_LABEL_WRITER ("Writer")
@@ -27,21 +27,7 @@
 void CardScanner::setup()
 {
     // Settings
-    _Setting.set(SETTING_KEY_MODE, "Develop");
-    _Setting.set(SETTING_KEY_PROBE_NAME, "Seat01");
-    _Setting.set(SETTING_KEY_PROBE_CARD_CAPACITY, "2");  
-    _Setting.set(SETTING_KEY_BLE_IDENTIFIER, "PTV_PP_001");
-    _Setting.set(SETTING_KEY_BLE_SERVICE_UUID, "cbaabb28-4e81-49c4-b775-aedfd27d8db0");
-    _Setting.set(SETTING_KEY_BLE_CHARACTERISTICS_UUID, "45f116ee-b087-4271-888d-a15eebebd2eb");
-    if(SD.begin(GPIO_NUM_4, SPI, 15000000))
-    {
-        SysLog::printf(__NAMEOF__(CardScanner), "SD initialize success.");
-        _Setting.load();
-    }
-    else
-    {
-        SysLog::printf(__NAMEOF__(CardScanner), "SD initialize failure.");
-    }
+    AppSetting::getInstance().init();
 
     // LCD
     SysDisplay::getInstance().init();
@@ -96,5 +82,9 @@ void CardScanner::onGUiButtonReleased(const char *label)
     if(strcmp(label, BUTTON_LABEL_DEVELOP) == 0)
     {
         SysModeManager::getInstance().transit(new AppModeDevelop(), true);
+    }
+    else if(strcmp(label, BUTTON_LABEL_READER) == 0)
+    {
+        SysModeManager::getInstance().transit(new AppModeReader(), true);
     }
 }

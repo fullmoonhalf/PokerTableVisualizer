@@ -60,12 +60,20 @@ void SysBLEControl::process()
         {
             if(_CharacteristicValueSourceable->tryGetBLECharacteristicValue(buffer, sizeof(buffer)))
             {
-                SysLog::printf(__NAMEOF__(SysBLEControl), "notify '%s'", buffer);
-                _BLECharacteristic->setValue(buffer);
-                _BLECharacteristic->notify();
+                notify(buffer);
             }
         }
     }
+}
+
+
+/// @brief 送信
+/// @param source 
+void SysBLEControl::notify(const char *source)
+{
+    SysLog::printf(__NAMEOF__(SysBLEControl), "notify '%s'", source);
+    _BLECharacteristic->setValue(source);
+    _BLECharacteristic->notify();
 }
 
 

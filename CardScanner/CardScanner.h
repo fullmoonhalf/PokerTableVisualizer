@@ -16,7 +16,6 @@ public:
     virtual void onGUiButtonReleased(const char *label);
 
 private:
-    SysSetting _Setting;
     SysGuiButton *_ButtonReader;
     SysGuiButton *_ButtonWriter;
     SysGuiButton *_ButtonDevelop;

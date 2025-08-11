@@ -18,6 +18,7 @@ class SysBLEControl : public BLEServerCallbacks
 public:
     SysBLEControl(const char *identifier, const char *service_uuid, const char *characteristics_uuid);
 
+    void notify(const char *source);
     void bind(SysBLECharacteristicValueSourceable *source);
     void process();
     int getFrameCount();
