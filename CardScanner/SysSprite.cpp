@@ -54,7 +54,7 @@ void SysSprite::fillRect(int x, int y, int w, int h, int color)
 /// @param text 
 void SysSprite::drawText(int x, int y, const char *text)
 {
-    drawText(x, y, 1.0f, text);
+    drawText(x, y, 1.0f, TFT_WHITE, text);
 }
 
 
@@ -65,12 +65,37 @@ void SysSprite::drawText(int x, int y, const char *text)
 /// @param text 
 void SysSprite::drawText(int x, int y, float size, const char *text)
 {
+    drawText(x, y, size, TFT_WHITE, text);
+}
+
+
+/// @brief 
+/// @param x 
+/// @param y 
+/// @param size 
+/// @param color 
+/// @param text 
+void SysSprite::drawText(int x, int y, float size, uint16_t color, const char *text)
+{
+    _Sprite->setTextColor(color);
     _Sprite->setTextSize(size);
     _Sprite->drawString(text, x, y);
 }
 
 
+/// @brief 
+/// @param x 
+/// @param y 
+/// @param w 
+/// @param h 
+/// @param bitmap 
+void SysSprite::drawImage(int x, int y, int w, int h, const uint16_t *bitmap)
+{
+    _Sprite->pushImage(x, y, w, h, bitmap);
+}
 
+
+/// @brief 
 void SysSprite::clear()
 {
     _Sprite->clear();

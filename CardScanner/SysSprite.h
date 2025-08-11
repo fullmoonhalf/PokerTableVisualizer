@@ -15,6 +15,8 @@ public:
     void drawRect(int x, int y, int w, int h, int color);
     void drawText(int x, int y, const char *text);
     void drawText(int x, int y, float size, const char *text);
+    void drawText(int x, int y, float size, uint16_t color, const char *text);
+    void drawImage(int x, int y, int w, int h, const uint16_t *bitmap);
     void clear();
 
 private:

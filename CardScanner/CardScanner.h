@@ -19,6 +19,7 @@ private:
     SysGuiButton *_ButtonReader;
     SysGuiButton *_ButtonWriter;
     SysGuiButton *_ButtonDevelop;
+    SysGuiButton *_ButtonDeckcheck;
     int _FrameCount = 0;
 };
 

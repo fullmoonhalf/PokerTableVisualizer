@@ -13,6 +13,7 @@ public:
 
     bool init();
     bool scan();
+    int scanWithInfo(AppCardInfo *outBuffer);
     void dump();
     int encode(char *buffer);
     bool write(int page, uint8_t *data, int size, int timeout);

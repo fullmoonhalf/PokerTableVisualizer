@@ -38,6 +38,21 @@ bool AppCardListenerUnitRfid2::scan()
 }
 
 
+int AppCardListenerUnitRfid2::scanWithInfo(AppCardInfo *outBuffer)
+{
+    if(scan())
+    {
+        for(int index=0; index<_CardCount; ++index)
+        {
+            outBuffer[index] = _CardInfo[index];
+        }
+        return _CardCount;
+    }
+
+    return 0;
+}
+
+
 /// @brief アンテナのリセット
 /// @param m 
 /// @return 

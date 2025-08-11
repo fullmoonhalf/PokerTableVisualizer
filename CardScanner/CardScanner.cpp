@@ -11,6 +11,7 @@
 #include "AppModeDevelop.h"
 #include "AppModeReader.h"
 #include "AppModeWriter.h"
+#include "AppModeDeckcheck.h"
 #include "CardScanner.h"
 
 
@@ -22,6 +23,7 @@
 #define BUTTON_LABEL_READER ("Reader")
 #define BUTTON_LABEL_WRITER ("Writer")
 #define BUTTON_LABEL_DEVELOP ("Develop")
+#define BUTTON_LABEL_DECKCHECK ("DeckCheck")
 
 
 /// @brief 初期化処理
@@ -47,11 +49,13 @@ void CardScanner::start()
     _ButtonReader = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_LABEL_READER, this);
     _ButtonWriter = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_LABEL_WRITER, this);
     _ButtonDevelop = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_LABEL_DEVELOP, this);
+    _ButtonDeckcheck = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_LABEL_DECKCHECK, this);
 }
 
 /// @brief モード終了時処理
 void CardScanner::end()
 {
+    SysSpriteManager::getInstance().destroyDrawable(_ButtonDeckcheck);
     SysSpriteManager::getInstance().destroyDrawable(_ButtonDevelop);
     SysSpriteManager::getInstance().destroyDrawable(_ButtonWriter);
     SysSpriteManager::getInstance().destroyDrawable(_ButtonReader);
@@ -64,6 +68,7 @@ void CardScanner::update()
     _ButtonReader->update();
     _ButtonWriter->update();
     _ButtonDevelop->update();
+    _ButtonDeckcheck->update();
 }
 
 /// @brief 描画処理
@@ -71,6 +76,7 @@ void CardScanner::draw()
 {
     _ButtonReader->draw(BUTTON_ANCHOR_X, BUTTON_ANCHOR_Y);
     _ButtonWriter->draw(BUTTON_ANCHOR_X+BUTTON_WIDTH+BUTTON_MARGIN, BUTTON_ANCHOR_Y);
+    _ButtonDeckcheck->draw(BUTTON_ANCHOR_X, BUTTON_ANCHOR_Y+BUTTON_HEIGHT+BUTTON_MARGIN);
     _ButtonDevelop->draw(BUTTON_ANCHOR_X+BUTTON_WIDTH+BUTTON_MARGIN, BUTTON_ANCHOR_Y+BUTTON_HEIGHT+BUTTON_MARGIN);
 }
 
@@ -92,4 +98,8 @@ void CardScanner::onGUiButtonReleased(const char *label)
     {
         SysModeManager::getInstance().transit(new AppModeWriter(), true);
     }
+    else if(strcmp(label, BUTTON_LABEL_DECKCHECK) == 0)
+    {
+        SysModeManager::getInstance().transit(new AppModeDeckcheck(), true);
+    }    
 }
