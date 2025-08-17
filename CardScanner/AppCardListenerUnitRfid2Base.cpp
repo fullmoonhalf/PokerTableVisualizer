@@ -1,7 +1,8 @@
 #define VERBOSE_ERROR (3)
 #define VERBOSE_INFO (2)
 #define VERBOSE_DETAIL (1)
-#define VERBOSE (VERBOSE_INFO)
+#define VERBOSE_NONE (0)
+#define VERBOSE (VERBOSE_NONE)
 #define VERBOSE_CHECK(x)  ((VERBOSE) >= (x))
 #include "SysUtils.h"
 #include "SysLog.h"
@@ -232,3 +233,25 @@ uint8_t AppCardListenerUnitRfid2Base::calcUidChecksum(uint8_t *test_uid, int tes
     }
     return checksum;
 }
+
+
+/// @brief 原状のダンプ
+void AppCardListenerUnitRfid2Base::_dump(AppCardInfo *infos, int Count)
+{
+    SysLog::printf(__NAMEOF__(AppCardListenerUnitRfid2Base), "Detect %d card(s)", Count);
+    for(int slot_index=0; slot_index<Count; ++slot_index)
+    {
+        AppCardInfo &slot = infos[slot_index];
+        char buffer[256];
+        char *seek = buffer;
+        seek += sprintf(seek, "[%d] UID:", slot_index);
+        for (int i = 0; i < slot.size; ++i)
+        {
+            seek += sprintf(seek, "%02X", slot.uid[i]);
+        }
+        seek += sprintf(seek, ": info %02X %02X %02X %02X", slot.info[0], slot.info[1], slot.info[2], slot.info[3]);
+        SysLog::printf(__NAMEOF__(AppCardListenerUnitRfid2Base), buffer);
+    }
+}
+
+

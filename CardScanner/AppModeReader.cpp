@@ -51,7 +51,6 @@ void AppModeReader::update()
 
     if(_CardReader->scan())
     {
-        _CardReader->dump();
         char *seek = _SendInfoBuffer;
         seek += sprintf(seek, "{Seat:\"%s\",", _ProbeName);
         seek += _CardReader->encode(seek);

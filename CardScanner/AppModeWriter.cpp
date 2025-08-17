@@ -156,10 +156,7 @@ void AppModeWriter::onGUiButtonReleased(const char *label)
         buffer[3] = 0;
         if(_CardReader->write(4, buffer, sizeof(buffer), 500))
         {
-            if(_CardReader->scan())
-            {
-                _CardReader->dump();
-            }
+            _CardReader->scan();
         }
         else
         {
@@ -167,5 +164,3 @@ void AppModeWriter::onGUiButtonReleased(const char *label)
         }
     }
 }
-
-

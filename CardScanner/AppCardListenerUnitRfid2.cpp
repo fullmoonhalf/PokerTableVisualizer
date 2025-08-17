@@ -28,7 +28,7 @@ bool AppCardListenerUnitRfid2::scan(int timeout)
 {
     return _scan(_MFRC522, timeout, _CardInfo, &_CardCount);
 #if VERBOSE_CHECK(VERBOSE_INFO)
-    dump();
+    _dump(_CardInfo, _CardCount);
 #endif
     return _CardCount > 0;
 }
@@ -56,26 +56,6 @@ int AppCardListenerUnitRfid2::encode(char *buffer)
     }
     seek += sprintf(seek, "]");
     return seek - buffer;
-}
-
-
-/// @brief 原状のダンプ
-void AppCardListenerUnitRfid2::dump()
-{
-    SysLog::printf(__NAMEOF__(AppCardListenerUnitRfid2), "Detect %d card(s)", _CardCount);
-    for(int slot_index=0; slot_index<_CardCount; ++slot_index)
-    {
-        AppCardInfo &slot = _CardInfo[slot_index];
-        char buffer[256];
-        char *seek = buffer;
-        seek += sprintf(seek, "[%d] UID:", slot_index);
-        for (int i = 0; i < slot.size; ++i)
-        {
-            seek += sprintf(seek, "%02X", slot.uid[i]);
-        }
-        seek += sprintf(seek, ": info %02X %02X %02X %02X", slot.info[0], slot.info[1], slot.info[2], slot.info[3]);
-        SysLog::printf(__NAMEOF__(AppCardListenerUnitRfid2), buffer);
-    }
 }
 
 

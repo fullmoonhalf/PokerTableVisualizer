@@ -28,6 +28,8 @@ void AppModeDevelop::update()
 {
     _FrameCount++;
 
+    _CardReader->scan();
+
     // ゲージ(デバイス生きてるのか確認する用)
     _Gauge->setCurrentValue(_FrameCount % 200);
     _Gauge->update();

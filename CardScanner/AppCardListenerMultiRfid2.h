@@ -10,6 +10,9 @@
 #include "SysI2CUtil.h"
 
 
+#define RFID_READER_COUNT (6)  // Slot の数
+
+
 
 class AppCardListenerMultiRfid2 : public AppCardListenerUnitRfid2Base
 {
@@ -29,6 +32,7 @@ private:
     ClosedCube::Wired::TCA9548A _TCA;
     AppCardInfo _CardInfo[8];
     int _CardCount = 0;
+    bool _ValidSlot[RFID_READER_COUNT];
 };
 
 

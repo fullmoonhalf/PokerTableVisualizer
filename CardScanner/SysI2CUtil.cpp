@@ -1,6 +1,7 @@
 #define VERBOSE_LEVEL_INFO (1)
 #define VERBOSE_LEVEL_DETAIL (2)
-#define VERBOSE (VERBOSE_LEVEL_INFO)
+#define VERBOSE_LEVEL_NONE (0)
+#define VERBOSE (VERBOSE_LEVEL_NONE)
 #include <Wire.h>
 #include "SysI2CUtil.h"
 #include "SysLog.h"

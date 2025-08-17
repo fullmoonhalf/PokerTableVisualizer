@@ -17,6 +17,7 @@ protected:
     bool _scan(MFRC522 *m, int timeout, AppCardInfo *outBuffer, int *outCount);
     int _scanWithInfo(MFRC522 *m, int timeout, AppCardInfo *outBuffer);
     bool _write(MFRC522 *m, uint page, uint8_t *data, int size, int timeout);
+    void _dump(AppCardInfo *infos, int Count);
 
 private:
     bool resetAntenna(MFRC522 *m);
