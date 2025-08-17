@@ -2,6 +2,7 @@
 #include "SysSpriteManager.h"
 #include "AppModeDeckcheck.h"
 #include "AppDrawablePlaycard.h"
+#include "AppCardListenerUnitRfid2.h"
 
  
 void AppModeDeckcheck::start()

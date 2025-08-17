@@ -7,6 +7,11 @@
 
 class AppCardListenerUnitRfid2Base : public AppCardListener
 {
+public:
+    virtual bool init() = 0;
+    virtual bool scan(int timeout = 500) = 0;
+    virtual int scanWithInfo(int timeout, AppCardInfo *outBuffer) = 0;
+
 protected:
     bool _init(MFRC522 *m);
     bool _scan(MFRC522 *m, int timeout, AppCardInfo *outBuffer, int *outCount);

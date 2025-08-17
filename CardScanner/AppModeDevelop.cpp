@@ -2,6 +2,7 @@
 #include "SysDisplay.h"
 #include "SysSpriteManager.h"
 #include "AppModeDevelop.h"
+#include "AppCardListenerMultiRfid2.h"
 #include "SysLog.h"
 
 
@@ -11,7 +12,7 @@ void AppModeDevelop::start()
     SysDisplay::getInstance().clear();
  
     // カードリーダー初期化
-    _CardReader = new AppCardListenerUnitRfid2();
+    _CardReader = new AppCardListenerMultiRfid2();
     _CardReader->init();
 
     // ゲージ
@@ -27,11 +28,6 @@ void AppModeDevelop::update()
 {
     _FrameCount++;
 
-    if(_CardReader->scan())
-    {
-        _CardReader->dump();
-    }
-    
     // ゲージ(デバイス生きてるのか確認する用)
     _Gauge->setCurrentValue(_FrameCount % 200);
     _Gauge->update();

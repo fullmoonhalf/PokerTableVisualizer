@@ -7,7 +7,9 @@
 class SysI2CUtil
 {
 public:
+    bool checkAlive(uint8_t inAddress);
     int readRegister(uint8_t inAddress, uint8_t inRegister, uint8_t *outBuffer, uint8_t inLength);
+    bool setReadRegister(uint8_t inAddress, uint8_t inRegister);
     int writeRegister(uint8_t inAddress, uint8_t inRegister, uint8_t *inSource, uint8_t inLength);
     int writeRegister(uint8_t inAddress, uint8_t inRegister, uint8_t inSource);
 };

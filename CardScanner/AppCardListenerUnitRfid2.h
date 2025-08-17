@@ -12,9 +12,9 @@ public:
     AppCardListenerUnitRfid2();
     ~AppCardListenerUnitRfid2();
 
-    bool init();
-    bool scan(int timeout = 500);
-    int scanWithInfo(int timeout, AppCardInfo *outBuffer);
+    virtual bool init();
+    virtual bool scan(int timeout = 500);
+    virtual int scanWithInfo(int timeout, AppCardInfo *outBuffer);
     void dump();
     int encode(char *buffer);
     bool write(int page, uint8_t *data, int size, int timeout);

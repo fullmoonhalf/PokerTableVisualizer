@@ -6,6 +6,56 @@
 #include "SysLog.h"
 
 
+
+/// @brief 指定のアドレスのデバイスが生きているかを確認する。
+/// @param inAddress 
+/// @return 
+bool SysI2CUtil::checkAlive(uint8_t inAddress)
+{
+#if VERBOSE >= VERBOSE_LEVEL_INFO
+    SysLog::printf(__NAMEOF__(SysI2CUtil), "checkAlive(%d, %d)", inAddress);
+#endif
+
+    Wire.beginTransmission(inAddress);
+    uint8_t result = Wire.endTransmission();
+    if(result != 0)
+    {
+#if VERBOSE >= VERBOSE_LEVEL_INFO
+        SysLog::printf(__NAMEOF__(SysI2CUtil), "readRegister request error %d", result);
+#endif
+        return false;
+    }
+
+    return true;
+}
+
+
+/// @brief 読み込み先レジスタの指定
+/// @param inAddress 
+/// @param inRegister 
+/// @return 
+bool SysI2CUtil::setReadRegister(uint8_t inAddress, uint8_t inRegister)
+{
+#if VERBOSE >= VERBOSE_LEVEL_INFO
+    SysLog::printf(__NAMEOF__(SysI2CUtil), "setReadRegister(%d, %d)", inAddress, inRegister);
+#endif
+
+    Wire.beginTransmission(inAddress);
+    Wire.write(inRegister);
+    uint8_t result = Wire.endTransmission();
+    if(result != 0)
+    {
+#if VERBOSE >= VERBOSE_LEVEL_INFO
+        SysLog::printf(__NAMEOF__(SysI2CUtil), "readRegister request error %d", result);
+#endif
+        return false;
+    }
+
+    return true;
+}
+
+
+
 /// @brief レジスタから値を読み取る
 /// @param inAddress デバイスのアドレス
 /// @param inRegister 読み出し先のレジスタ
@@ -18,15 +68,9 @@ int SysI2CUtil::readRegister(uint8_t inAddress, uint8_t inRegister, uint8_t *out
     SysLog::printf(__NAMEOF__(SysI2CUtil), "readRegister(%d, %d, %p, %d)", inAddress, inRegister, outBuffer, inLength);
 #endif
 
-    Wire.beginTransmission(inAddress);
-    Wire.write(inRegister);
-    uint8_t result = Wire.endTransmission();
-    if(result != 0)
+    bool set_result = setReadRegister(inAddress, inRegister);
+    if(set_result == false)
     {
-#if VERBOSE >= VERBOSE_LEVEL_INFO
-        // rc: 0=成功, 1=バッファ超過, 2=アドレスNACK, 3=データNACK, 4=その他エラー    
-        SysLog::printf(__NAMEOF__(SysI2CUtil), "readRegister request error %d", result);
-#endif
         return 0;
     }
 

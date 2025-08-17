@@ -1,35 +1,32 @@
 #ifndef _INCLUDED_APP_CARD_LISTENER_MULTI_RFID2
 #define _INCLUDED_APP_CARD_LISTENER_MULTI_RFID2
-#include "AppCardListener.h"
+//
+#include "ClosedCube_TCA9548A.h"
+//
 #include "UnitRfid2Driver.h"
 #include "MFRC522_I2C.h"
+#include "AppCardListener.h"
+#include "AppCardListenerUnitRfid2Base.h"
+#include "SysI2CUtil.h"
 
 
-class AppCardListenerUnitRfid2 : public AppCardListener
+
+class AppCardListenerMultiRfid2 : public AppCardListenerUnitRfid2Base
 {
 public:
-    AppCardListenerUnitRfid2();
-    ~AppCardListenerUnitRfid2();
+    AppCardListenerMultiRfid2();
+    ~AppCardListenerMultiRfid2();
 
-    bool init();
-    bool scan(int timeout = 500);
-    int scanWithInfo(AppCardInfo *outBuffer);
-    void dump();
-    int encode(char *buffer);
+    virtual bool init();
+    virtual bool scan(int timeout = 500);
+    virtual int scanWithInfo(int timeout, AppCardInfo *outBuffer);
 
 private:
-    bool resetAntenna(MFRC522 *m);
-    bool wakeup(MFRC522 *m);
-    bool scanCards(MFRC522 *m, int span);
-    bool scanOneCardOnce(MFRC522 *m);
-    bool readCards(MFRC522 *m);
-    bool readOneCardOnce(MFRC522 *m, AppCardInfo *card);
-    bool isScanned(uint8_t *test_uid, int test_uid_length, uint8_t checksum);
-    uint8_t calcUidChecksum(uint8_t *test_uid, int test_uid_length);
+    bool switchTcaChannel(int channel);
 
-    bool writeOnce(int page, uint8_t *data, int size);
-
+    SysI2CUtil _I2C;
     MFRC522 *_MFRC522;
+    ClosedCube::Wired::TCA9548A _TCA;
     AppCardInfo _CardInfo[8];
     int _CardCount = 0;
 };

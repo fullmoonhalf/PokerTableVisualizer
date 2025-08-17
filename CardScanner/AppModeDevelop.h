@@ -2,7 +2,7 @@
 #define _INCLUDED_APP_MODE_DEVELOP
 #include "SysMode.h"
 #include "SysGuiGauge.h"
-#include "AppCardListenerUnitRfid2.h"
+#include "AppCardListenerUnitRfid2Base.h"
 
 
 class AppModeDevelop : public SysMode
@@ -15,7 +15,7 @@ public:
 
 private:
     SysGuiGauge *_Gauge;
-    AppCardListenerUnitRfid2 *_CardReader;
+    AppCardListenerUnitRfid2Base *_CardReader;
     int _FrameCount;
 };
 
