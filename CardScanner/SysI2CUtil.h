@@ -1,5 +1,7 @@
 #ifndef _INCLUDED_SYS_I2C_UTIL_H
 #define _INCLUDED_SYS_I2C_UTIL_H
+#include <M5Unified.h>
+
 
 
 class SysI2CUtil

@@ -34,7 +34,7 @@ void AppModeDeckcheck::end()
 void AppModeDeckcheck::update()
 {
     AppCardInfo info[8];
-    int count = _CardReader->scanWithInfo(info);
+    int count = _CardReader->scanWithInfo(500, info);
     for(int index=0; index<count; ++index)
     {
         int card = info[index].info[1];
