@@ -8,9 +8,11 @@
 class AppCardListenerUnitRfid2Base : public AppCardListener
 {
 public:
+    static AppCardListenerUnitRfid2Base *createCardListener();
     virtual bool init() = 0;
     virtual bool scan(int timeout = 500) = 0;
     virtual int scanWithInfo(int timeout, AppCardInfo *outBuffer) = 0;
+    virtual int encode(char *outBuffer);
 
 protected:
     bool _init(MFRC522 *m);
@@ -18,6 +20,7 @@ protected:
     int _scanWithInfo(MFRC522 *m, int timeout, AppCardInfo *outBuffer);
     bool _write(MFRC522 *m, uint page, uint8_t *data, int size, int timeout);
     void _dump(AppCardInfo *infos, int Count);
+    int _encode(char *outBuffer, AppCardInfo *infos, int Count);
 
 private:
     bool resetAntenna(MFRC522 *m);

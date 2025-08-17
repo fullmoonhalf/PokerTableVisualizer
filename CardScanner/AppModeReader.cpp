@@ -17,7 +17,7 @@ void AppModeReader::start()
 
     // カードリーダー初期化
     {
-        _CardReader = new AppCardListenerUnitRfid2();
+        _CardReader = AppCardListenerUnitRfid2Base::createCardListener();
         _CardReader->init();
     }
 

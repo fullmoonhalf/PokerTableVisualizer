@@ -10,7 +10,7 @@ void AppModeDeckcheck::start()
     SysDisplay::getInstance().clear();
 
     // カードリーダー初期化
-    _CardReader = new AppCardListenerUnitRfid2();
+    _CardReader = AppCardListenerUnitRfid2Base::createCardListener();
     _CardReader->init();
 
     // カードスプライトの生成

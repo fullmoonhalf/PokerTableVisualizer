@@ -10,6 +10,9 @@
 
 
 
+/// @brief 初期化処理
+/// @param m 
+/// @return 
 bool AppCardListenerUnitRfid2Base::_init(MFRC522 *m)
 {
     m->PCD_Init();
@@ -17,6 +20,12 @@ bool AppCardListenerUnitRfid2Base::_init(MFRC522 *m)
 }
 
 
+/// @brief スキャン処理
+/// @param m 
+/// @param timeout 
+/// @param outBuffer 
+/// @param outCount 
+/// @return 
 bool AppCardListenerUnitRfid2Base::_scan(MFRC522 *m, int timeout, AppCardInfo *outBuffer, int *outCount)
 {
 #if VERBOSE_CHECK(VERBOSE_DETAIL)
@@ -45,6 +54,11 @@ bool AppCardListenerUnitRfid2Base::_scan(MFRC522 *m, int timeout, AppCardInfo *o
 }
 
 
+/// @brief 出力先指定されたスキャン処理
+/// @param m 
+/// @param timeout 
+/// @param outBuffer 
+/// @return 
 int AppCardListenerUnitRfid2Base::_scanWithInfo(MFRC522 *m, int timeout, AppCardInfo *outBuffer)
 {
     int Count = 0;
@@ -103,6 +117,12 @@ bool AppCardListenerUnitRfid2Base::wakeup(MFRC522 *m)
 }
 
 
+/// @brief カードスキャンの実処理
+/// @param m 
+/// @param timeout 
+/// @param outBuffer 
+/// @param outCount 
+/// @return 
 bool AppCardListenerUnitRfid2Base::scanCards(MFRC522 *m, int timeout, AppCardInfo *outBuffer, int *outCount)
 {
 #if VERBOSE_CHECK(VERBOSE_INFO)
@@ -220,7 +240,7 @@ bool AppCardListenerUnitRfid2Base::writeOnce(MFRC522 *m, uint page, uint8_t *dat
 }
 
 
-/// @brief 
+/// @brief チェックサムを求める
 /// @param test_uid 
 /// @param test_uid_length 
 /// @return 
@@ -255,3 +275,20 @@ void AppCardListenerUnitRfid2Base::_dump(AppCardInfo *infos, int Count)
 }
 
 
+/// @brief 外部に渡す用のエンコード
+/// @param buffer 
+/// @return 
+int AppCardListenerUnitRfid2Base::_encode(char *outBuffer, AppCardInfo *infos, int Count)
+{
+    char *seek = outBuffer;
+    seek += sprintf(seek, "cards:[");
+    const char *delim = "";
+    for(int slot_index=0; slot_index<Count; ++slot_index)
+    {
+        AppCardInfo &slot = infos[slot_index];
+        seek += sprintf(seek, "%s%d", delim, slot.info[1]);
+        delim = ",";
+    }
+    seek += sprintf(seek, "]");
+    return seek - outBuffer;
+}

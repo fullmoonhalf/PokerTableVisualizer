@@ -12,7 +12,7 @@ void AppModeDevelop::start()
     SysDisplay::getInstance().clear();
  
     // カードリーダー初期化
-    _CardReader = new AppCardListenerMultiRfid2();
+    _CardReader = AppCardListenerUnitRfid2Base::createCardListener();
     _CardReader->init();
 
     // ゲージ

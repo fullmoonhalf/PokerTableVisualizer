@@ -15,8 +15,9 @@ public:
     virtual bool init();
     virtual bool scan(int timeout = 500);
     virtual int scanWithInfo(int timeout, AppCardInfo *outBuffer);
+    virtual int encode(char *outBuffer);
+
     void dump();
-    int encode(char *buffer);
     bool write(int page, uint8_t *data, int size, int timeout);
 
 private:

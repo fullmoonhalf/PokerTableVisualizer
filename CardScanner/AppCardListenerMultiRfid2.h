@@ -11,6 +11,7 @@
 
 
 #define RFID_READER_COUNT (6)  // Slot の数
+#define PaHub_I2C_ADDRESS 0x70
 
 
 
@@ -23,6 +24,7 @@ public:
     virtual bool init();
     virtual bool scan(int timeout = 500);
     virtual int scanWithInfo(int timeout, AppCardInfo *outBuffer);
+    virtual int encode(char *outBuffer);
 
 private:
     bool switchTcaChannel(int channel);

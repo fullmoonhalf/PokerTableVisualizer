@@ -1,7 +1,6 @@
 #include "SysUtils.h"
 #include "SysLog.h"
 #include "AppCardListenerMultiRfid2.h"
-#define PaHub_I2C_ADDRESS 0x70
 
 
 AppCardListenerMultiRfid2::AppCardListenerMultiRfid2()
@@ -79,13 +78,28 @@ bool AppCardListenerMultiRfid2::scan(int timeout)
     return _CardCount > 0;
 }
 
+
+
 int AppCardListenerMultiRfid2::scanWithInfo(int timeout, AppCardInfo *outBuffer)
 {
-    return 0;
+    _CardCount = 0;
+    if(scan(timeout))
+    {
+        for(int index=0; index<_CardCount; ++index)
+        {
+            outBuffer[index] = _CardInfo[index];
+        }
+    }
+    return _CardCount;
 }
 
 
 bool AppCardListenerMultiRfid2::switchTcaChannel(int channel)
 {
     return _I2C.setReadRegister(PaHub_I2C_ADDRESS, 1 << channel);
+}
+
+int AppCardListenerMultiRfid2::encode(char *outBuffer)
+{
+    return _encode(outBuffer, _CardInfo, _CardCount);
 }

@@ -16,7 +16,7 @@ public:
     virtual void draw();
 
 private:
-    AppCardListenerUnitRfid2 *_CardReader;
+    AppCardListenerUnitRfid2Base *_CardReader;
     SysBLEControl *_BLEController;
     SysGuiGauge *_GaugeBattery;
     char _SendInfoBuffer[480];
