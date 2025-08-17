@@ -49,10 +49,14 @@ void AppModeReader::update()
     _GaugeBattery->setCurrentValue(M5.Power.getBatteryLevel());
     _GaugeBattery->update();
 
-    if(_CardReader->scan())
+    if(_CardReader->scan() == false)
+    {
+        wait(500);
+    }
+
     {
         char *seek = _SendInfoBuffer;
-        seek += sprintf(seek, "{Seat:\"%s\",", _ProbeName);
+        seek += sprintf(seek, "{\"probe\":\"%s\",", _ProbeName);
         seek += _CardReader->encode(seek);
         seek += sprintf(seek, "}");
         _BLEController->notify(_SendInfoBuffer);

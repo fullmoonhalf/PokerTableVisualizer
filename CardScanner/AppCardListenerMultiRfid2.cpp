@@ -73,8 +73,6 @@ bool AppCardListenerMultiRfid2::scan(int timeout)
         }
     }
 
-    _dump(_CardInfo, _CardCount);
-
     return _CardCount > 0;
 }
 

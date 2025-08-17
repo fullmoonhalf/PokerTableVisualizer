@@ -281,12 +281,12 @@ void AppCardListenerUnitRfid2Base::_dump(AppCardInfo *infos, int Count)
 int AppCardListenerUnitRfid2Base::_encode(char *outBuffer, AppCardInfo *infos, int Count)
 {
     char *seek = outBuffer;
-    seek += sprintf(seek, "cards:[");
+    seek += sprintf(seek, "\"cards\":[");
     const char *delim = "";
     for(int slot_index=0; slot_index<Count; ++slot_index)
     {
         AppCardInfo &slot = infos[slot_index];
-        seek += sprintf(seek, "%s%d", delim, slot.info[1]);
+        seek += sprintf(seek, "%s{\"card\":%d,\"rssi\":240}", delim, slot.info[1]);
         delim = ",";
     }
     seek += sprintf(seek, "]");
