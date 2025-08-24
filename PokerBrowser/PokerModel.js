@@ -1,6 +1,7 @@
 var PokerConst = PokerConst || 
 {
     BettingRound : {
+        Interval : 0,
         Preflop : 1,
         Flop : 2,
         Turn : 3,
@@ -43,21 +44,11 @@ var PokerModel = PokerModel || (function(){
     // ---------------------------------------------------------------------
 	// プレイヤーの状況
 	// ---------------------------------------------------------------------
-    function cPlayer()
+    function cPlayer(name)
     {
-        this.Identifier = "";
-        this.ChipCount = 0;
-    }
-
-    // ---------------------------------------------------------------------
-	// ハンドの状況
-	// ---------------------------------------------------------------------
-    function cHand(argHandCount)
-    {
-        this.HandCount = argHandCount;
-		this.CommunityCardsFlop = [];
-		this.CommunityCardsTurn = [];
-		this.CommunityCardsRiver = [];
+        this.Identifier = name; // プレイヤー識別子
+        this.ChipCount = 0; // 現在のチップカウント
+        this.Alive = true;
     }
 
     // ---------------------------------------------------------------------
@@ -65,7 +56,8 @@ var PokerModel = PokerModel || (function(){
 	// ---------------------------------------------------------------------
     function cHandPlayerAction()
     {
-        this.HandCount = 0;
+        this.HandCount = argHandCount; // 何ハンド目なのか
+        this.HandPlayer = null; // プレイヤー。cHandPlayer を入れる。
         this.BettingRound = PokerConst.BettingRound.Preflop;
         this.Type = PokerConst.PlayerAction.Fold;
         this.BetAmount = 0;
@@ -74,35 +66,113 @@ var PokerModel = PokerModel || (function(){
     // ---------------------------------------------------------------------
 	// ハンドにおける各プレイヤー
 	// ---------------------------------------------------------------------
-    function cHandPlayer()
+    function cHandPlayer(player)
     {
-        this.HoleCards = [];
-        this.Status = PokerConst.PlayerStatus.Waiting;
-        this.CurrentAction = null;
-        this.ActionHistory = [];
+        this.Player = player; // プレイヤー
+        this.HoleCards = []; // ホールカード
+        this.Position = 0; // ディーラーから数えて何人目か(ディーラーなら 0)。
+        this.Status = PokerConst.PlayerStatus.Waiting; // 現在の状態
+        this.CurrentAction = null; // 現在のアクション
+        this.ActionHistory = []; // アクション履歴
     }
 
     // ---------------------------------------------------------------------
-	// テーブルの状況
+	// ハンド: 1 回のゲーム(カード配ってから決着がつくまで)の単位
+	// ---------------------------------------------------------------------
+    function cHand(argHandCount)
+    {
+        this.HandCount = argHandCount; // 何ハンド目なのか
+        this.HandPlayers = []; // ハンドに参加したプレイヤーのリスト
+		this.CommunityCardsFlop = []; // Flop で出たカード(3枚)
+		this.CommunityCardsTurn = []; // Turn で出たカード(3枚)
+		this.CommunityCardsRiver = []; // River で出たカード(3枚)
+    }
+
+    // ---------------------------------------------------------------------
+	// Session: テーブル始まってから終わるまでの単位
 	// ---------------------------------------------------------------------
     function cSession()
     {
-        this.Players = [];
-        this.AlivePlayers = [];
-        this.HandHistory = [];
+        this.HandHistory = [] // cHand のリストが入る。
     }
 
-    ///
-	var _model = {
-		init : function()
-		{
-            console.log("model init");
-		},
-        reset : function()
+	// =====================================================================
+	// モデル全体
+	// =====================================================================
+    function cModel()
+    {
+        this.Session = new cSession();
+        this.PlayerList = [];
+        this.Notifier = null;
+        this.CurrentHand = new cHand(0);
+    }
+    cModel.prototype.init = function()
+    {
+        console.log("model init");
+    }
+    
+    // ---------------------------------------------------------------------
+    // 通知関連
+	// ---------------------------------------------------------------------
+    cModel.prototype.bindModelUpdateNotifier = function(notifier)
+    {
+        this.Notifier = notifier;
+    }
+    cModel.prototype.notify = function()
+    {
+        if(this.Notifier)
         {
-        },
-	};
+            this.Notifier.notifyModelUpdate();
+        }
+    }
+    cModel.prototype.notifyHand = function(hand)
+    {
+        if(this.Notifier)
+        {
+            this.Notifier.notifyModelUpdateHand(hand);
+        }
+    }
 
+    // ---------------------------------------------------------------------
+    // モデルへの操作(ゲーム進行系)
+	// ---------------------------------------------------------------------
+    cModel.prototype.startHand = function()
+    {
+        this.CurrentHand = new cHand(this.CurrentHand.HandCount);
+        for(const player of this.PlayerList)
+        {
+            if(player.Alive)
+            {
+                this.CurrentHand.HandPlayers.push(new cHandPlayer(player));
+            }
+        }
+        this.notifyHand(this.CurrentHand);
+    }
+    cModel.prototype.startFlop = function()
+    {
+    }
+    cModel.prototype.startTurn = function()
+    {
+    }
+    cModel.prototype.startRiver = function()
+    {
+    }
+
+    // ---------------------------------------------------------------------
+    // モデルへの操作
+	// ---------------------------------------------------------------------
+    cModel.prototype.reset = function()
+    {
+        console.log("model reset");
+    }
+    cModel.prototype.addUser = function(name)
+    {
+        let user = new cPlayer(name);
+        this.PlayerList.push(user);
+        this.notify();
+    }
+
+    _model = new cModel();
     _model.init();
 	return _model;
 })();

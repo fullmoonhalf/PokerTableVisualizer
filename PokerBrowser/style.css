@@ -2,3 +2,100 @@
 {
     background-color:white;
 }
+
+/* 全体構成 */
+.poker_browser
+{
+    display: flex;
+}
+.poker_browser_control
+{
+    width: 30%;
+}
+.poker_browser_display
+{
+    width: 70%;
+    background: #0f0;
+}
+
+/* タブメニュー */
+.tab-menu 
+{
+    display: flex;
+    border-bottom: 2px solid #ccc;
+}
+
+.tab-menu button 
+{
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: #eee;
+    cursor: pointer;
+    font-size: 16px;
+}
+.tab-menu button.active 
+{
+    background: #fff;
+    border-bottom: 2px solid #000;
+    font-weight: bold;
+}
+
+/* コンテンツ */
+.tab-content 
+{
+    display: none;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-top: none;
+}
+.tab-content.active 
+{
+    display: block;
+}
+
+/* 汎用部品 */
+.template_card_hand
+{
+    width: 32px;
+    height: 64px;
+    margin: 2px 1px;
+}
+
+
+/* 現在のユーザーのハンドパネル */
+.template_panel_user_current_hand_base
+{
+    position: relative;   /* 基準にする */
+    background: #000;
+    width: 256px;
+    height: 80px;
+}
+.template_panel_user_current_hand_value_name
+{
+    position: absolute;   /* 親を基準に */
+    top: 30px;
+    left: 30px;
+    color: #fff;
+}
+.template_panel_user_current_hand_value_position
+{
+    position: absolute;   /* 親を基準に */
+    top: 10px;
+    left: 10px;
+    color: #fff;
+}
+.template_panel_user_current_hand_value_winrate
+{
+    position: absolute;   /* 親を基準に */
+    top: 50px;
+    left: 140px;
+    color: #fff;
+}
+.template_panel_user_current_hand_value_hand
+{
+    position: absolute;   /* 親を基準に */
+    top: 8px;
+    left: 180px;
+    color: #fff;
+}

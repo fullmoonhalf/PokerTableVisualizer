@@ -2,11 +2,73 @@
 <html>
     <head>
         <link type="text/css" rel="stylesheet" href="./style.css">
+        <script src="./HtmlUtil.js" type="text/javascript"></script>
         <script src="./winrate.js" type="text/javascript"></script>
         <script src="./PokerModel.js" type="text/javascript"></script>
         <script src="./PokerBrowserEngine.js" type="text/javascript"></script>
         <title>Poker Table Monitor Browser</title>
     </head>
     <body>
+        <div class="poker_browser">
+            <div class="poker_browser_control">
+                <div>
+                    <p>commands</p>
+                    <button id="command_start_hand">Start Hand</button>
+                    <button id="command_start_flop">Start Flop</button>
+                    <button id="command_start_turn">Start Turn</button>
+                    <button id="command_start_river">Start River</button>
+                </div>
+                <!-- タブメニュー -->
+                <div class="tab-menu">
+                    <button id="tabmenu_management" class="active">管理画面</button>
+                    <button id="tabmenu_current_hand">ハンド表示</button>
+                </div>
+                <!-- タブコンテンツ -->
+                <div class="tab-content-list">
+                    <div id="tab_management" class="tab-content active">
+                        <h1>管理画面</h1>
+                        <div id="screen_management_user_all">
+                        <div id="screen_management_user_header">
+                            ユーザー管理
+                            <button id="command_user_add">ユーザー追加</button>
+                        </div>
+                        <div id="screen_management_user_list">ユーザー一覧</div>
+                        </div>
+                    </div>
+                    <div id="tab_current_hand" class="tab-content">
+                        <h2>ハンド表示</h2>
+                        <p>ここにタブ2のコンテンツを書きます。</p>
+                        <hr>
+                        <button id="command_reset_hand">Reset</button><br>
+                        <button id="command_dev_deal_hand">[Dev] Deal hand</button>
+                    </div>
+                    <div id="tab3" class="tab-content">
+                        <h2>タブ3の内容</h2>
+                        <p>ここにタブ3のコンテンツを書きます。</p>
+                    </div> 
+                    <div id="tab4" class="tab-content">
+                        <h2>タブ4 の内容</h2>
+                        <p>ここにタブ3のコンテンツを書きます。</p>
+                    </div> 
+                </div>
+            </div>
+            <div id="screen_display" class="poker_browser_display">
+                display
+            </div>
+       </div>
+        <div class="poker_browser_templates">
+            テンプレ
+            <p>
+                <div id="template_panel_user_current_hand" class="template_panel_user_current_hand_base">
+                    <div class="template_panel_user_current_hand_value_name">名前</div>
+                    <div class="template_panel_user_current_hand_value_position">ポジション</div>
+                    <div class="template_panel_user_current_hand_value_winrate">勝率</div>
+                    <div class="template_panel_user_current_hand_value_hand">
+                        <img class="template_card_hand" src="../Assets/UI/cards_pc-1.png">
+                        <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
+                    </div>
+                </div>
+            </p>
+        </div>
     </body>
 </html>
