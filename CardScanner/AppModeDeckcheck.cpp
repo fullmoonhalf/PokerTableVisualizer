@@ -19,6 +19,7 @@ void AppModeDeckcheck::start()
         _Cards[index] = createPlaycardSprite(index);
         _Exist[index] = false;
     }
+    _ButtonClear = SysSpriteManager::getInstance().createButton(64, 32, "Clear", this);
     _NeedToDraw = true;
 }
 
@@ -50,21 +51,46 @@ void AppModeDeckcheck::update()
         _Exist[card] = true;
         _NeedToDraw = true;
     }
+
+    _ButtonClear->update();
 }
+
 
 void AppModeDeckcheck::draw()
 {
+    int display_width = SysDisplay::getInstance().getWidth();
+    int display_height = SysDisplay::getInstance().getHeight();
+    _ButtonClear->draw((display_width - 64)/2, display_height - 64);
+
     if(_NeedToDraw)
     {
+        const int CARD_WIDTH = 16;
+        const int CARD_HEIGHT = 32;
+        const int CARD_MARGIN = 2;
+        const int CARD_TOP_MARGIN = 8;
+        int card_left_x = (display_width - (CARD_WIDTH * 13 + CARD_MARGIN * 12)) / 2; 
+
         for(int index=1; index<=52; ++index)
         {
             if(_Exist[index])
             {
-                int x = ((index - 1) % 13) * 17;
-                int y = ((index - 1) / 13) * 33;
+                int x = card_left_x + ((index - 1) % 13) * (CARD_WIDTH + CARD_MARGIN);
+                int y = CARD_TOP_MARGIN + ((index - 1) / 13) * (CARD_HEIGHT + CARD_MARGIN);
                 _Cards[index]->draw(x, y);
             }
         }
+
         _NeedToDraw = false;
     }
+}
+
+
+void AppModeDeckcheck::onGUiButtonReleased(const char *label)
+{
+    for(int index=1; index<=52; ++index)
+    {
+        _Exist[index] = false;
+    }
+    SysDisplay::getInstance().clear();
+    _NeedToDraw = true;
 }
