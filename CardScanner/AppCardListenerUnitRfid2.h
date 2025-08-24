@@ -16,6 +16,8 @@ public:
     virtual bool scan(int timeout = 500);
     virtual int scanWithInfo(int timeout, AppCardInfo *outBuffer);
     virtual int encode(char *outBuffer);
+    virtual int getSensorCount();
+    virtual bool getSensorStatus(int index, char *buffer);
 
     void dump();
     bool write(int page, uint8_t *data, int size, int timeout);

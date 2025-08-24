@@ -13,6 +13,8 @@ public:
     virtual bool scan(int timeout = 500) = 0;
     virtual int scanWithInfo(int timeout, AppCardInfo *outBuffer) = 0;
     virtual int encode(char *outBuffer);
+    virtual int getSensorCount() = 0;
+    virtual bool getSensorStatus(int index, char *buffer) = 0;
 
 protected:
     bool _init(MFRC522 *m);

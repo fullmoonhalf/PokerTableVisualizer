@@ -11,8 +11,7 @@ SysBLEControl::SysBLEControl(const char *identifier, const char *service_uuid, c
     , _BLECharacteristic( nullptr )
     , _BLEAdvertising( nullptr )
     , _CharacteristicValueSourceable( nullptr )
-    , _FrameCount( 0 )
-    , _Connected( false )
+    , _ConnectionConut( 0 )
 {
     SysLog::printf(__NAMEOF__(SysBLEControl), "identifier=%s service_uuid=%s characteristics_uuid=%s", identifier, service_uuid, characteristics_uuid);
     BLEDevice::init(identifier);
@@ -41,46 +40,15 @@ void SysBLEControl::bind(SysBLECharacteristicValueSourceable *source)
 }
 
 
-/// @brief スレッドドライバ
-void SysBLEControl::process()
-{
-    char buffer[256];
-
-    for(_FrameCount = 0;;++_FrameCount)
-    {
-        // ちょいまち
-//        delay(50);
-
-        if(_Connected == false)
-        {
-            continue;
-        }
-
-        if(_CharacteristicValueSourceable != nullptr)
-        {
-            if(_CharacteristicValueSourceable->tryGetBLECharacteristicValue(buffer, sizeof(buffer)))
-            {
-                notify(buffer);
-            }
-        }
-    }
-}
-
-
 /// @brief 送信
 /// @param source 
 void SysBLEControl::notify(const char *source)
 {
+#if VERBOSE
     SysLog::printf(__NAMEOF__(SysBLEControl), "notify '%s'", source);
+#endif
     _BLECharacteristic->setValue(source);
     _BLECharacteristic->notify();
-}
-
-
-/// @brief ステータス文字列の取得
-int SysBLEControl::getFrameCount()
-{
-    return _FrameCount;
 }
 
 
@@ -89,7 +57,7 @@ int SysBLEControl::getFrameCount()
 void SysBLEControl::onConnect(BLEServer *pServer)
 {
     SysLog::printf(__NAMEOF__(SysBLEControl), "Connected.");
-    _Connected = true;
+    _ConnectionConut++;
 }
 
 
@@ -98,5 +66,13 @@ void SysBLEControl::onConnect(BLEServer *pServer)
 void SysBLEControl::onDisconnect(BLEServer *pServer)
 {
     SysLog::printf(__NAMEOF__(SysBLEControl), "Disconnected.");
-    _Connected = false;
+    _ConnectionConut--;
+}
+
+
+/// @brief 現在のコネクション数を取得する
+/// @return 
+int SysBLEControl::getConnectionCount()
+{
+    return _ConnectionConut;
 }

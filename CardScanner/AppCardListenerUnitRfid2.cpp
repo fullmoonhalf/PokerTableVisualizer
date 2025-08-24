@@ -51,8 +51,27 @@ bool AppCardListenerUnitRfid2::write(int page, uint8_t *data, int size, int time
 }
 
 
-
+/// @brief エンコード
+/// @param outBuffer 
+/// @return 
 int AppCardListenerUnitRfid2::encode(char *outBuffer)
 {
     return _encode(outBuffer, _CardInfo, _CardCount);
+}
+
+
+/// @brief センサーの数
+/// @return 
+int AppCardListenerUnitRfid2::getSensorCount()
+{
+    return 1;
+}
+
+
+/// @brief センサーの状態文字列の取得
+/// @param buffer 
+/// @return 
+bool AppCardListenerUnitRfid2::getSensorStatus(int index, char *buffer)
+{
+    return false;
 }

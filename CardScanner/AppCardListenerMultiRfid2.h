@@ -25,6 +25,8 @@ public:
     virtual bool scan(int timeout = 500);
     virtual int scanWithInfo(int timeout, AppCardInfo *outBuffer);
     virtual int encode(char *outBuffer);
+    virtual int getSensorCount();
+    virtual bool getSensorStatus(int index, char *buffer);
 
 private:
     bool switchTcaChannel(int channel);
@@ -35,6 +37,7 @@ private:
     AppCardInfo _CardInfo[8];
     int _CardCount = 0;
     bool _ValidSlot[RFID_READER_COUNT];
+    int _ReadCount[RFID_READER_COUNT];
 };
 
 

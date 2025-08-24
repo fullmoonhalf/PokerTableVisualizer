@@ -20,8 +20,7 @@ public:
 
     void notify(const char *source);
     void bind(SysBLECharacteristicValueSourceable *source);
-    void process();
-    int getFrameCount();
+    int getConnectionCount();
 
 private:
     void onConnect(BLEServer *pServer);
@@ -33,10 +32,7 @@ private:
     BLECharacteristic *_BLECharacteristic;
     BLEAdvertising *_BLEAdvertising;
     SysBLECharacteristicValueSourceable *_CharacteristicValueSourceable;
-
-    int _FrameCount;
-    bool _Connected;
-
+    int _ConnectionConut;
 };
 
 

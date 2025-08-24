@@ -5,14 +5,16 @@
 
 AppCardListenerMultiRfid2::AppCardListenerMultiRfid2()
 {
-
 }
+
 
 AppCardListenerMultiRfid2::~AppCardListenerMultiRfid2()
 {
-
 }
 
+
+/// @brief 初期化
+/// @return 成否
 bool AppCardListenerMultiRfid2::init()
 {
     // RFID 通信ユーティリティオブジェクト
@@ -22,6 +24,7 @@ bool AppCardListenerMultiRfid2::init()
     _TCA.address(PaHub_I2C_ADDRESS);
     for (uint8_t t = 0; t < RFID_READER_COUNT; t++) {
         _ValidSlot[t] = false;
+        _ReadCount[t] = 0;
 
         // チャンネルを合わせて
         bool result_switch = switchTcaChannel(t);
@@ -48,11 +51,14 @@ bool AppCardListenerMultiRfid2::init()
 }
 
 
-
+/// @brief スキャン
+/// @param timeout 探索時間[ms]
+/// @return 検出したカード枚数
 bool AppCardListenerMultiRfid2::scan(int timeout)
 {
     _CardCount = 0;
     for (uint8_t t = 0; t < RFID_READER_COUNT; t++) {
+        _ReadCount[t] = 0;
         if(_ValidSlot[t] == false)
         {
             continue;
@@ -66,9 +72,10 @@ bool AppCardListenerMultiRfid2::scan(int timeout)
             continue;
         }
 
-        int count;
+        int count = 0;
         if(_scan(_MFRC522, timeout, _CardInfo+_CardCount, &count))
         {
+            _ReadCount[t] = count;
             _CardCount += count;
         }
     }
@@ -77,7 +84,10 @@ bool AppCardListenerMultiRfid2::scan(int timeout)
 }
 
 
-
+/// @brief スキャン
+/// @param timeout 探索時間[ms]
+/// @param outBuffer 情報返しバッファ
+/// @return 検出したカード枚数
 int AppCardListenerMultiRfid2::scanWithInfo(int timeout, AppCardInfo *outBuffer)
 {
     _CardCount = 0;
@@ -92,12 +102,45 @@ int AppCardListenerMultiRfid2::scanWithInfo(int timeout, AppCardInfo *outBuffer)
 }
 
 
+/// @brief ハブの対象スイッチ切り替え
+/// @param channel 対象チャネル
+/// @return 成否
 bool AppCardListenerMultiRfid2::switchTcaChannel(int channel)
 {
     return _I2C.setReadRegister(PaHub_I2C_ADDRESS, 1 << channel);
 }
 
+
+/// @brief エンコード
+/// @param outBuffer 
+/// @return 
 int AppCardListenerMultiRfid2::encode(char *outBuffer)
 {
     return _encode(outBuffer, _CardInfo, _CardCount);
+}
+
+
+/// @brief センサーの数
+/// @return 
+int AppCardListenerMultiRfid2::getSensorCount()
+{
+    return RFID_READER_COUNT;
+}
+
+
+/// @brief センサーの状態文字列の取得
+/// @param buffer 
+/// @return 
+bool AppCardListenerMultiRfid2::getSensorStatus(int index, char *buffer)
+{
+    char *seek = buffer;
+    if(_ValidSlot[index])
+    {
+        seek += sprintf(seek, "VALID - read %d", _ReadCount[index]);
+    }
+    else
+    {
+        seek += sprintf(seek, "invalid");
+    }
+    return _ValidSlot[index];
 }
