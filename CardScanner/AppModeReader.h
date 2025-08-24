@@ -19,6 +19,8 @@ private:
     AppCardListenerUnitRfid2Base *_CardReader;
     SysBLEControl *_BLEController;
     SysGuiGauge *_GaugeBattery;
+    SysSprite *_LabelBattery;
+    SysSprite *_LabelSeat;
     char _SendInfoBuffer[480];
     char _ProbeName[64];
     char _BLE_identifier[64];
@@ -26,6 +28,9 @@ private:
     char _BLE_characteristics_uuid[64];
     int _GaugeBatteryPosX;
     int _GaugeBatteryPosY;
+    int _LabelBatteryPosX;
+    int _LabelSeatPosX;
+    int _LabelSeatPosY;
 };
 
 
