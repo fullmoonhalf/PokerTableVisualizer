@@ -25,6 +25,7 @@ private:
     SysGuiButton *_ButtonWrite;
     SysSprite *_LabelCard;
     SysSprite *_LabelDeck;
+    SysSprite *_LabelStatus;
 
     int _CurrentCardIndex;
     int _CurrentDeckIndex;

@@ -16,7 +16,7 @@
 #define BUTTON_LAYOUT_INNER_MARGIN  (16)
 #define LABEL_WIDTH                 (64)
 #define LABEL_HEIGHT                (32)
-
+#define LABEL_STATUS_HEIGHT         (8)
 
 void AppModeWriter::start()
 {
@@ -36,6 +36,7 @@ void AppModeWriter::start()
     // ラベル初期化
     _LabelCard = SysSpriteManager::getInstance().createSprite(LABEL_WIDTH, LABEL_HEIGHT);
     _LabelDeck = SysSpriteManager::getInstance().createSprite(LABEL_WIDTH, LABEL_HEIGHT);
+    _LabelStatus = SysSpriteManager::getInstance().createSprite(LABEL_WIDTH, LABEL_STATUS_HEIGHT);
 
     // コンテキスト初期化
     _CurrentCardIndex = 1;
@@ -52,6 +53,10 @@ void AppModeWriter::end()
     SysSpriteManager::getInstance().destroyDrawable(_ButtonUpDeck);
     SysSpriteManager::getInstance().destroyDrawable(_ButtonDownCard);
     SysSpriteManager::getInstance().destroyDrawable(_ButtonUpCard);
+    SysSpriteManager::getInstance().destroySprite(_LabelCard);
+    SysSpriteManager::getInstance().destroySprite(_LabelDeck);
+    SysSpriteManager::getInstance().destroySprite(_LabelStatus);
+
     delete _CardReader;
 }
 
@@ -64,6 +69,7 @@ void AppModeWriter::update()
     _ButtonDownDeck->update();
     _ButtonWrite->update();
 
+    bool need_to_clear_status = false;
     if(_NeedToUpdateCard)
     {
         static const char rank_letter[] = {'A','2','3','4','5','6','7','8','9','T','J','Q','K',};
@@ -77,6 +83,7 @@ void AppModeWriter::update()
         _LabelCard->clear();
         _LabelCard->drawText(0, 0, 4.0f, buffer);
         _NeedToUpdateCard = false;
+        need_to_clear_status = true;
     }
     if(_NeedToUpdateDeck)
     {
@@ -85,6 +92,11 @@ void AppModeWriter::update()
         _LabelDeck->clear();
         _LabelDeck->drawText(0, 0, 4.0f, buffer);
         _NeedToUpdateDeck = false;
+        need_to_clear_status = true;
+    }
+    if(need_to_clear_status)
+    {
+        _LabelStatus->clear();
     }
 }
 
@@ -98,6 +110,7 @@ void AppModeWriter::draw()
     int write_x = (display_width - BUTTON_WRITE_WIDTH) / 2;
     int write_y = display_height - BUTTON_LAYOUT_OUTER_MARGIN - BUTTON_WRITE_HEIGHT;
     int label_x = (display_width - LABEL_WIDTH) / 2;
+    int status_y = write_y - LABEL_STATUS_HEIGHT - LABEL_STATUS_HEIGHT;
 
     _ButtonUpCard->draw(BUTTON_LAYOUT_OUTER_MARGIN, BUTTON_LAYOUT_OUTER_MARGIN);
     _ButtonDownCard->draw(right_selector_x, BUTTON_LAYOUT_OUTER_MARGIN);
@@ -106,6 +119,7 @@ void AppModeWriter::draw()
     _ButtonWrite->draw(write_x, write_y);
     _LabelCard->draw(label_x, BUTTON_LAYOUT_OUTER_MARGIN+(BUTTON_SELECTOR_HEIGHT-LABEL_HEIGHT)/2);
     _LabelDeck->draw(label_x, deck_selector_y+(BUTTON_SELECTOR_HEIGHT-LABEL_HEIGHT)/2);
+    _LabelStatus->draw(label_x, status_y);
 }
 
 
@@ -154,13 +168,23 @@ void AppModeWriter::onGUiButtonReleased(const char *label)
         buffer[1] = _CurrentCardIndex;
         buffer[2] = 0;
         buffer[3] = 0;
+
+        bool is_success = false;
+        _LabelStatus->clear();
         if(_CardReader->write(4, buffer, sizeof(buffer), 500))
         {
-            _CardReader->scan();
+            if(_CardReader->scan())
+            {
+                is_success = true;
+            }
+        }
+        if(is_success)
+        {
+            _LabelStatus->drawText(0, 0, 1.0f, TFT_CYAN, "success");
         }
         else
         {
-            SysLog::printf(__NAMEOF__(AppModeWriter), "Write Failure.");
+            _LabelStatus->drawText(0, 0, 1.0f, TFT_RED, "failure");
         }
     }
 }
