@@ -145,6 +145,12 @@
     width: 128px;
 }
 
+/* fold 中の状態 */
+.panel_player.folded {
+    filter: grayscale(100%); /* 白黒にするなら */
+}
+
+
 .panel_player_name_value
 {
     background: #222;
@@ -155,6 +161,14 @@
     font-weight: bold;
     border-radius: 8px;
     box-shadow: inset 0 0 4px #000;
+}
+
+.panel_player_action_value
+{
+    color: #888;
+    text-align: center;
+    font-size: xx-small;
+    height: 15px;
 }
 
 .panel_player_winrate_value

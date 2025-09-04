@@ -44,6 +44,7 @@ PokerTableMonitor.engine = (function(){{
 	const HTML_CLASS_PANEL_PLAYER_POSITION_DEALER = "panel_player_position_dealer_button";
 	const HTML_CLASS_PANEL_PLAYER_POSITION_DEALER_HAVE = "panel_player_position_dealer_button_have";
 	const HTML_CLASS_PANEL_PLAYER_WINRATE_VALUE = "panel_player_winrate_value";
+	const HTML_CLASS_PANEL_PLAYER_ACTION_VALUE = "panel_player_action_value";
 	const HTML_CLASS_PANEL_PLAYER_COMMAND_FOLD = "panel_player_command_fold";
 	const HTML_CLASS_PANEL_PLAYER_COMMAND_CALL = "panel_player_command_call";
 	const HTML_CLASS_PANEL_PLAYER_COMMAND_AGGRESSIVE_ACTION = "panel_player_command_aggressive_action";
@@ -342,6 +343,7 @@ PokerTableMonitor.engine = (function(){{
 		this.ElementPositionNameValue = searchNodeByClassNameFromChildren(this.ElementPositionValue, HTML_CLASS_PANEL_PLAYER_POSITION_NAME);
 		this.ElementPositionDealerValue = searchNodeByClassNameFromChildren(this.ElementPositionValue, HTML_CLASS_PANEL_PLAYER_POSITION_DEALER);
 		this.ElementWinRateValue = searchNodeByClassNameFromChildren(argCloneHtmlNode, HTML_CLASS_PANEL_PLAYER_WINRATE_VALUE);
+		this.ElementActionValue = searchNodeByClassNameFromChildren(argCloneHtmlNode, HTML_CLASS_PANEL_PLAYER_ACTION_VALUE, "");
 		this.ElementCommandFold = searchNodeByClassNameFromChildren(argCloneHtmlNode, HTML_CLASS_PANEL_PLAYER_COMMAND_FOLD);
 		this.ElementCommandCall = searchNodeByClassNameFromChildren(argCloneHtmlNode, HTML_CLASS_PANEL_PLAYER_COMMAND_CALL);
 		this.ElementCommandAggressiveAction = searchNodeByClassNameFromChildren(argCloneHtmlNode, HTML_CLASS_PANEL_PLAYER_COMMAND_AGGRESSIVE_ACTION);
@@ -419,6 +421,7 @@ PokerTableMonitor.engine = (function(){{
 	cPlayerViewPanel.prototype.setActive = function(argActive)
 	{
 		this.Active = argActive;
+		this.ViewPanelRoot.classList.toggle("folded", !argActive);
 	}
 	cPlayerViewPanel.prototype.setAlive = function(argAlive)
 	{
@@ -473,13 +476,20 @@ PokerTableMonitor.engine = (function(){{
 	cPlayerViewPanel.prototype.onClickCommandFold = function(argEvent)
 	{
 		this.setActive(false);
+		this.ElementActionValue.innerHTML = "Fold";
 		engine.Manager.updateWinRate();
 	}
 	cPlayerViewPanel.prototype.onClickCommandCall = function(argEvent)
 	{
+		this.setActive(true);
+		this.ElementActionValue.innerHTML = "";
+		engine.Manager.updateWinRate();
 	}
 	cPlayerViewPanel.prototype.onClickCommandAggresiveAction = function(argEvent)
 	{
+		this.setActive(true);
+		this.ElementActionValue.innerHTML = "";
+		engine.Manager.updateWinRate();
 	}
 	cPlayerViewPanel.prototype.proceedNextHand = function(argHandCount)
 	{
@@ -497,7 +507,8 @@ PokerTableMonitor.engine = (function(){{
 		// コンテキストのクリア
 		this.CurrentHand = [];
 		this.WinRate = "";
-		this.Active = true;
+		this.setActive(true);
+		this.ElementActionValue.innerHTML = "";
 	}
 	cPlayerViewPanel.prototype.draw = function()
 	{
