@@ -5,12 +5,6 @@
 #include "AppModeReader.h"
 
 
-
-#define BATTERY_GAUGE_WIDTH (64)
-#define BATTERY_GAUGE_HEIGHT (8)
-#define BATTERY_LABEL_WIDTH (80)
-#define BATTERY_GAUGE_ANCHOR (8)
-
 #define SEAT_LABEL_WIDTH (128)
 #define SEAT_LABEL_HEIGHT (8)
 #define SEAT_LABEL_ANCHOR (8)
@@ -53,17 +47,15 @@ void AppModeReader::start_indicator()
 {
     // バッテリーゲージ
     {
-        _LabelBattery = SysSpriteManager::getInstance().createSprite(BATTERY_LABEL_WIDTH, BATTERY_GAUGE_HEIGHT);
-        _GaugeBattery = SysSpriteManager::getInstance().createGauge(BATTERY_GAUGE_WIDTH, BATTERY_GAUGE_HEIGHT, 0, 100);
-        _GaugeBatteryPosX = SysDisplay::getInstance().getWidth() - BATTERY_GAUGE_WIDTH - BATTERY_GAUGE_ANCHOR;
-        _GaugeBatteryPosY = BATTERY_GAUGE_ANCHOR;
-        _LabelBatteryPosX = _GaugeBatteryPosX - BATTERY_LABEL_WIDTH;
+        _BatteryGauge = new AppBatteryGauge();
+        _GaugeBatteryPosX = SysDisplay::getInstance().getWidth() - _BatteryGauge->getWidth() - 8;
+        _GaugeBatteryPosY = 8;
     }
     // シート情報
     {
         _LabelSeat = SysSpriteManager::getInstance().createSprite(SEAT_LABEL_WIDTH, SEAT_LABEL_HEIGHT);
         _LabelSeatPosX = SEAT_LABEL_ANCHOR;
-        _LabelSeatPosY = _GaugeBatteryPosY + BATTERY_GAUGE_HEIGHT + SEAT_LABEL_ANCHOR;
+        _LabelSeatPosY = _GaugeBatteryPosY + _BatteryGauge->getHeight() + SEAT_LABEL_ANCHOR;
         _LabelSeat->drawText(0, 0, _ProbeName);
     }
     // BLE デバイス情報
@@ -90,7 +82,14 @@ void AppModeReader::start_indicator()
 
 void AppModeReader::end()
 {
-    SysSpriteManager::getInstance().destroyDrawable(_GaugeBattery);
+    for(int index=0; index<_SensorCount; ++index)
+    {
+        SysSpriteManager::getInstance().destroySprite(_LabelSensorStatus[index]);
+    }
+    SysSpriteManager::getInstance().destroySprite(_LabelSensorHeader);
+    SysSpriteManager::getInstance().destroySprite(_LabelBLEStatus);
+    delete _BatteryGauge;
+    delete _BLEController;
     delete _CardReader;
 }
 
@@ -120,12 +119,7 @@ void AppModeReader::update_indicator()
 
     // バッテリー情報更新
     {
-        auto level = M5.Power.getBatteryLevel();
-        sprintf(buffer, "Battery %3d%%", level);
-        _LabelBattery->clear();
-        _LabelBattery->drawText(0, 0, buffer);
-        _GaugeBattery->setCurrentValue(level);
-        _GaugeBattery->update();
+        _BatteryGauge->update();
     }
 
     // BLE 情報更新
@@ -151,8 +145,7 @@ void AppModeReader::update_indicator()
 
 void AppModeReader::draw()
 {
-    _GaugeBattery->draw(_GaugeBatteryPosX, _GaugeBatteryPosY);
-    _LabelBattery->draw(_LabelBatteryPosX, _GaugeBatteryPosY);
+    _BatteryGauge->draw(_GaugeBatteryPosX, _GaugeBatteryPosY);
     _LabelSeat->draw(_LabelSeatPosX, _LabelSeatPosY);
     _LabelBLEStatus->draw(_LabelBLEPosX, _LabelBLEPosY);
     _LabelSensorHeader->draw(_LabelSensorPosX, _LabelSensorPosY);

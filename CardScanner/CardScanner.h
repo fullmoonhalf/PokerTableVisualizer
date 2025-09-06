@@ -3,7 +3,10 @@
 #include "SysDisplay.h"
 #include "SysSetting.h"
 #include "SysMode.h"
+#include "SysSprite.h"
 #include "SysGuiButton.h"
+#include "AppBatteryGauge.h"
+
 
 class CardScanner : public SysMode, public SysGuiButtonReaction
 {
@@ -16,11 +19,15 @@ public:
     virtual void onGUiButtonReleased(const char *label);
 
 private:
+    AppBatteryGauge *_BatteryGauge;
     SysGuiButton *_ButtonReader;
     SysGuiButton *_ButtonWriter;
     SysGuiButton *_ButtonDevelop;
     SysGuiButton *_ButtonDeckcheck;
+    SysSprite *_LabelSeat;
     int _FrameCount = 0;
+    int _GaugeBatteryPosX;
+    int _GaugeBatteryPosY;
 };
 
 

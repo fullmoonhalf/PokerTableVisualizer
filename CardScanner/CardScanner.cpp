@@ -50,11 +50,25 @@ void CardScanner::start()
     _ButtonWriter = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_LABEL_WRITER, this);
     _ButtonDevelop = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_LABEL_DEVELOP, this);
     _ButtonDeckcheck = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_LABEL_DECKCHECK, this);
+    {
+        _BatteryGauge = new AppBatteryGauge();
+        _GaugeBatteryPosX = SysDisplay::getInstance().getWidth() - _BatteryGauge->getWidth() - 8;
+        _GaugeBatteryPosY = 8;
+    }
+    {
+        char _buffer[32];
+        AppSetting::getInstance().get(SETTING_KEY_PROBE_NAME, _buffer);
+        _LabelSeat = SysSpriteManager::getInstance().createSprite(64, 8);
+        _LabelSeat->drawText(0, 0, _buffer);
+    }
 }
+
 
 /// @brief モード終了時処理
 void CardScanner::end()
 {
+    SysSpriteManager::getInstance().destroySprite(_LabelSeat);
+    delete _BatteryGauge;
     SysSpriteManager::getInstance().destroyDrawable(_ButtonDeckcheck);
     SysSpriteManager::getInstance().destroyDrawable(_ButtonDevelop);
     SysSpriteManager::getInstance().destroyDrawable(_ButtonWriter);
@@ -69,6 +83,7 @@ void CardScanner::update()
     _ButtonWriter->update();
     _ButtonDevelop->update();
     _ButtonDeckcheck->update();
+    _BatteryGauge->update();
 }
 
 /// @brief 描画処理
@@ -78,6 +93,8 @@ void CardScanner::draw()
     _ButtonWriter->draw(BUTTON_ANCHOR_X+BUTTON_WIDTH+BUTTON_MARGIN, BUTTON_ANCHOR_Y);
     _ButtonDeckcheck->draw(BUTTON_ANCHOR_X, BUTTON_ANCHOR_Y+BUTTON_HEIGHT+BUTTON_MARGIN);
     _ButtonDevelop->draw(BUTTON_ANCHOR_X+BUTTON_WIDTH+BUTTON_MARGIN, BUTTON_ANCHOR_Y+BUTTON_HEIGHT+BUTTON_MARGIN);
+    _LabelSeat->draw(8, 8);
+    _BatteryGauge->draw(_GaugeBatteryPosX, _GaugeBatteryPosY);
 }
 
 /// @brief ボタン離したときの処理

@@ -2,9 +2,9 @@
 #define _INCLUDED_APP_MODE_READER
 #include "SysMode.h"
 #include "SysGuiGauge.h"
-#include "SysBLEControl.h";
+#include "SysBLEControl.h"
 #include "AppCardListenerUnitRfid2.h"
-
+#include "AppBatteryGauge.h"
 
 
 class AppModeReader : public SysMode
@@ -32,8 +32,7 @@ private: // BLE まわり
     char _BLE_characteristics_uuid[64];
 
 private: // 表示まわり
-    SysGuiGauge *_GaugeBattery;
-    SysSprite *_LabelBattery;
+    AppBatteryGauge *_BatteryGauge;
     SysSprite *_LabelSeat;
     SysSprite *_LabelBLEStatus;
     SysSprite *_LabelSensorHeader;
@@ -41,7 +40,6 @@ private: // 表示まわり
 
     int _GaugeBatteryPosX;
     int _GaugeBatteryPosY;
-    int _LabelBatteryPosX;
     int _LabelSeatPosX;
     int _LabelSeatPosY;
     int _LabelBLEPosX;
