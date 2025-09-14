@@ -145,11 +145,19 @@
     width: 128px;
 }
 
-/* fold 中の状態 */
-.panel_player.folded {
-    filter: grayscale(100%); /* 白黒にするなら */
+.panel_player_info {
+    color: white;
+    border: 4px solid #00ff88;
+    padding: 5px 12px;
+    margin: 2px 2px;
+    border-radius: 15px;
+    background-color: #111;
 }
 
+.panel_player_info.folded {
+    border: 1px solid #000;
+    filter: brightness(30%) saturate(50%); /* 数値を下げるほど暗くなる */
+}
 
 .panel_player_name_value
 {
@@ -165,7 +173,7 @@
 
 .panel_player_action_value
 {
-    color: #888;
+    color: #fff;
     text-align: center;
     font-size: xx-small;
     height: 15px;
@@ -175,7 +183,7 @@
 {
     color: #bb7;
     text-align: center;
-    font-size: xx-small;
+    font-size: small;
     height: 15px;
 }
 
@@ -189,6 +197,11 @@
     font-weight: bold;
     padding: 2px 10px;
     justify-content: center;
+}
+
+.panel_player_hand_value.folded
+{
+    opacity: 50%;
 }
 
 .panel_player_hand_image_style
@@ -342,6 +355,10 @@
     width: 40px;
 }
 
+.panel_player_control
+{
+    margin-top: 8px;
+}
 
 /* probe informations */
 .panel_probe_information_rssi_group

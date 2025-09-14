@@ -27,6 +27,7 @@ PokerTableMonitor.engine = (function(){{
 	const HTML_ID_SECTOR_GLOBAL = "sector_global";
 	const HTML_CLASS_PANEL_PLAYER = "panel_player";
 
+	const HTML_CLASS_PANEL_PLAYER_INFO = "panel_player_info";
 	const HTML_CLASS_PANEL_PLAYER_NAME_VALUE = "panel_player_name_value";
 	const HTML_CLASS_PANEL_PLAYER_HAND_VALUE = "panel_player_hand_value";
 	const HTML_CLASS_PANEL_PLAYER_HAND_IMG_STYLE = "panel_player_hand_image_style";
@@ -335,6 +336,7 @@ PokerTableMonitor.engine = (function(){{
 	{
 		this.ViewPanelRoot = argCloneHtmlNode;
 		this.argSourceLogUnit = argSourceLogUnit;
+		this.ElementInfoPanel = searchNodeByClassNameFromChildren(argCloneHtmlNode, HTML_CLASS_PANEL_PLAYER_INFO);
 		this.ElementNameValue = searchNodeByClassNameFromChildren(argCloneHtmlNode, HTML_CLASS_PANEL_PLAYER_NAME_VALUE, "");
 		this.ElementHandValue = searchNodeByClassNameFromChildren(argCloneHtmlNode, HTML_CLASS_PANEL_PLAYER_HAND_VALUE, "");
 		this.ElementLogValue = searchNodeByClassNameFromChildren(argCloneHtmlNode, HTML_CLASS_PANEL_PLAYER_LOG_VALUE, "");
@@ -421,7 +423,9 @@ PokerTableMonitor.engine = (function(){{
 	cPlayerViewPanel.prototype.setActive = function(argActive)
 	{
 		this.Active = argActive;
-		this.ViewPanelRoot.classList.toggle("folded", !argActive);
+		const is_active = this.isActive();
+		this.ElementInfoPanel.classList.toggle("folded", !is_active);
+		this.ElementHandValue.classList.toggle("folded", !is_active);
 	}
 	cPlayerViewPanel.prototype.setAlive = function(argAlive)
 	{
