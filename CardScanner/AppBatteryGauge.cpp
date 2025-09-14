@@ -12,6 +12,7 @@ AppBatteryGauge::AppBatteryGauge()
 {
     _Label = SysSpriteManager::getInstance().createSprite(BATTERY_LABEL_WIDTH, BATTERY_GAUGE_HEIGHT);
     _Gauge = SysSpriteManager::getInstance().createGauge(BATTERY_GAUGE_WIDTH, BATTERY_GAUGE_HEIGHT, 0, 100);
+    _CurrentBatteryLevel = 0;
 }
 
 
@@ -34,14 +35,20 @@ int AppBatteryGauge::getHeight()
 }
 
 
+int AppBatteryGauge::getBatteryLevel()
+{
+    return _CurrentBatteryLevel;
+}
+
+
 void AppBatteryGauge::update()
 {
     char buffer[32];
-    auto level = M5.Power.getBatteryLevel();
-    sprintf(buffer, "Battery %3d%%", level);
+    _CurrentBatteryLevel = M5.Power.getBatteryLevel();
+    sprintf(buffer, "Battery %3d%%", _CurrentBatteryLevel);
     _Label->clear();
     _Label->drawText(0, 0, buffer);
-    _Gauge->setCurrentValue(level);
+    _Gauge->setCurrentValue(_CurrentBatteryLevel);
     _Gauge->update();
 }
 

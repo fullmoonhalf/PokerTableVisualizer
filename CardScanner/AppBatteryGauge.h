@@ -14,10 +14,12 @@ public:
     void update();
     int getWidth();
     int getHeight();
+    int getBatteryLevel();
 
 private:
     SysGuiGauge *_Gauge;
     SysSprite *_Label;
+    int _CurrentBatteryLevel;
 };
 
 

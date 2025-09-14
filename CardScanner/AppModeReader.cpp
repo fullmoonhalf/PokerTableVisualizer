@@ -103,7 +103,7 @@ void AppModeReader::update()
     // ＢＬＥデバイスへの通知
     {
         char *seek = _SendInfoBuffer;
-        seek += sprintf(seek, "{\"probe\":\"%s\",", _ProbeName);
+        seek += sprintf(seek, "{\"probe\":\"%s\",\"battery\":\"%d\",", _ProbeName, _BatteryGauge->getBatteryLevel());
         seek += _CardReader->encode(seek);
         seek += sprintf(seek, "}");
         _BLEController->notify(_SendInfoBuffer);
