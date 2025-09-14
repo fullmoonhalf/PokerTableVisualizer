@@ -10,35 +10,12 @@
 }
 .poker_browser_control
 {
-    width: 30%;
+    width: 320px;
 }
 .poker_browser_display
 {
-    width: 70%;
     background: #0f0;
-}
-
-/* タブメニュー */
-.tab-menu 
-{
-    display: flex;
-    border-bottom: 2px solid #ccc;
-}
-
-.tab-menu button 
-{
     flex: 1;
-    padding: 10px;
-    border: none;
-    background: #eee;
-    cursor: pointer;
-    font-size: 16px;
-}
-.tab-menu button.active 
-{
-    background: #fff;
-    border-bottom: 2px solid #000;
-    font-weight: bold;
 }
 
 /* コンテンツ */
@@ -61,6 +38,12 @@
     height: 64px;
     margin: 2px 1px;
 }
+.template_card_hand_small
+{
+    width: 16px;
+    height: 32px;
+    margin: 2px 1px;
+}
 
 
 /* 現在のユーザーのハンドパネル */
@@ -68,7 +51,7 @@
 {
     position: relative;   /* 基準にする */
     background: #000;
-    width: 256px;
+    width: 300px;
     height: 80px;
 }
 .template_panel_user_current_hand_value_name
@@ -98,4 +81,106 @@
     top: 8px;
     left: 180px;
     color: #fff;
+}
+
+
+/* 現在のプローブコントロールパネル */
+.template_panel_probe_base
+{
+    position: relative;   /* 基準にする */
+    background: #cff;
+    width: 300px;
+    height: 40px;
+    margin: 2px;
+    font-size: 8px;
+}
+.template_panel_probe_base.button
+{
+    background: #8ff;
+}
+.template_panel_probe_base.utg
+{
+    background: #8f8;
+}
+.template_panel_probe_base.allin
+{
+    background: #faa;
+}
+.template_panel_probe_base.fold
+{
+    background: #999;
+}
+.template_panel_probe_base.dead
+{
+    color: #aaa;
+    background: #444;
+}
+
+.template_panel_probe_value_seat
+{
+    position: absolute;   /* 親を基準に */
+    left: 8px;
+}
+.template_panel_probe_value_seat_id_value
+{
+    font-size: 12px;
+    font-weight: bold;
+}
+.template_panel_probe_value_seat_name_input
+{
+    font-size: 8px;
+}
+
+.template_panel_probe_value_hand
+{
+    position: absolute;   /* 親を基準に */
+    left: 120px;
+}
+.template_panel_probe_value_rssi
+{
+    position: absolute;   /* 親を基準に */
+    top: 0px;
+    left: 42px;
+}
+.template_panel_probe_value_battery
+{
+    position: absolute;   /* 親を基準に */
+    top: 0px;
+    left: 70px;
+}
+.template_panel_probe_command_fold
+{
+    position: absolute;   /* 親を基準に */
+    top: 4px;
+    left: 188px;
+    width: 32px;
+    height: 32px;
+    font-size: 8px;
+}
+.template_panel_probe_command_allin
+{
+    position: absolute;   /* 親を基準に */
+    top: 4px;
+    left: 222px;
+    width: 32px;
+    height: 32px;
+    font-size: 8px;
+}
+.template_panel_probe_command_position
+{
+    position: absolute;   /* 親を基準に */
+    top: 4px;
+    left: 256px;
+    width: 40px;
+    height: 16px;
+    font-size: 8px;
+}
+.template_panel_probe_command_alive
+{
+    position: absolute;   /* 親を基準に */
+    top: 20px;
+    left: 256px;
+    width: 40px;
+    height: 16px;
+    font-size: 8px;
 }

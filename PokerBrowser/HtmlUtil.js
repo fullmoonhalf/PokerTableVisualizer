@@ -1,6 +1,7 @@
 var HtmlUtil = HtmlUtil || (function(){
     ///
 	var _object = {
+        // ID 指定してボタンにイベントリスナを追加する。
         addButtonEventListenerByID : function (id, event)
         {
             const element = document.getElementById(id);

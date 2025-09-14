@@ -13,43 +13,28 @@
             <div class="poker_browser_control">
                 <div>
                     <p>commands</p>
-                    <button id="command_start_hand">Start Hand</button>
+                    <button id="command_deal_hand">Deal Hand</button>
+                    <button id="command_fix_hand">Fix Hand</button>
                     <button id="command_start_flop">Start Flop</button>
                     <button id="command_start_turn">Start Turn</button>
                     <button id="command_start_river">Start River</button>
-                </div>
-                <!-- タブメニュー -->
-                <div class="tab-menu">
-                    <button id="tabmenu_management" class="active">管理画面</button>
-                    <button id="tabmenu_current_hand">ハンド表示</button>
-                </div>
-                <!-- タブコンテンツ -->
-                <div class="tab-content-list">
-                    <div id="tab_management" class="tab-content active">
-                        <h1>管理画面</h1>
-                        <div id="screen_management_user_all">
+                    <div id="screen_management_user_all">
                         <div id="screen_management_user_header">
                             ユーザー管理
-                            <button id="command_user_add">ユーザー追加</button>
+                            <button id="command_probe_add">プローブ追加</button>
                         </div>
-                        <div id="screen_management_user_list">ユーザー一覧</div>
+                        <div id="screen_management_user_list">ユーザー一覧
+                            <div class="element_panel_probe" id="Seat01"></div>
+                            <div class="element_panel_probe" id="Seat02"></div>
+                            <div class="element_panel_probe" id="Seat03"></div>
+                            <div class="element_panel_probe" id="Seat04"></div>
+                            <div class="element_panel_probe" id="Seat05"></div>
+                            <div class="element_panel_probe" id="Seat06"></div>
+                            <div class="element_panel_probe" id="Seat07"></div>
+                            <div class="element_panel_probe" id="Seat08"></div>
+                            <div class="element_panel_probe" id="Seat09"></div>
                         </div>
                     </div>
-                    <div id="tab_current_hand" class="tab-content">
-                        <h2>ハンド表示</h2>
-                        <p>ここにタブ2のコンテンツを書きます。</p>
-                        <hr>
-                        <button id="command_reset_hand">Reset</button><br>
-                        <button id="command_dev_deal_hand">[Dev] Deal hand</button>
-                    </div>
-                    <div id="tab3" class="tab-content">
-                        <h2>タブ3の内容</h2>
-                        <p>ここにタブ3のコンテンツを書きます。</p>
-                    </div> 
-                    <div id="tab4" class="tab-content">
-                        <h2>タブ4 の内容</h2>
-                        <p>ここにタブ3のコンテンツを書きます。</p>
-                    </div> 
                 </div>
             </div>
             <div id="screen_display" class="poker_browser_display">
@@ -64,9 +49,27 @@
                     <div class="template_panel_user_current_hand_value_position">ポジション</div>
                     <div class="template_panel_user_current_hand_value_winrate">勝率</div>
                     <div class="template_panel_user_current_hand_value_hand">
-                        <img class="template_card_hand" src="../Assets/UI/cards_pc-1.png">
+                        <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
                         <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
                     </div>
+                </div>
+            </p>
+            <p>
+                <div id="template_panel_probe" class="template_panel_probe_base">
+                    <div class="template_panel_probe_value_seat">
+                        <div class="template_panel_probe_value_seat_id_value">ID</div>
+                        <div class="template_panel_probe_value_rssi">Rssi</div>
+                        <div class="template_panel_probe_value_battery">Battery</div>
+                        <input class="template_panel_probe_value_seat_name_input">
+                    </div>
+                    <div class="template_panel_probe_value_hand">
+                        <img class="template_card_hand_small" src="../Assets/UI/cards_pc-0.png">
+                        <img class="template_card_hand_small" src="../Assets/UI/cards_pc-0.png">
+                    </div>
+                    <button class="template_panel_probe_command_fold">Fold</button>
+                    <button class="template_panel_probe_command_allin">All-In</button>
+                    <button class="template_panel_probe_command_position">-</button>
+                    <button class="template_panel_probe_command_alive">Alive</button>
                 </div>
             </p>
         </div>

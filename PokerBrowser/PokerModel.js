@@ -77,12 +77,47 @@ var PokerModel = PokerModel || (function(){
     }
 
     // ---------------------------------------------------------------------
+	// デッキ管理
+	// ---------------------------------------------------------------------
+	function cDeck()
+	{
+		this.Deck = Array.from({ length: 52 }, (_, i) => i + 1); // シャッフル
+		this.Used = Array.from({ length: 53 }, (_, i) => false); // 利用済みフラグ
+	}
+	cDeck.prototype.drawCard = function()
+	{
+		const index = Math.floor(Math.random() * this.Deck.length);
+		const card = this.Deck[index];
+		this.Deck.splice(index, 1);
+		this.Used[card] = true;
+		return card;
+	}
+	cDeck.prototype.use = function(argIndex)
+	{
+		this.Deck = this.Deck.filter((_, index) => index !== argIndex);
+		this.Used[argIndex] = true;
+	}
+	cDeck.prototype.useList = function(argIndexList)
+	{
+		for(const index of argIndexList)
+		{
+			this.use(index);
+		}
+	}
+	cDeck.prototype.isUsed = function(argIndex)
+	{
+		return this.Used[argIndex];
+	}
+
+    // ---------------------------------------------------------------------
 	// ハンド: 1 回のゲーム(カード配ってから決着がつくまで)の単位
 	// ---------------------------------------------------------------------
     function cHand(argHandCount)
     {
         this.HandCount = argHandCount; // 何ハンド目なのか
+        this.BettingRound = PokerConst.BettingRound.Preflop;
         this.HandPlayers = []; // ハンドに参加したプレイヤーのリスト
+        this.Deck = new cDeck(); // デッキの情報
 		this.CommunityCardsFlop = []; // Flop で出たカード(3枚)
 		this.CommunityCardsTurn = []; // Turn で出たカード(3枚)
 		this.CommunityCardsRiver = []; // River で出たカード(3枚)
@@ -150,12 +185,23 @@ var PokerModel = PokerModel || (function(){
     }
     cModel.prototype.startFlop = function()
     {
+        this.BettingRound = PokerConst.BettingRound.Flop;
     }
     cModel.prototype.startTurn = function()
     {
+        this.BettingRound = PokerConst.BettingRound.Turn;
     }
     cModel.prototype.startRiver = function()
     {
+        this.BettingRound = PokerConst.BettingRound.River;
+    }
+    cModel.prototype.dealCards = function(target, cards)
+    {
+        const hand_player = this.CurrentHand.HandPlayers.find(x => x.Player.Identifier == target);
+        if(hand_player)
+        {
+            hand_player.HoleCards = cards;
+        }
     }
 
     // ---------------------------------------------------------------------
