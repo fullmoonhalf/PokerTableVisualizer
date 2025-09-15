@@ -16,7 +16,10 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	const COMMAND_START_RIVER = "command_start_river"; // リバー開始コマンド
 	const COMMAND_END_HAND = "command_end_hand"; // ハンド終了コマンド
 	
-	const COMMAND_DEV_DEAL_HAND = "command_dev_deal_hand"; // [開発] ハンド配布
+	const COMMAND_DEV_DEAL_HAND = "command_dev_deal_hands"; // [開発] ハンド配布
+	const COMMAND_DEV_DEAL_FLOP = "command_dev_deal_flop"; // [開発] ハンド配布
+	const COMMAND_DEV_DEAL_TURN = "command_dev_deal_turn"; // [開発] ハンド配布
+	const COMMAND_DEV_DEAL_RIVER = "command_dev_deal_river"; // [開発] ハンド配布
 
 	const SCREEN_USER_LIST = "screen_management_user_list"; // ユーザーリスト表示領域
 	const SCREEN_DISPLAY = "screen_display";
@@ -390,6 +393,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	{
 		this.ElementInfos.classList.toggle("fold", true);
 		this.ElementName.classList.toggle("fold", true);
+		this.ElementWinRate.innerHTML= "";
 	}
 	cSeatLiveView.prototype.toActive = function()
 	{
@@ -399,6 +403,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	cSeatLiveView.prototype.toDead = function()
 	{
 		this.ElementBase.classList.toggle("seatopen", true);
+		this.ElementWinRate.innerHTML= "";
 	}
 	cSeatLiveView.prototype.toAlive = function()
 	{
@@ -418,6 +423,11 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	{
 		this.ElementHand.innerHTML = createHoleCardsHTML(argHoleCards, CLASS_CARD_NORMAL);
 	}
+	cSeatLiveView.prototype.setWinRate = function(argWinRate)
+	{
+		this.ElementWinRate.innerHTML= `${argWinRate}%`;
+	}
+	
 
 	// =====================================================================
 	// プローブの表示まわり
@@ -612,7 +622,10 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 				break;
 		}
 	}
-
+	cSeatView.prototype.setWinRate = function(argWinRate)
+	{
+		this.SeatLive.setWinRate(argWinRate);
+	}
 	
 	// =====================================================================
 	// Dealer 表示オブジェクト
@@ -730,16 +743,19 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 				this.BoardFlop = disp_hole_cards;
 				this.ControlView.setBoardFlop(disp_hole_cards);
 				this.LiveView.setBoardFlop(disp_hole_cards);
+				PokerBrowser.engine.broadcastWinrate();
 				break;
 			case PokerConst.BettingRound.Turn:
 				this.BoardTurn = disp_hole_cards;
 				this.ControlView.setBoardTurn(disp_hole_cards);
 				this.LiveView.setBoardTurn(disp_hole_cards);
+				PokerBrowser.engine.broadcastWinrate();
 				break;
 			case PokerConst.BettingRound.River:
 				this.BoardRiver = disp_hole_cards;
 				this.ControlView.setBoardRiver(disp_hole_cards);
 				this.LiveView.setBoardRiver(disp_hole_cards);
+				PokerBrowser.engine.broadcastWinrate();
 				break;
 			default:
 				break;
@@ -784,6 +800,10 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 				return 0;
 		}
 	}
+	cDealerView.prototype.getCurrentCommunityCards = function()
+	{
+		return this.BoardFlop.concat(this.BoardTurn, this.BoardRiver);
+	}
 
 	// =====================================================================
 	// engine オブジェクト
@@ -805,6 +825,9 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 		HtmlUtil.addButtonEventListenerByID(COMMAND_START_RIVER, this.onCommandStartRiver.bind(this));
 		HtmlUtil.addButtonEventListenerByID(COMMAND_END_HAND, this.onCommandEndHand.bind(this));
 		HtmlUtil.addButtonEventListenerByID(COMMAND_DEV_DEAL_HAND, this.onCommandDevDealHand.bind(this));
+		HtmlUtil.addButtonEventListenerByID(COMMAND_DEV_DEAL_FLOP, this.onCommandDevDealFlop.bind(this));
+		HtmlUtil.addButtonEventListenerByID(COMMAND_DEV_DEAL_TURN, this.onCommandDevDealTurn.bind(this));
+		HtmlUtil.addButtonEventListenerByID(COMMAND_DEV_DEAL_RIVER, this.onCommandDevDealRiver.bind(this));
 		
 		this.ScreenUserList = document.getElementById(SCREEN_USER_LIST);
 		this.ScreenDisplay = document.getElementById(SCREEN_DISPLAY);
@@ -937,6 +960,45 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	// ---------------------------------------------------------------------
 	cEngine.prototype.onCommandDevDealHand = function()
 	{
+		this.startHand();
+		this.broadcastRound(PokerConst.BettingRound.DealHand);
+		for(const seat of  this.SeatViews)
+		{
+			if(seat.isActive())
+			{
+				const holdcard = [
+					PokerModel.CurrentHand.Deck.drawCard(),
+					PokerModel.CurrentHand.Deck.drawCard(),
+				];
+				seat.setHoleCards(holdcard);
+			}
+		}
+	}
+	cEngine.prototype.onCommandDevDealFlop = function()
+	{
+		this.broadcastRound(PokerConst.BettingRound.Flop);
+		const holdcard = [
+			PokerModel.CurrentHand.Deck.drawCard(),
+			PokerModel.CurrentHand.Deck.drawCard(),
+			PokerModel.CurrentHand.Deck.drawCard(),
+		];
+		this.DealerView.setHoleCards(holdcard);
+	}
+	cEngine.prototype.onCommandDevDealTurn = function()
+	{
+		this.broadcastRound(PokerConst.BettingRound.Turn);
+		const holdcard = [
+			PokerModel.CurrentHand.Deck.drawCard(),
+		];
+		this.DealerView.setHoleCards(holdcard);
+	}
+	cEngine.prototype.onCommandDevDealRiver = function()
+	{
+		this.broadcastRound(PokerConst.BettingRound.River);
+		const holdcard = [
+			PokerModel.CurrentHand.Deck.drawCard(),
+		];
+		this.DealerView.setHoleCards(holdcard);
 	}
 	// ---------------------------------------------------------------------
 	// 論理設定
@@ -1010,6 +1072,48 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 		this.Probes.forEach(x => x.proceedRound());
 	}
 
+	cEngine.prototype.broadcastWinrate = function()
+	{
+		// 現在の制約上、フロップが開くまでは確率表示できない。
+		const community_cards = this.DealerView.getCurrentCommunityCards();
+		if(community_cards.length < 3)
+		{
+			return;
+		}
+
+		// 勝率計算処理に食わせられるようにする
+		let index_table = [];
+		let hand_info = [];
+		for(let index=0; index<this.SeatViews.length; ++index)
+		{
+			const seat = this.SeatViews[index];
+			if(!seat.isActive())
+			{
+				continue;
+			}
+			if(seat.CurrentHoleCards.length < 2)
+			{
+				continue;
+			}
+			index_table.push(index);
+			hand_info.push(seat.CurrentHoleCards);
+		}
+
+		// 勝率計算
+		const result = WinRate.calc(hand_info, community_cards, [])
+		for(let result_index=0; result_index<result.infos.length; ++result_index)
+		{
+			const access_index = index_table[result_index];
+			const seat = this.SeatViews[access_index];
+			const result_unit = result.infos[result_index];
+			const rate = Math.round((result_unit.win * 100 / result_unit.comb));
+			seat.setWinRate(rate);
+		}
+	}
+
+	// =====================================================================
+	// エンジンオブジェクト生成
+	// =====================================================================
 	engine = new cEngine();
 	return engine;
 })();

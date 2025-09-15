@@ -12,9 +12,11 @@
     position: absolute;
     touch-action: none;                /* スクロールよりドラッグを優先 */
     transform: translate(0,0);         /* 以後は translate で動かす */
+/*
     width: 200px;
-    height: 64px;
-}
+    height: 80px;
+*/
+    }
 .template_panel_user_current_hand_layout_base
 {
     position: relative;
@@ -25,7 +27,7 @@
     background: #030;
     border: 2px solid #ff8;
     width: 200px;
-    height: 50px
+    height: 54px;
 }
 .template_panel_user_current_hand_infos.fold
 {
@@ -62,14 +64,16 @@
 .template_panel_user_current_hand_value_winrate
 {
     position: absolute;   /* 親を基準に */
-    top: 5px;
-    left: 100px;
+    top: 2px;
+    left: 90px;
+    width: 50px;
     color: #ff0;
+    text-align: right;
 }
 .template_panel_user_current_hand_value_hand
 {
     position: absolute;   /* 親を基準に */
-    top: 0px;
+    top: 2px;
     left: 140px;
     color: #fff;
 }
