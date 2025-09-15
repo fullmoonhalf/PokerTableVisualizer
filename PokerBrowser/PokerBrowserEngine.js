@@ -396,12 +396,14 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	{
 		this.ElementInfos.classList.toggle("fold", true);
 		this.ElementName.classList.toggle("fold", true);
+		this.ElementHand.classList.toggle("fold", true);
 		this.ElementWinRate.innerHTML= "";
 	}
 	cSeatLiveView.prototype.toActive = function()
 	{
 		this.ElementInfos.classList.toggle("fold", false);
 		this.ElementName.classList.toggle("fold", false);
+		this.ElementHand.classList.toggle("fold", false);
 	}
 	cSeatLiveView.prototype.toDead = function()
 	{
