@@ -52,31 +52,23 @@
 .template_panel_dealer_probe_flop
 {
     position: absolute;   /* 親を基準に */
-    left: 130px;
+    left: 160px;
 }
 .template_panel_dealer_probe_turn
 {
     position: absolute;   /* 親を基準に */
-    left: 230px;
+    left: 245px;
 }
 .template_panel_dealer_probe_river
 {
     position: absolute;   /* 親を基準に */
     left: 270px;
 }
-.template_panel_dealer_probe_blind_update
-{
-    position: absolute;   /* 親を基準に */
-    top: 32px;
-    left: 10px;
-    width: 32px;
-    font-size: 8px;
-}
 .template_panel_dealer_probe_sb_input
 {
     position: absolute;   /* 親を基準に */
     top: 32px;
-    left: 45px;
+    left: 10px;
     width: 30px;
     font-size: 8px;
 }
@@ -84,7 +76,15 @@
 {
     position: absolute;   /* 親を基準に */
     top: 32px;
-    left: 85px;
+    left: 50px;
     width: 30px;
+    font-size: 8px;
+}
+.template_panel_dealer_probe_pot_input
+{
+    position: absolute;   /* 親を基準に */
+    top: 32px;
+    left: 100px;
+    width: 40px;
     font-size: 8px;
 }

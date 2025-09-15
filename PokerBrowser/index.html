@@ -34,9 +34,9 @@
                             <div class="template_panel_dealer_probe_battery">Battery</div>
                             <div class="template_panel_dealer_probe_hand">Hand</div>
                             <div class="template_panel_dealer_probe_round">Round</div>
-                            <button class="template_panel_dealer_probe_blind_update">Up</button>
-                            <input class="template_panel_dealer_probe_sb_input">
-                            <input class="template_panel_dealer_probe_bb_input">
+                            <input type="number" class="template_panel_dealer_probe_sb_input" placeholder="SB">
+                            <input type="number" class="template_panel_dealer_probe_bb_input" placeholder="BB">
+                            <input type="number" class="template_panel_dealer_probe_pot_input" placeholder="POT">
                             <div class="template_panel_dealer_probe_flop">
                                 <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
                                 <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
@@ -79,6 +79,10 @@
                                 <div class="template_panel_user_current_hand_value_name">名前</div>
                                 <div class="template_panel_user_current_hand_value_position">ポジション</div>
                                 <div class="template_panel_user_current_hand_value_winrate">勝率</div>
+                                <div class="template_panel_user_current_hand_label_stack">Stack</div>
+                                <div class="template_panel_user_current_hand_value_stack">Stack</div>
+                                <div class="template_panel_user_current_hand_label_bet">Bet</div>
+                                <div class="template_panel_user_current_hand_value_bet">Bet</div>
                             </div>
                             <div class="template_panel_user_current_hand_value_hand">
                                 <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
@@ -95,6 +99,10 @@
                         <div class="template_panel_probe_value_rssi">Rssi</div>
                         <div class="template_panel_probe_value_battery">Battery</div>
                         <input class="template_panel_probe_value_seat_name_input">
+                        <input type="number" class="template_panel_probe_value_bet_amount_input" placeholder="BET">
+                        <input type="number" class="template_panel_probe_value_stack_input" placeholder="Stack">
+                        <button class="template_panel_probe_command_bet_action">Bet</button>
+                        <button class="template_panel_probe_command_call_action">Call</button>
                     </div>
                     <div class="template_panel_probe_value_hand">
                         <img class="template_card_hand_small" src="../Assets/UI/cards_pc-0.png">
@@ -121,6 +129,9 @@
                             <div class="template_panel_dealer_view_river">
                                 <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
                             </div>
+                            <div class="template_panel_dealer_view_blind_value">blind</div>
+                            <div class="template_panel_dealer_view_pot_label">pot:</div>
+                            <div class="template_panel_dealer_view_pot_value">pot</div>
                         </div>
                     </div>
                 </div>

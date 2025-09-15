@@ -12,10 +12,6 @@
     position: absolute;
     touch-action: none;                /* スクロールよりドラッグを優先 */
     transform: translate(0,0);         /* 以後は translate で動かす */
-/*
-    width: 200px;
-    height: 80px;
-*/
 }
 .template_panel_user_current_hand_layout_base
 {
@@ -44,8 +40,9 @@
 .template_panel_user_current_hand_value_name
 {
     position: absolute;   /* 親を基準に */
-    top: 20px;
-    left: 10px;
+    top: 15px;
+    left: 8px;
+    font-size: 16px;
     color: #fff;
 }
 .template_panel_user_current_hand_value_name.fold
@@ -69,6 +66,44 @@
     left: 90px;
     width: 50px;
     color: #ff0;
+    text-align: right;
+}
+.template_panel_user_current_hand_label_bet
+{
+    position: absolute;   /* 親を基準に */
+    top: 40px;
+    left: 20px;
+    text-align: right;
+    font-size: 8px;
+    color: #aaa;
+}
+.template_panel_user_current_hand_value_bet
+{
+    position: absolute;   /* 親を基準に */
+    top: 40px;
+    left: 30px;
+    width: 40px;
+    text-align: right;
+    font-size: 8px;
+    color: #ff0;
+}
+.template_panel_user_current_hand_label_stack
+{
+    position: absolute;   /* 親を基準に */
+    top: 40px;
+    left: 75px;
+    width: 20px;
+    font-size: 8px;
+    color: #aaa;
+}
+.template_panel_user_current_hand_value_stack
+{
+    position: absolute;   /* 親を基準に */
+    top: 40px;
+    left: 100px;
+    width: 40px;
+    font-size: 8px;
+    color: #fff;
     text-align: right;
 }
 .template_panel_user_current_hand_value_hand

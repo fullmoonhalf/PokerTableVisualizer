@@ -43,12 +43,13 @@
 .template_panel_probe_value_seat_name_input
 {
     font-size: 8px;
+    width: 80px;
 }
 
 .template_panel_probe_value_hand
 {
     position: absolute;   /* 親を基準に */
-    left: 120px;
+    left: 95px;
 }
 .template_panel_probe_value_rssi
 {
@@ -62,24 +63,59 @@
     top: 0px;
     left: 70px;
 }
+
+.template_panel_probe_value_bet_amount_input
+{
+    position: absolute;   /* 親を基準に */
+    font-size: 8px;
+    top: 4px;
+    left: 125px;
+    width: 40px;
+}
+.template_panel_probe_value_stack_input
+{
+    position: absolute;   /* 親を基準に */
+    font-size: 8px;
+    top: 20px;
+    left: 125px;
+    width: 40px;
+}
+.template_panel_probe_command_bet_action
+{
+    position: absolute;   /* 親を基準に */
+    top: 4px;
+    left: 175px;
+    font-size: 8px;
+    width: 25px;
+}
+.template_panel_probe_command_call_action
+{
+    position: absolute;   /* 親を基準に */
+    top: 20px;
+    left: 175px;
+    font-size: 8px;
+    width: 25px;
+}
+
 .template_panel_probe_command_fold
 {
     position: absolute;   /* 親を基準に */
     top: 4px;
-    left: 188px;
-    width: 32px;
-    height: 32px;
+    left: 212px;
+    width: 40px;
+    height: 16px;
     font-size: 8px;
 }
 .template_panel_probe_command_allin
 {
     position: absolute;   /* 親を基準に */
-    top: 4px;
-    left: 222px;
-    width: 32px;
-    height: 32px;
+    top: 22px;
+    left: 212px;
+    width: 40px;
+    height: 16px;
     font-size: 8px;
 }
+
 .template_panel_probe_command_position
 {
     position: absolute;   /* 親を基準に */
@@ -92,7 +128,7 @@
 .template_panel_probe_command_alive
 {
     position: absolute;   /* 親を基準に */
-    top: 20px;
+    top: 22px;
     left: 256px;
     width: 40px;
     height: 16px;
