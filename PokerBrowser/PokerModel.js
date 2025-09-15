@@ -1,11 +1,13 @@
 var PokerConst = PokerConst || 
 {
     BettingRound : {
-        Interval : 0,
-        Preflop : 1,
-        Flop : 2,
-        Turn : 3,
-        River : 4,
+        Invalid : 0,
+        DealHand : 1,
+        Preflop : 2,
+        Flop : 3,
+        Turn : 4,
+        River : 5,
+        EndHand: 6,
     },
 
     PlayerStatus : {
@@ -47,20 +49,6 @@ var PokerModel = PokerModel || (function(){
     function cPlayer(name)
     {
         this.Identifier = name; // プレイヤー識別子
-        this.ChipCount = 0; // 現在のチップカウント
-        this.Alive = true;
-    }
-
-    // ---------------------------------------------------------------------
-	// プレイヤーのアクション
-	// ---------------------------------------------------------------------
-    function cHandPlayerAction()
-    {
-        this.HandCount = argHandCount; // 何ハンド目なのか
-        this.HandPlayer = null; // プレイヤー。cHandPlayer を入れる。
-        this.BettingRound = PokerConst.BettingRound.Preflop;
-        this.Type = PokerConst.PlayerAction.Fold;
-        this.BetAmount = 0;
     }
 
     // ---------------------------------------------------------------------
@@ -69,11 +57,6 @@ var PokerModel = PokerModel || (function(){
     function cHandPlayer(player)
     {
         this.Player = player; // プレイヤー
-        this.HoleCards = []; // ホールカード
-        this.Position = 0; // ディーラーから数えて何人目か(ディーラーなら 0)。
-        this.Status = PokerConst.PlayerStatus.Waiting; // 現在の状態
-        this.CurrentAction = null; // 現在のアクション
-        this.ActionHistory = []; // アクション履歴
     }
 
     // ---------------------------------------------------------------------
@@ -119,8 +102,8 @@ var PokerModel = PokerModel || (function(){
         this.HandPlayers = []; // ハンドに参加したプレイヤーのリスト
         this.Deck = new cDeck(); // デッキの情報
 		this.CommunityCardsFlop = []; // Flop で出たカード(3枚)
-		this.CommunityCardsTurn = []; // Turn で出たカード(3枚)
-		this.CommunityCardsRiver = []; // River で出たカード(3枚)
+		this.CommunityCardsTurn = []; // Turn で出たカード(1枚)
+		this.CommunityCardsRiver = []; // River で出たカード(1枚)
     }
 
     // ---------------------------------------------------------------------
@@ -137,7 +120,7 @@ var PokerModel = PokerModel || (function(){
     function cModel()
     {
         this.Session = new cSession();
-        this.PlayerList = [];
+        this.PlayerList = {};
         this.Notifier = null;
         this.CurrentHand = new cHand(0);
     }
@@ -145,43 +128,12 @@ var PokerModel = PokerModel || (function(){
     {
         console.log("model init");
     }
-    
-    // ---------------------------------------------------------------------
-    // 通知関連
-	// ---------------------------------------------------------------------
-    cModel.prototype.bindModelUpdateNotifier = function(notifier)
-    {
-        this.Notifier = notifier;
-    }
-    cModel.prototype.notify = function()
-    {
-        if(this.Notifier)
-        {
-            this.Notifier.notifyModelUpdate();
-        }
-    }
-    cModel.prototype.notifyHand = function(hand)
-    {
-        if(this.Notifier)
-        {
-            this.Notifier.notifyModelUpdateHand(hand);
-        }
-    }
-
     // ---------------------------------------------------------------------
     // モデルへの操作(ゲーム進行系)
 	// ---------------------------------------------------------------------
-    cModel.prototype.startHand = function()
+    cModel.prototype.startHand = function(argAlivePlayers)
     {
-        this.CurrentHand = new cHand(this.CurrentHand.HandCount);
-        for(const player of this.PlayerList)
-        {
-            if(player.Alive)
-            {
-                this.CurrentHand.HandPlayers.push(new cHandPlayer(player));
-            }
-        }
-        this.notifyHand(this.CurrentHand);
+        this.CurrentHand = new cHand(this.CurrentHand.HandCount+1);
     }
     cModel.prototype.startFlop = function()
     {
@@ -195,13 +147,39 @@ var PokerModel = PokerModel || (function(){
     {
         this.BettingRound = PokerConst.BettingRound.River;
     }
-    cModel.prototype.dealCards = function(target, cards)
+    // ---------------------------------------------------------------------
+    // カード状態の設定
+	// ---------------------------------------------------------------------
+    cModel.prototype.useHoleCards = function(argPlayerName, argCards)
     {
-        const hand_player = this.CurrentHand.HandPlayers.find(x => x.Player.Identifier == target);
-        if(hand_player)
-        {
-            hand_player.HoleCards = cards;
-        }
+        this.CurrentHand.Deck.useList(argCards);
+    }
+    cModel.prototype.useFlopCards = function(argFlop)
+    {
+		this.CommunityCardsFlop = argFlop;
+        this.CurrentHand.Deck.useList(argFlop);
+    }
+    cModel.prototype.useTurnCards = function(argTurn)
+    {
+		this.CommunityCardsTurn = argTurn;
+        this.CurrentHand.Deck.useList(argTurn);
+    }
+    cModel.prototype.useRiverCards = function(argRiver)
+    {
+		this.CommunityCardsRiver = argRiver;
+        this.CurrentHand.Deck.useList(argRiver);
+    }
+
+    // ---------------------------------------------------------------------
+    // 状態の取得
+	// ---------------------------------------------------------------------
+    cModel.prototype.getCurrentHandCount = function()
+    {
+        return this.CurrentHand.HandCount;
+    }
+    cModel.prototype.isUsedCard = function(argCard)
+    {
+        return this.CurrentHand.Deck.isUsed(argCard);
     }
 
     // ---------------------------------------------------------------------
@@ -210,12 +188,6 @@ var PokerModel = PokerModel || (function(){
     cModel.prototype.reset = function()
     {
         console.log("model reset");
-    }
-    cModel.prototype.addUser = function(name)
-    {
-        let user = new cPlayer(name);
-        this.PlayerList.push(user);
-        this.notify();
     }
 
     _model = new cModel();

@@ -4,7 +4,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 
 	// BLEデバイス関係
 	const BLE_DEVICE_NAME_PREFIX = "PTV_PP_";
-	const BLE_DEVICE_PROBE_NAME_DEALER_PREFIX = "Dealer";
+	const BLE_DEVICE_PROBE_NAME_DEALER = "Dealer01";
 	const UUID_SERVICE = "cbaabb28-4e81-49c4-b775-aedfd27d8db0";
 	const UUID_CHARACTERISTIC = "45f116ee-b087-4271-888d-a15eebebd2eb";
 
@@ -14,7 +14,8 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	const COMMAND_START_FLOP = "command_start_flop"; // フロップ開始コマンド
 	const COMMAND_START_TURN = "command_start_turn"; // ターン開始コマンド
 	const COMMAND_START_RIVER = "command_start_river"; // リバー開始コマンド
-
+	const COMMAND_END_HAND = "command_end_hand"; // ハンド終了コマンド
+	
 	const COMMAND_DEV_DEAL_HAND = "command_dev_deal_hand"; // [開発] ハンド配布
 
 	const SCREEN_USER_LIST = "screen_management_user_list"; // ユーザーリスト表示領域
@@ -39,7 +40,25 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	const TEMPLATE_PANEL_PROBE_COMMANBD_POSITION = "template_panel_probe_command_position";
 	const TEMPLATE_PANEL_PROBE_COMMANBD_ALIVE = "template_panel_probe_command_alive";
 
+	const TEMPLATE_DEALER_CONTROL = "template_panel_dealer_control";
+	const TEMPLATE_DEALER_CONTROL_HAND = "template_panel_dealer_probe_hand";
+	const TEMPLATE_DEALER_CONTROL_ROUND = "template_panel_dealer_probe_round";
+	const TEMPLATE_DEALER_CONTROL_BOARD_FLOP = "template_panel_dealer_probe_flop";
+	const TEMPLATE_DEALER_CONTROL_BOARD_TURN = "template_panel_dealer_probe_turn";
+	const TEMPLATE_DEALER_CONTROL_BOARD_RIVER = "template_panel_dealer_probe_river";
+	const TEMPLATE_DEALER_CONTROL_RSSI = "template_panel_dealer_probe_rssi";
+	const TEMPLATE_DEALER_CONTROL_Battery = "template_panel_dealer_probe_battery";
+
+	const TEMPLATE_DEALER_VIEW = "template_panel_dealer_view";
+	const TEMPLATE_DEALER_VIEW_DRAG = "template_panel_dealer_view_drag";
+	const TEMPLATE_DEALER_VIEW_BOARD_FLOP = "template_panel_dealer_view_flop";
+	const TEMPLATE_DEALER_VIEW_BOARD_TURN = "template_panel_dealer_view_turn";
+	const TEMPLATE_DEALER_VIEW_BOARD_RIVER = "template_panel_dealer_view_river";
+	
 	const ELEMENT_PANEL_PROBE = "element_panel_probe";
+
+	const CLASS_CARD_NORMAL = "template_card_hand";
+	const CLASS_CARD_SMALL = "template_card_hand_small";
 
 	// カードの表示順
 	const CARD_ORDER = [
@@ -50,6 +69,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 		3, 51, 47, 43, 39, 35, 31, 27, 23, 19, 15, 11, 7,
 		4, 52, 48, 44, 40, 36, 32, 28, 24, 20, 16, 12, 8,
 	]
+
 
 	// ポジション名
 	const POKER_POSITION_DEALER = "D";
@@ -93,7 +113,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	// =====================================================================
 	// ユーティリティ
 	// =====================================================================
-	function createHoleCardsHTML(argHoleCards, argClassName)
+	function createHoleCardsHTML(argHoleCards, argClassName, argCapacity)
 	{
 		let html = "";
 		let index = 0;
@@ -102,7 +122,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 			html += `<img class="${argClassName}" src="../Assets/UI/cards_pc-${card}.png">`;
 			index++;
 		}
-		while(index < 2)
+		while(index < argCapacity)
 		{
 			html += `<img class="${argClassName}" src="../Assets/UI/cards_pc-0.png">`;
 			index++;
@@ -112,21 +132,50 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 
 
 	// =====================================================================
-	// ユーザーハンドの表示
+	// DnDまわり
 	// =====================================================================
-	function cPanelCurrentHand(argPanelTemplate, argHandPlayer)
+	function cDragableElement(argElement)
 	{
-		this.HandPlayer = argHandPlayer;
-		this.ElementBase = argPanelTemplate.cloneNode(true);
-		this.ElementName = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_CURRENT_HAND_VALUE_NAME);
-		this.ElementPosition = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_CURRENT_HAND_VALUE_POSITION);
-		this.ElementWinRate = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_CURRENT_HAND_VALUE_WINRATE);
-		this.ElementHand = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_CURRENT_HAND_VALUE_HAND);
+		this.TargetElement = argElement;
+		HtmlUtil.addEventListenerToElement(argElement, "pointerdown", this.onDragStart.bind(this));
+		HtmlUtil.addEventListenerToElement(argElement, "pointermove", this.onDragMove.bind(this));
+		HtmlUtil.addEventListenerToElement(argElement, "pointerup", this.onDragEnd.bind(this));
+		HtmlUtil.addEventListenerToElement(argElement, "pointercancel", this.onDragEnd.bind(this));
+
+		this.Draggning = false;
+		this.DragPrevX = 0;
+		this.DragPrevY = 0;
+		this.TransX = 0;
+		this.TransY = 0;
 	}
-	cPanelCurrentHand.prototype.render = function()
+	cDragableElement.prototype.onDragStart = function(event)
 	{
-		this.ElementName.innerHTML = this.HandPlayer.Player.Identifier;
+		event.preventDefault();
+		this.Draggning = true;
+		this.DragPrevX = event.clientX;
+		this.DragPrevY = event.clientY;
 	}
+	cDragableElement.prototype.onDragMove = function(event)
+	{
+		const grid_size = 16;
+		if(this.Draggning)
+		{
+			let dx = event.clientX - this.DragPrevX;
+			let dy = event.clientY - this.DragPrevY;
+			this.TransX += dx;
+			this.TransY += dy;
+			this.DragPrevX = event.clientX;
+			this.DragPrevY = event.clientY;
+			const nx = Math.round(this.TransX/grid_size)*grid_size;
+			const ny = Math.round(this.TransY/grid_size)*grid_size;
+			this.TargetElement.style.transform = `translate(${nx}px, ${ny}px)`;
+		}
+	}
+	cDragableElement.prototype.onDragEnd = function(event)
+	{
+		this.Draggning = false;
+	}
+
 
 	// =====================================================================
 	// プローブとの通信まわり
@@ -159,6 +208,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 
 			// 読み込み閾値の変更
 			let rssi_threshold = 180;
+			const scan_count = this.SeatView.getScanCount();
 
 			// カードの更新
 			let need_to_update = false;
@@ -167,6 +217,10 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 			{
 				for(const card of json.cards)
 				{
+					if(PokerModel.isUsedCard(card.card))
+					{
+						continue;
+					}
 					if(card.rssi >= rssi_threshold)
 					{
 						this.ReceiveHistory.push(card.card);
@@ -185,7 +239,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 
 			if(need_to_update)
 			{
-				const hold_cards = this.getTopNFrequentItems(this.ReceiveHistory, 2);
+				const hold_cards = this.getTopNFrequentItems(this.ReceiveHistory, scan_count);
 				this.SeatView.setHoleCards(hold_cards);
 			}
 
@@ -213,6 +267,10 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 
 		// 値（キー）だけ取り出す
 		return sorted.map(entry => isNaN(entry[0]) ? entry[0] : Number(entry[0]));
+	}
+	cProbe.prototype.proceedRound = function()
+	{
+		this.ReceiveHistory = [];
 	}
 
 	// =====================================================================
@@ -290,7 +348,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	}
 	cSeatControlView.prototype.setHoleCards = function(argHoleCards)
 	{
-		this.ElementHand.innerHTML = createHoleCardsHTML(argHoleCards, "template_card_hand_small");
+		this.ElementHand.innerHTML = createHoleCardsHTML(argHoleCards, CLASS_CARD_SMALL, 2);
 	}
 	cSeatControlView.prototype.setPosition = function(argPositionIndex, argAlivePlayerCount)
 	{
@@ -312,44 +370,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 		this.ElementPosition = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_CURRENT_HAND_VALUE_POSITION, "");
 		this.ElementWinRate = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_CURRENT_HAND_VALUE_WINRATE, "");
 		this.ElementHand = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_CURRENT_HAND_VALUE_HAND);
-
-		HtmlUtil.addEventListenerToElement(this.ElementDrag, "pointerdown", this.onDragStart.bind(this));
-		HtmlUtil.addEventListenerToElement(this.ElementDrag, "pointermove", this.onDragMove.bind(this));
-		HtmlUtil.addEventListenerToElement(this.ElementDrag, "pointerup", this.onDragEnd.bind(this));
-		HtmlUtil.addEventListenerToElement(this.ElementDrag, "pointercancel", this.onDragEnd.bind(this));
-
-		this.Draggning = false;
-		this.DragPrevX = 0;
-		this.DragPrevY = 0;
-		this.TransX = 0;
-		this.TransY = 0;
-	}
-	cSeatLiveView.prototype.onDragStart = function(event)
-	{
-		event.preventDefault();
-		this.Draggning = true;
-		this.DragPrevX = event.clientX;
-		this.DragPrevY = event.clientY;
-	}
-	cSeatLiveView.prototype.onDragMove = function(event)
-	{
-		const grid_size = 16;
-		if(this.Draggning)
-		{
-			let dx = event.clientX - this.DragPrevX;
-			let dy = event.clientY - this.DragPrevY;
-			this.TransX += dx;
-			this.TransY += dy;
-			this.DragPrevX = event.clientX;
-			this.DragPrevY = event.clientY;
-			const nx = Math.round(this.TransX/grid_size)*grid_size;
-			const ny = Math.round(this.TransY/grid_size)*grid_size;
-			this.ElementDrag.style.transform = `translate(${nx}px, ${ny}px)`;
-		}
-	}
-	cSeatLiveView.prototype.onDragEnd = function(event)
-	{
-		this.Draggning = false;
+		this.DragControl = new cDragableElement(this.ElementDrag);
 	}
 	cSeatLiveView.prototype.setName = function(argName)
 	{
@@ -395,7 +416,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	}
 	cSeatLiveView.prototype.setHoleCards = function(argHoleCards)
 	{
-		this.ElementHand.innerHTML = createHoleCardsHTML(argHoleCards, "template_card_hand");
+		this.ElementHand.innerHTML = createHoleCardsHTML(argHoleCards, CLASS_CARD_NORMAL);
 	}
 
 	// =====================================================================
@@ -410,6 +431,9 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 		this.AllIn = false;
 		this.PositionIndex = 0; // ディーラーまでの人数
 		this.AlivePlayerCount = 0;
+		this.Round = PokerConst.BettingRound.Invalid;
+		this.PlayerName = "";
+		this.CurrentHoleCards = [];
 
 		this.setSeatName(argSeatName);
 		this.toDead();
@@ -531,6 +555,14 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	{
 		return this.Alive == true && this.Active == true;
 	}
+	cSeatView.prototype.getScanCount = function()
+	{
+		return 2;
+	}
+	cSeatView.prototype.getPlayerName = function()
+	{
+		return this.PlayerName;
+	}
 
 	// ---------------------------------------------------------------------
 	// 状態の設定
@@ -540,6 +572,10 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 		this.SeatName = argSeatName;
 		this.SeatControl.setSeatName(argSeatName);
 		this.SeatLive.setName(argSeatName);
+		if(!this.PlayerName)
+		{
+			this.PlayerName = argSeatName;
+		}
 	}
 	cSeatView.prototype.setRSSI = function(argRSSI)
 	{
@@ -551,9 +587,13 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	}
 	cSeatView.prototype.setHoleCards = function(argHoleCards)
 	{
-		const disp_hole_cards = argHoleCards.sort((a, b) => CARD_ORDER[a] - CARD_ORDER[b]);
-		this.SeatControl.setHoleCards(disp_hole_cards);
-		this.SeatLive.setHoleCards(disp_hole_cards);
+		if(this.Round == PokerConst.BettingRound.DealHand)
+		{
+			const disp_hole_cards = argHoleCards.sort((a, b) => CARD_ORDER[a] - CARD_ORDER[b]);
+			this.SeatControl.setHoleCards(disp_hole_cards);
+			this.SeatLive.setHoleCards(disp_hole_cards);
+			this.CurrentHoleCards = disp_hole_cards;
+		}
 	}
 	cSeatView.prototype.setPosition = function(argPositionIndex, argAlivePlayerCount)
 	{
@@ -561,6 +601,188 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 		this.AlivePlayerCount = argAlivePlayerCount;
 		this.SeatControl.setPosition(argPositionIndex, argAlivePlayerCount);
 		this.SeatLive.setPosition(argPositionIndex, argAlivePlayerCount);
+	}
+	cSeatView.prototype.setRound = function(argRound)
+	{
+		this.Round = argRound;
+		switch(this.Round)
+		{
+			case PokerConst.BettingRound.Preflop:
+				PokerModel.useHoleCards(this.PlayerName, this.CurrentHoleCards);
+				break;
+		}
+	}
+
+	
+	// =====================================================================
+	// Dealer 表示オブジェクト
+	// =====================================================================
+	function cDealerLiveView(argBaseElement)
+	{
+		this.ElementBase = argBaseElement;
+		this.ElementDrag = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_DRAG); 
+		this.ElementBoardFlop = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_BOARD_FLOP);
+		this.ElementBoardTurn = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_BOARD_TURN);
+		this.ElementBoardRiver = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_BOARD_RIVER);
+		this.DragControl = new cDragableElement(this.ElementDrag);
+	}
+	cDealerLiveView.prototype.setBoardFlop = function(argCards)
+	{
+		this.ElementBoardFlop.innerHTML = createHoleCardsHTML(argCards, CLASS_CARD_NORMAL, 3);
+	}
+	cDealerLiveView.prototype.setBoardTurn = function(argCards)
+	{
+		this.ElementBoardTurn.innerHTML = createHoleCardsHTML(argCards, CLASS_CARD_NORMAL, 1);
+	}
+	cDealerLiveView.prototype.setBoardRiver = function(argCards)
+	{
+		this.ElementBoardRiver.innerHTML = createHoleCardsHTML(argCards, CLASS_CARD_NORMAL, 1);
+	}
+
+	// =====================================================================
+	// Dealer 制御オブジェクト
+	// =====================================================================
+	function cDealerControlView(argBaseElement)
+	{
+		this.ElementBase = argBaseElement;
+		this.ElementHand = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_HAND, "");
+		this.ElementRound = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_ROUND, "");
+		this.ElementBoardFlop = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_BOARD_FLOP);
+		this.ElementBoardTurn = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_BOARD_TURN);
+		this.ElementBoardRiver = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_BOARD_RIVER);
+		this.ElementRssi = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_RSSI, "");
+		this.ElementBattery = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_Battery, "");
+	}
+	cDealerControlView.prototype.setRound = function(argRound)
+	{
+		switch(argRound)
+		{
+			case PokerConst.BettingRound.DealHand:
+				this.ElementRound.innerHTML = "Preflop(deal)";
+				break;
+			case PokerConst.BettingRound.Preflop:
+				this.ElementRound.innerHTML = "Preflop";
+				break;
+			case PokerConst.BettingRound.Flop:
+				this.ElementRound.innerHTML = "Flop";
+				break;
+			case PokerConst.BettingRound.Turn:
+				this.ElementRound.innerHTML = "Turn";
+				break;
+			case PokerConst.BettingRound.River:
+				this.ElementRound.innerHTML = "River";
+				break;
+		}
+	}
+	cDealerControlView.prototype.setRSSI = function(argRSSI)
+	{
+		this.ElementRssi.innerHTML = "R:" + argRSSI;
+	}
+	cDealerControlView.prototype.setBattery = function(argBattery)
+	{
+		this.ElementBattery.innerHTML ="B:" + argBattery + "%";
+	}
+	cDealerControlView.prototype.setHandCount = function(argHandCount)
+	{
+		this.ElementHand.innerHTML = `Hand: ${argHandCount}`;
+	}
+	cDealerControlView.prototype.setBoardFlop = function(argCards)
+	{
+		this.ElementBoardFlop.innerHTML = createHoleCardsHTML(argCards, CLASS_CARD_NORMAL, 3);
+	}
+	cDealerControlView.prototype.setBoardTurn = function(argCards)
+	{
+		this.ElementBoardTurn.innerHTML = createHoleCardsHTML(argCards, CLASS_CARD_NORMAL, 1);
+	}
+	cDealerControlView.prototype.setBoardRiver = function(argCards)
+	{
+		this.ElementBoardRiver.innerHTML = createHoleCardsHTML(argCards, CLASS_CARD_NORMAL, 1);
+	}
+
+	// =====================================================================
+	// Dealer オブジェクト
+	// =====================================================================
+	function cDealerView(argControlBaseElement, argLiveBaseElement)
+	{
+		this.ControlView = new cDealerControlView(argControlBaseElement);
+		this.LiveView = new cDealerLiveView(argLiveBaseElement);
+		this.Round = PokerConst.BettingRound.Invalid;
+		this.BoardFlop = [];
+		this.BoardTurn = [];
+		this.BoardRiver = [];
+		this.SeatName = BLE_DEVICE_PROBE_NAME_DEALER;
+		this.CurrentRound = PokerConst.BettingRound.Invalid;
+	}
+	cDealerView.prototype.setRSSI = function(argRSSI)
+	{
+		this.ControlView.setRSSI(argRSSI);
+	}
+	cDealerView.prototype.setBattery = function(argBattery)
+	{
+		this.ControlView.setBattery(argBattery);
+	}
+	cDealerView.prototype.setHoleCards = function(argHoleCards)
+	{
+		const disp_hole_cards = argHoleCards.sort((a, b) => CARD_ORDER[a] - CARD_ORDER[b]);
+		switch(this.CurrentRound)
+		{
+			case PokerConst.BettingRound.Flop:
+				this.BoardFlop = disp_hole_cards;
+				this.ControlView.setBoardFlop(disp_hole_cards);
+				this.LiveView.setBoardFlop(disp_hole_cards);
+				break;
+			case PokerConst.BettingRound.Turn:
+				this.BoardTurn = disp_hole_cards;
+				this.ControlView.setBoardTurn(disp_hole_cards);
+				this.LiveView.setBoardTurn(disp_hole_cards);
+				break;
+			case PokerConst.BettingRound.River:
+				this.BoardRiver = disp_hole_cards;
+				this.ControlView.setBoardRiver(disp_hole_cards);
+				this.LiveView.setBoardRiver(disp_hole_cards);
+				break;
+			default:
+				break;
+		}
+	}
+	cDealerView.prototype.setRound = function(argRound)
+	{
+		this.CurrentRound = argRound;
+		this.ControlView.setRound(argRound);
+		switch(this.CurrentRound)
+		{
+			case PokerConst.BettingRound.Flop:
+				break;
+			case PokerConst.BettingRound.Turn:
+				PokerModel.useFlopCards(this.BoardFlop);
+				break;
+			case PokerConst.BettingRound.River:
+				PokerModel.useTurnCards(this.BoardTurn);
+				break;
+			case PokerConst.BettingRound.EndHand:
+				PokerModel.useRiverCards(this.BoardRiver);
+				break;
+			default:
+				break;
+		}
+	}
+	cDealerView.prototype.setHandCount = function(argHandCount)
+	{
+		this.ControlView.setHandCount(argHandCount);
+	}
+	cDealerView.prototype.getScanCount = function()
+	{
+		switch(this.CurrentRound)
+		{
+			case PokerConst.BettingRound.Flop:
+				return 3;
+			case PokerConst.BettingRound.Turn:
+				return 1;
+			case PokerConst.BettingRound.River:
+				return 1;
+			default:
+				return 0;
+		}
 	}
 
 	// =====================================================================
@@ -573,22 +795,35 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	cEngine.prototype.init = function()
 	{
 		console.log("cEngine.prototype.init");
++
+		// HTML 構造の取得
 		HtmlUtil.addButtonEventListenerByID(COMMAND_PROBE_ADD, this.onCommandProbeAdd.bind(this));
 		HtmlUtil.addButtonEventListenerByID(COMMAND_DEAL_HAND, this.onCommandDealHand.bind(this));
 		HtmlUtil.addButtonEventListenerByID(COMMAND_FIX_HAND, this.onCommandFixHand.bind(this));
 		HtmlUtil.addButtonEventListenerByID(COMMAND_START_FLOP, this.onCommandStartFlop.bind(this));
 		HtmlUtil.addButtonEventListenerByID(COMMAND_START_TURN, this.onCommandStartTurn.bind(this));
 		HtmlUtil.addButtonEventListenerByID(COMMAND_START_RIVER, this.onCommandStartRiver.bind(this));
+		HtmlUtil.addButtonEventListenerByID(COMMAND_END_HAND, this.onCommandEndHand.bind(this));
 		HtmlUtil.addButtonEventListenerByID(COMMAND_DEV_DEAL_HAND, this.onCommandDevDealHand.bind(this));
+		
 		this.ScreenUserList = document.getElementById(SCREEN_USER_LIST);
 		this.ScreenDisplay = document.getElementById(SCREEN_DISPLAY);
+		this.DealerControlElementBase = document.getElementById(TEMPLATE_DEALER_CONTROL);
+		this.TemplateDealerLive = document.getElementById(TEMPLATE_DEALER_VIEW).cloneNode(true);
 		this.TemplateSeatLive = document.getElementById(TEMPLATE_PANEL_CURRENT_HAND).cloneNode(true);
 		this.TemplateSeatControl = document.getElementById(TEMPLATE_PANEL_PROBE).cloneNode(true);
 
-		// コントロールパネルの初期化
+		// ディスプレイフィールドの初期化
+		this.ScreenDisplay.innerHTML = "";
+
+		// ディーラー系コントロールパネルの初期化
+		const dealer_live_view = this.TemplateDealerLive.cloneNode(true);
+		this.DealerView = new cDealerView(this.DealerControlElementBase, dealer_live_view);
+		this.ScreenDisplay.appendChild(dealer_live_view);
+
+		// ユーザー系コントロールパネルの初期化
 		this.SeatViews = [];
 		this.DealerSeatName = "";
-		this.ScreenDisplay.innerHTML = "";
 		const element_panel_probes = document.getElementsByClassName(ELEMENT_PANEL_PROBE);
 		for(const element of element_panel_probes)
 		{
@@ -605,13 +840,17 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 		}
 
 		//
-		this.HandPlayerPanels = [];
 		this.Probes = [];
 		console.log("cEngine.prototype.init - ok");
 	}
-
+	// シートビューの取得
 	cEngine.prototype.getSeatView = function(argName)
 	{
+		if(argName == BLE_DEVICE_PROBE_NAME_DEALER)
+		{
+			return this.DealerView;
+		}
+
 		const view = this.SeatViews.find(x => x.SeatName == argName);
 		if(view)
 		{
@@ -662,23 +901,37 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	cEngine.prototype.onCommandDealHand = function()
 	{
 		this.startHand();
+		this.broadcastRound(PokerConst.BettingRound.DealHand);
 	}
 	// ハンド開始コマンド
 	cEngine.prototype.onCommandFixHand = function()
 	{
+		this.broadcastRound(PokerConst.BettingRound.Preflop);
 	}
 	// フロップ開始コマンド
 	cEngine.prototype.onCommandStartFlop = function()
 	{
+		this.broadcastRound(PokerConst.BettingRound.Flop);
+		PokerModel.startFlop();
 	}
 	// ターン開始コマンド
 	cEngine.prototype.onCommandStartTurn = function()
 	{
+		this.broadcastRound(PokerConst.BettingRound.Turn);
+		PokerModel.startTurn();
 	}
 	// リバー開始コマンド
 	cEngine.prototype.onCommandStartRiver = function()
 	{
+		this.broadcastRound(PokerConst.BettingRound.River);
+		PokerModel.startRiver();
 	}
+	// ハンド終了コマンド
+	cEngine.prototype.onCommandEndHand = function()
+	{
+		this.broadcastRound(PokerConst.BettingRound.EndHand);
+	}
+
 	// ---------------------------------------------------------------------
 	// コマンド処理まわり(開発オンリー)
 	// ---------------------------------------------------------------------
@@ -706,6 +959,10 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 				}
 			}
 		}
+
+		// ハンドカウントを進める
+		PokerModel.startHand();
+		this.DealerView.setHandCount(PokerModel.getCurrentHandCount());
 
 		// シートの状態の初期化
 		for(const seat of this.SeatViews)
@@ -745,7 +1002,13 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 			}
 		}
 	}
-
+	// ラウンドの設定
+	cEngine.prototype.broadcastRound = function(argRound)
+	{
+		this.SeatViews.forEach(x => x.setRound(argRound));
+		this.DealerView.setRound(argRound);
+		this.Probes.forEach(x => x.proceedRound());
+	}
 
 	engine = new cEngine();
 	return engine;

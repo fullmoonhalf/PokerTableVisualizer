@@ -3,6 +3,7 @@
     <head>
         <link type="text/css" rel="stylesheet" href="./style.css">
         <link type="text/css" rel="stylesheet" href="./style_dealer_control.css">
+        <link type="text/css" rel="stylesheet" href="./style_dealer_view.css">
         <link type="text/css" rel="stylesheet" href="./style_player_control.css">
         <link type="text/css" rel="stylesheet" href="./style_player_view.css">
         <script src="./HtmlUtil.js" type="text/javascript"></script>
@@ -17,14 +18,19 @@
                 <div>
                     <p>commands</p>
                     <button id="command_deal_hand">Deal Hand</button>
-                    <button id="command_fix_hand">Fix Hand</button>
+                    <button id="command_fix_hand">Fix Hand</button><br>
                     <button id="command_start_flop">Start Flop</button>
                     <button id="command_start_turn">Start Turn</button>
-                    <button id="command_start_river">Start River</button>
+                    <button id="command_start_river">Start River</button><br>
+                    <button id="command_end_hand">End Hand</button><br>
                     <button id="command_probe_add">プローブ追加</button>
                     <p>
-                        <div id="template_panel_dealer_probe" class="template_panel_dealer_probe_base">
+                        <div id="template_panel_dealer_control" class="template_panel_dealer_probe_base">
                             <div class="template_panel_dealer_probe_name_label">Board</div>
+                            <div class="template_panel_dealer_probe_rssi">Rssi</div>
+                            <div class="template_panel_dealer_probe_battery">Battery</div>
+                            <div class="template_panel_dealer_probe_hand">Hand</div>
+                            <div class="template_panel_dealer_probe_round">Round</div>
                             <button class="template_panel_dealer_probe_blind_update">Up</button>
                             <input class="template_panel_dealer_probe_sb_input">
                             <input class="template_panel_dealer_probe_bb_input">
@@ -95,6 +101,25 @@
                     <button class="template_panel_probe_command_allin">All-In</button>
                     <button class="template_panel_probe_command_position">-</button>
                     <button class="template_panel_probe_command_alive">Alive</button>
+                </div>
+            </p>
+            <p>
+                <div id="template_panel_dealer_view" class="template_panel_dealer_view_base">
+                    <div class="template_panel_dealer_view_drag">
+                        <div class="template_panel_dealer_view_layout_base">
+                            <div class="template_panel_dealer_view_flop">
+                                <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
+                                <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
+                                <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
+                            </div>
+                            <div class="template_panel_dealer_view_turn">
+                                <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
+                            </div>
+                            <div class="template_panel_dealer_view_river">
+                                <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </p>
         </div>

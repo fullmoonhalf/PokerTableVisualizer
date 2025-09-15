@@ -1,0 +1,41 @@
+.template_panel_dealer_view_base
+{
+    position: relative;
+}
+
+.template_panel_dealer_view_drag
+{
+    position: absolute;
+    touch-action: none;                /* スクロールよりドラッグを優先 */
+    transform: translate(0,0);         /* 以後は translate で動かす */
+}
+
+.template_panel_dealer_view_layout_base
+{
+    position: relative;
+    background: #030;
+    width: 200px;
+    height: 80px;
+}
+
+.template_panel_dealer_view_flop
+{
+    position: absolute;
+    top: 16px;
+    left: 10px;
+    width: 100px;
+}
+
+.template_panel_dealer_view_turn
+{
+    position: absolute;
+    top: 16px;
+    left: 115px;
+}
+
+.template_panel_dealer_view_river
+{
+    position: absolute;
+    top: 16px;
+    left: 160px;
+}

@@ -7,6 +7,7 @@
     margin: 2px;
     font-size: 8px;
 }
+
 .template_panel_dealer_probe_name_label
 {
     position: absolute;   /* 親を基準に */
@@ -14,6 +15,39 @@
     color: #fff;
     font-size: 12px;
     font-weight: bold;
+}
+
+.template_panel_dealer_probe_rssi
+{
+    position: absolute;   /* 親を基準に */
+    color: #fff;
+    top: 0px;
+    left: 50px;
+}
+
+.template_panel_dealer_probe_battery
+{
+    position: absolute;   /* 親を基準に */
+    color: #fff;
+    top: 0px;
+    left: 75px;
+}
+
+.template_panel_dealer_probe_hand
+{
+    position: absolute;   /* 親を基準に */
+    top: 20px;
+    left: 10px;
+    color: #fff;
+}
+.template_panel_dealer_probe_round
+{
+    position: absolute;   /* 親を基準に */
+    top: 20px;
+    left: 70px;
+    width: 50px;
+    text-align: right;
+    color: #fff;
 }
 .template_panel_dealer_probe_flop
 {
@@ -33,7 +67,7 @@
 .template_panel_dealer_probe_blind_update
 {
     position: absolute;   /* 親を基準に */
-    top: 20px;
+    top: 32px;
     left: 10px;
     width: 32px;
     font-size: 8px;
@@ -41,7 +75,7 @@
 .template_panel_dealer_probe_sb_input
 {
     position: absolute;   /* 親を基準に */
-    top: 20px;
+    top: 32px;
     left: 45px;
     width: 30px;
     font-size: 8px;
@@ -49,7 +83,7 @@
 .template_panel_dealer_probe_bb_input
 {
     position: absolute;   /* 親を基準に */
-    top: 20px;
+    top: 32px;
     left: 85px;
     width: 30px;
     font-size: 8px;
