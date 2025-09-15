@@ -1,54 +1,3 @@
-#all
-{
-    background-color:white;
-}
-
-/* 全体構成 */
-.poker_browser
-{
-    display: flex;
-}
-.poker_browser_control
-{
-    width: 320px;
-}
-.poker_browser_display
-{
-    background: #0f0;
-    padding: 8px;
-    flex: 1;
-}
-
-/* コンテンツ */
-.tab-content 
-{
-    display: none;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-top: none;
-}
-.tab-content.active 
-{
-    display: block;
-}
-
-/* 汎用部品 */
-.template_card_hand
-{
-    width: 24px;
-    height: 48px;
-    margin-top: 2px;
-    margin-left: 2px;
-}
-.template_card_hand_small
-{
-    width: 16px;
-    height: 32px;
-    margin-top: 2px;
-    margin-left: 2px;
-}
-
-
 /* 現在のユーザーのハンドパネル */
 .template_panel_user_current_hand_base
 {
@@ -124,5 +73,3 @@
     left: 140px;
     color: #fff;
 }
-
-

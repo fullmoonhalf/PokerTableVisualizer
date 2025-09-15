@@ -1,0 +1,56 @@
+.template_panel_dealer_probe_base
+{
+    position: relative;   /* 基準にする */
+    background: #060;
+    width: 300px;
+    height: 60px;
+    margin: 2px;
+    font-size: 8px;
+}
+.template_panel_dealer_probe_name_label
+{
+    position: absolute;   /* 親を基準に */
+    left: 8px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+}
+.template_panel_dealer_probe_flop
+{
+    position: absolute;   /* 親を基準に */
+    left: 130px;
+}
+.template_panel_dealer_probe_turn
+{
+    position: absolute;   /* 親を基準に */
+    left: 230px;
+}
+.template_panel_dealer_probe_river
+{
+    position: absolute;   /* 親を基準に */
+    left: 270px;
+}
+.template_panel_dealer_probe_blind_update
+{
+    position: absolute;   /* 親を基準に */
+    top: 20px;
+    left: 10px;
+    width: 32px;
+    font-size: 8px;
+}
+.template_panel_dealer_probe_sb_input
+{
+    position: absolute;   /* 親を基準に */
+    top: 20px;
+    left: 45px;
+    width: 30px;
+    font-size: 8px;
+}
+.template_panel_dealer_probe_bb_input
+{
+    position: absolute;   /* 親を基準に */
+    top: 20px;
+    left: 85px;
+    width: 30px;
+    font-size: 8px;
+}

@@ -2,6 +2,9 @@
 <html>
     <head>
         <link type="text/css" rel="stylesheet" href="./style.css">
+        <link type="text/css" rel="stylesheet" href="./style_dealer_control.css">
+        <link type="text/css" rel="stylesheet" href="./style_player_control.css">
+        <link type="text/css" rel="stylesheet" href="./style_player_view.css">
         <script src="./HtmlUtil.js" type="text/javascript"></script>
         <script src="./winrate.js" type="text/javascript"></script>
         <script src="./PokerModel.js" type="text/javascript"></script>
@@ -22,16 +25,19 @@
                     <p>
                         <div id="template_panel_dealer_probe" class="template_panel_dealer_probe_base">
                             <div class="template_panel_dealer_probe_name_label">Board</div>
+                            <button class="template_panel_dealer_probe_blind_update">Up</button>
+                            <input class="template_panel_dealer_probe_sb_input">
+                            <input class="template_panel_dealer_probe_bb_input">
                             <div class="template_panel_dealer_probe_flop">
-                                <img class="template_card_hand_small" src="../Assets/UI/cards_pc-0.png">
-                                <img class="template_card_hand_small" src="../Assets/UI/cards_pc-0.png">
-                                <img class="template_card_hand_small" src="../Assets/UI/cards_pc-0.png">
+                                <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
+                                <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
+                                <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
                             </div>
                             <div class="template_panel_dealer_probe_turn">
-                                <img class="template_card_hand_small" src="../Assets/UI/cards_pc-0.png">
+                                <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
                             </div>
                             <div class="template_panel_dealer_probe_river">
-                                <img class="template_card_hand_small" src="../Assets/UI/cards_pc-0.png">
+                                <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
                             </div>
                         </div>
                     </p>
