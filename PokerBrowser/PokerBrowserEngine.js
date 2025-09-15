@@ -27,6 +27,8 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	const TEMPLATE_PANEL_CURRENT_HAND_VALUE_HAND = "template_panel_user_current_hand_value_hand";
 
 	const TEMPLATE_PANEL_PROBE = "template_panel_probe";
+	const TEMPLATE_PANEL_PROBE_DRAG = "template_panel_user_current_hand_drag";
+	const TEMPLATE_PANEL_PROBE_INFOS = "template_panel_user_current_hand_infos";
 	const TEMPLATE_PANEL_PROBE_VALUE_SEAT_ID = "template_panel_probe_value_seat_id_value";
 	const TEMPLATE_PANEL_PROBE_VALUE_NAME_INPUT = "template_panel_probe_value_seat_name_input";
 	const TEMPLATE_PANEL_PROBE_VALUE_HAND = "template_panel_probe_value_hand";
@@ -87,6 +89,27 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 		[POKER_POSITION_DEALER, POKER_POSITION_CUTOFF, POKER_POSITION_HIJACK, POKER_POSITION_MIDDLEp1, POKER_POSITION_MIDDLE, POKER_POSITION_UTGp2, POKER_POSITION_UTGp1, POKER_POSITION_UTG, POKER_POSITION_BB, POKER_POSITION_SB],
 	];
 	
+
+	// =====================================================================
+	// ユーティリティ
+	// =====================================================================
+	function createHoleCardsHTML(argHoleCards, argClassName)
+	{
+		let html = "";
+		let index = 0;
+		for(const card of argHoleCards)
+		{
+			html += `<img class="${argClassName}" src="../Assets/UI/cards_pc-${card}.png">`;
+			index++;
+		}
+		while(index < 2)
+		{
+			html += `<img class="${argClassName}" src="../Assets/UI/cards_pc-0.png">`;
+			index++;
+		}
+		return html;
+	}
+
 
 	// =====================================================================
 	// ユーザーハンドの表示
@@ -193,9 +216,9 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	}
 
 	// =====================================================================
-	// プローブの表示まわり
+	// コントローラ側
 	// =====================================================================
-	function cSeatView(argSeatName, argElementBase)
+	function cSeatControlView(argSeatView, argElementBase)
 	{
 		this.ElementBase = argElementBase; 
 		this.ElementSeatValueID = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_SEAT_ID);
@@ -207,21 +230,191 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 		this.CommandAlive = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase,  TEMPLATE_PANEL_PROBE_COMMANBD_ALIVE);
 		this.CommandAllIn = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_COMMANBD_ALLIN);
 		this.InputName = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_NAME_INPUT);
+	
+		HtmlUtil.addEventListenerToElement(this.CommandActivityFold, "click", argSeatView.onCommandActivityFold.bind(argSeatView));
+		HtmlUtil.addEventListenerToElement(this.CommandPosition, "click", argSeatView.onCommandPosition.bind(argSeatView));
+		HtmlUtil.addEventListenerToElement(this.CommandAlive, "click", argSeatView.onCommandAlive.bind(argSeatView));
+		HtmlUtil.addEventListenerToElement(this.CommandAllIn, "click", argSeatView.onCommandAllIn.bind(argSeatView));
+		HtmlUtil.addEventListenerToElement(this.InputName, "change", argSeatView.onInputName.bind(argSeatView));
+	}
+	cSeatControlView.prototype.toDealed = function()
+	{
+		this.leaveAnnIn();
+		this.toActive();
+	}
+	cSeatControlView.prototype.toFold = function()
+	{
+		this.ElementBase.classList.toggle("fold", true);
+		this.CommandActivityFold.innerHTML = "";
+	}
+	cSeatControlView.prototype.toActive = function()
+	{
+		this.ElementBase.classList.toggle("fold", false);
+		this.CommandActivityFold.innerHTML = "Fold";
+	}
+	cSeatControlView.prototype.toDead = function()
+	{
+		this.ElementBase.classList.toggle("dead", true);
+		this.ElementBase.classList.toggle("allin", false);
+		this.CommandAlive.innerHTML = "Join";
+	}
+	cSeatControlView.prototype.toAlive = function()
+	{
+		this.ElementBase.classList.toggle("dead", false);
+		this.ElementBase.classList.toggle("allin", false);
+		this.CommandAlive.innerHTML = "Leave";
+	}
+	cSeatControlView.prototype.enterAllIn = function()
+	{
+		this.ElementBase.classList.toggle("allin", true);
+		this.CommandAllIn.innerHTML = "";
+	}
+	cSeatControlView.prototype.leaveAnnIn = function()
+	{
+		this.ElementBase.classList.toggle("allin", false);
+		this.CommandAllIn.innerHTML = "All-In";
+	}
+	cSeatControlView.prototype.setSeatName = function(argSeatName)
+	{
+		this.ElementSeatValueID.innerHTML = argSeatName;
+		this.InputName.id = "panel_seat_name_" + argSeatName;
+		this.InputName.value = argSeatName;
+	}
+	cSeatControlView.prototype.setRSSI = function(argRSSI)
+	{
+		this.ElementRssi.innerHTML = "R:" + argRSSI;
+	}
+	cSeatControlView.prototype.setBattery = function(argBattery)
+	{
+		this.ElementBattery.innerHTML ="B:" + argBattery + "%";
+	}
+	cSeatControlView.prototype.setHoleCards = function(argHoleCards)
+	{
+		this.ElementHand.innerHTML = createHoleCardsHTML(argHoleCards, "template_card_hand_small");
+	}
+	cSeatControlView.prototype.setPosition = function(argPositionIndex, argAlivePlayerCount)
+	{
+		const position_name = POKER_POSITION_TABLE[argAlivePlayerCount][argPositionIndex];
+		this.CommandPosition.innerHTML = position_name;
+		this.ElementBase.classList.toggle("button", argPositionIndex == 0);
+		this.ElementBase.classList.toggle("utg", position_name == POKER_POSITION_UTG);
+	}
+
+	// =====================================================================
+	// 中継表示側
+	// =====================================================================
+	function cSeatLiveView(argElementBase)
+	{
+		this.ElementBase = argElementBase; 
+		this.ElementDrag = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_DRAG); 
+		this.ElementInfos = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_INFOS);
+		this.ElementName = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_CURRENT_HAND_VALUE_NAME);
+		this.ElementPosition = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_CURRENT_HAND_VALUE_POSITION, "");
+		this.ElementWinRate = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_CURRENT_HAND_VALUE_WINRATE, "");
+		this.ElementHand = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_CURRENT_HAND_VALUE_HAND);
+
+		HtmlUtil.addEventListenerToElement(this.ElementDrag, "pointerdown", this.onDragStart.bind(this));
+		HtmlUtil.addEventListenerToElement(this.ElementDrag, "pointermove", this.onDragMove.bind(this));
+		HtmlUtil.addEventListenerToElement(this.ElementDrag, "pointerup", this.onDragEnd.bind(this));
+		HtmlUtil.addEventListenerToElement(this.ElementDrag, "pointercancel", this.onDragEnd.bind(this));
+
+		this.Draggning = false;
+		this.DragPrevX = 0;
+		this.DragPrevY = 0;
+		this.TransX = 0;
+		this.TransY = 0;
+	}
+	cSeatLiveView.prototype.onDragStart = function(event)
+	{
+		event.preventDefault();
+		this.Draggning = true;
+		this.DragPrevX = event.clientX;
+		this.DragPrevY = event.clientY;
+	}
+	cSeatLiveView.prototype.onDragMove = function(event)
+	{
+		const grid_size = 16;
+		if(this.Draggning)
+		{
+			let dx = event.clientX - this.DragPrevX;
+			let dy = event.clientY - this.DragPrevY;
+			this.TransX += dx;
+			this.TransY += dy;
+			this.DragPrevX = event.clientX;
+			this.DragPrevY = event.clientY;
+			const nx = Math.round(this.TransX/grid_size)*grid_size;
+			const ny = Math.round(this.TransY/grid_size)*grid_size;
+			this.ElementDrag.style.transform = `translate(${nx}px, ${ny}px)`;
+		}
+	}
+	cSeatLiveView.prototype.onDragEnd = function(event)
+	{
+		this.Draggning = false;
+	}
+	cSeatLiveView.prototype.setName = function(argName)
+	{
+		this.ElementName.innerHTML = argName;
+	}
+	cSeatLiveView.prototype.setPosition = function(argPositionIndex, argAlivePlayerCount)
+	{
+		const position_name = POKER_POSITION_TABLE[argAlivePlayerCount][argPositionIndex];
+		this.ElementPosition.innerHTML = position_name;
+	}
+	cSeatLiveView.prototype.toDealed = function()
+	{
+		this.leaveAnnIn();
+		this.toActive();
+	}
+	cSeatLiveView.prototype.toFold = function()
+	{
+		this.ElementInfos.classList.toggle("fold", true);
+		this.ElementName.classList.toggle("fold", true);
+	}
+	cSeatLiveView.prototype.toActive = function()
+	{
+		this.ElementInfos.classList.toggle("fold", false);
+		this.ElementName.classList.toggle("fold", false);
+	}
+	cSeatLiveView.prototype.toDead = function()
+	{
+		this.ElementBase.classList.toggle("seatopen", true);
+	}
+	cSeatLiveView.prototype.toAlive = function()
+	{
+		this.ElementBase.classList.toggle("seatopen", false);
+	}
+	cSeatLiveView.prototype.enterAllIn = function()
+	{
+		this.ElementInfos.classList.toggle("allin", true);
+		this.ElementInfos.classList.toggle("fold", false);
+	}
+	cSeatLiveView.prototype.leaveAnnIn = function()
+	{
+		this.ElementInfos.classList.toggle("allin", false);
+		this.ElementInfos.classList.toggle("fold", false);
+	}
+	cSeatLiveView.prototype.setHoleCards = function(argHoleCards)
+	{
+		this.ElementHand.innerHTML = createHoleCardsHTML(argHoleCards, "template_card_hand");
+	}
+
+	// =====================================================================
+	// プローブの表示まわり
+	// =====================================================================
+	function cSeatView(argSeatName, argSeatControlViewElement, argSeatLiveViewElemwent)
+	{
+		this.SeatControl = new cSeatControlView(this, argSeatControlViewElement);
+		this.SeatLive = new cSeatLiveView(argSeatLiveViewElemwent);
 		this.Active = true;
 		this.Alive = false;
 		this.AllIn = false;
 		this.PositionIndex = 0; // ディーラーまでの人数
 		this.AlivePlayerCount = 0;
 
-		HtmlUtil.addEventListenerToElement(this.CommandActivityFold, "click", this.onCommandActivityFold.bind(this));
-		HtmlUtil.addEventListenerToElement(this.CommandPosition, "click", this.onCommandPosition.bind(this));
-		HtmlUtil.addEventListenerToElement(this.CommandAlive, "click", this.onCommandAlive.bind(this));
-		HtmlUtil.addEventListenerToElement(this.CommandAllIn, "click", this.onCommandAllIn.bind(this));
-
 		this.setSeatName(argSeatName);
 		this.toDead();
-
 	}
+
 	// ---------------------------------------------------------------------
 	// 
 	// ---------------------------------------------------------------------
@@ -266,6 +459,12 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 			this.enterAllIn();
 		}
 	}
+	// 名前入力イベントの処理
+	cSeatView.prototype.onInputName = function(event)
+	{
+		this.SeatLive.setName(event.target.value);
+	}
+
 	// ---------------------------------------------------------------------
 	// 
 	// ---------------------------------------------------------------------
@@ -273,8 +472,8 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	{
 		if(this.Alive)
 		{
-			this.leaveAnnIn();
-			this.toActive();
+			this.SeatControl.toDealed();
+			this.SeatLive.toDealed();
 		}
 	}
 	cSeatView.prototype.toFold = function()
@@ -282,8 +481,8 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 		if(this.Alive)
 		{
 			this.Active = false;
-			this.ElementBase.classList.toggle("fold", true);
-			this.CommandActivityFold.innerHTML = "";
+			this.SeatControl.toFold();
+			this.SeatLive.toFold();
 		}
 	}
 	cSeatView.prototype.toActive = function()
@@ -291,37 +490,35 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 		if(this.Alive)
 		{
 			this.Active = true;
-			this.ElementBase.classList.toggle("fold", false);
-			this.CommandActivityFold.innerHTML = "Fold";
+			this.SeatControl.toActive();
+			this.SeatLive.toActive();
 		}
 	}
 	cSeatView.prototype.toDead = function()
 	{
 		this.Alive = false;
 		this.AllIn = false;
-		this.ElementBase.classList.toggle("dead", true);
-		this.ElementBase.classList.toggle("allin", false);
-		this.CommandAlive.innerHTML = "Join";
+		this.SeatControl.toDead();
+		this.SeatLive.toDead();
 	}
 	cSeatView.prototype.toAlive = function()
 	{
 		this.Alive = true;
 		this.AllIn = false;
-		this.ElementBase.classList.toggle("dead", false);
-		this.ElementBase.classList.toggle("allin", false);
-		this.CommandAlive.innerHTML = "Leave";
+		this.SeatControl.toAlive();
+		this.SeatLive.toAlive();
 	}
 	cSeatView.prototype.enterAllIn = function()
 	{
 		this.AllIn = true;
-		this.ElementBase.classList.toggle("allin", true);
-		this.CommandAllIn.innerHTML = "";
+		this.SeatControl.enterAllIn();
+		this.SeatLive.enterAllIn();
 	}
 	cSeatView.prototype.leaveAnnIn = function()
 	{
 		this.AllIn = false;
-		this.ElementBase.classList.toggle("allin", false);
-		this.CommandAllIn.innerHTML = "All-In";
+		this.SeatControl.leaveAnnIn();
+		this.SeatLive.leaveAnnIn();
 	}
 	// ---------------------------------------------------------------------
 	// 状態の取得
@@ -341,44 +538,29 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	cSeatView.prototype.setSeatName = function(argSeatName)
 	{
 		this.SeatName = argSeatName;
-		this.ElementSeatValueID.innerHTML = this.SeatName;
-		this.InputName.id = "panel_seat_name_" + this.SeatName;
-		this.InputName.value = this.SeatName;
+		this.SeatControl.setSeatName(argSeatName);
+		this.SeatLive.setName(argSeatName);
 	}
 	cSeatView.prototype.setRSSI = function(argRSSI)
 	{
-		this.ElementRssi.innerHTML = "R:" + argRSSI;
+		this.SeatControl.setRSSI(argRSSI);
 	}
 	cSeatView.prototype.setBattery = function(argBattery)
 	{
-		this.ElementBattery.innerHTML ="B:" + argBattery + "%";
+		this.SeatControl.setBattery(argBattery);
 	}
 	cSeatView.prototype.setHoleCards = function(argHoleCards)
 	{
 		const disp_hole_cards = argHoleCards.sort((a, b) => CARD_ORDER[a] - CARD_ORDER[b]);
-
-		let html = "";
-		let index = 0;
-		for(const card of disp_hole_cards)
-		{
-			html += '<img class="template_card_hand_small" src="../Assets/UI/cards_pc-' + String(card) + '.png">';
-			index++;
-		}
-		while(index < 2)
-		{
-			html += '<img class="template_card_hand_small" src="../Assets/UI/cards_pc-0.png">';
-			index++;
-		}
-		this.ElementHand.innerHTML = html;
+		this.SeatControl.setHoleCards(disp_hole_cards);
+		this.SeatLive.setHoleCards(disp_hole_cards);
 	}
 	cSeatView.prototype.setPosition = function(argPositionIndex, argAlivePlayerCount)
 	{
 		this.PositionIndex = argPositionIndex;
 		this.AlivePlayerCount = argAlivePlayerCount;
-		const position_name = POKER_POSITION_TABLE[argAlivePlayerCount][argPositionIndex];
-		this.CommandPosition.innerHTML = position_name;
-		this.ElementBase.classList.toggle("button", argPositionIndex == 0);
-		this.ElementBase.classList.toggle("utg", position_name == POKER_POSITION_UTG);
+		this.SeatControl.setPosition(argPositionIndex, argAlivePlayerCount);
+		this.SeatLive.setPosition(argPositionIndex, argAlivePlayerCount);
 	}
 
 	// =====================================================================
@@ -400,25 +582,27 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 		HtmlUtil.addButtonEventListenerByID(COMMAND_DEV_DEAL_HAND, this.onCommandDevDealHand.bind(this));
 		this.ScreenUserList = document.getElementById(SCREEN_USER_LIST);
 		this.ScreenDisplay = document.getElementById(SCREEN_DISPLAY);
-		this.TemplatePanelCurrentHand = document.getElementById(TEMPLATE_PANEL_CURRENT_HAND).cloneNode(true);
-		this.TemplateProbe = document.getElementById(TEMPLATE_PANEL_PROBE).cloneNode(true);
+		this.TemplateSeatLive = document.getElementById(TEMPLATE_PANEL_CURRENT_HAND).cloneNode(true);
+		this.TemplateSeatControl = document.getElementById(TEMPLATE_PANEL_PROBE).cloneNode(true);
 
 		// コントロールパネルの初期化
 		this.SeatViews = [];
 		this.DealerSeatName = "";
+		this.ScreenDisplay.innerHTML = "";
 		const element_panel_probes = document.getElementsByClassName(ELEMENT_PANEL_PROBE);
 		for(const element of element_panel_probes)
 		{
 			const id = element.id;
-			const view_element = this.TemplateProbe.cloneNode(true);
-			const view = new cSeatView(id, view_element);
+			const seat_control_element = this.TemplateSeatControl.cloneNode(true);
+			const seat_view_element = this.TemplateSeatLive.cloneNode(true);
+			const view = new cSeatView(id, seat_control_element, seat_view_element);
 			this.SeatViews.push(view);
 
 			// HTML の書き換え
 			element.innerHTML = "";
-			element.appendChild(view_element);
+			element.appendChild(seat_control_element);
+			this.ScreenDisplay.appendChild(seat_view_element);
 		}
-
 
 		//
 		this.HandPlayerPanels = [];
@@ -504,7 +688,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	// ---------------------------------------------------------------------
 	// 論理設定
 	// ---------------------------------------------------------------------
-	//
+	// ハンド開始時の処理
 	cEngine.prototype.startHand = function()
 	{
 		// 次のボタン

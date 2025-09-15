@@ -18,11 +18,24 @@
                     <button id="command_start_flop">Start Flop</button>
                     <button id="command_start_turn">Start Turn</button>
                     <button id="command_start_river">Start River</button>
-                    <div id="screen_management_user_all">
-                        <div id="screen_management_user_header">
-                            ユーザー管理
-                            <button id="command_probe_add">プローブ追加</button>
+                    <button id="command_probe_add">プローブ追加</button>
+                    <p>
+                        <div id="template_panel_dealer_probe" class="template_panel_dealer_probe_base">
+                            <div class="template_panel_dealer_probe_name_label">Board</div>
+                            <div class="template_panel_dealer_probe_flop">
+                                <img class="template_card_hand_small" src="../Assets/UI/cards_pc-0.png">
+                                <img class="template_card_hand_small" src="../Assets/UI/cards_pc-0.png">
+                                <img class="template_card_hand_small" src="../Assets/UI/cards_pc-0.png">
+                            </div>
+                            <div class="template_panel_dealer_probe_turn">
+                                <img class="template_card_hand_small" src="../Assets/UI/cards_pc-0.png">
+                            </div>
+                            <div class="template_panel_dealer_probe_river">
+                                <img class="template_card_hand_small" src="../Assets/UI/cards_pc-0.png">
+                            </div>
                         </div>
+                    </p>
+                    <div id="screen_management_user_all">
                         <div id="screen_management_user_list">ユーザー一覧
                             <div class="element_panel_probe" id="Seat01"></div>
                             <div class="element_panel_probe" id="Seat02"></div>
@@ -45,12 +58,18 @@
             テンプレ
             <p>
                 <div id="template_panel_user_current_hand" class="template_panel_user_current_hand_base">
-                    <div class="template_panel_user_current_hand_value_name">名前</div>
-                    <div class="template_panel_user_current_hand_value_position">ポジション</div>
-                    <div class="template_panel_user_current_hand_value_winrate">勝率</div>
-                    <div class="template_panel_user_current_hand_value_hand">
-                        <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
-                        <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
+                    <div class="template_panel_user_current_hand_drag">
+                        <div class="template_panel_user_current_hand_layout_base">
+                            <div class="template_panel_user_current_hand_infos">
+                                <div class="template_panel_user_current_hand_value_name">名前</div>
+                                <div class="template_panel_user_current_hand_value_position">ポジション</div>
+                                <div class="template_panel_user_current_hand_value_winrate">勝率</div>
+                            </div>
+                            <div class="template_panel_user_current_hand_value_hand">
+                                <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
+                                <img class="template_card_hand" src="../Assets/UI/cards_pc-0.png">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </p>
