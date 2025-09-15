@@ -302,6 +302,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	{
 		this.leaveAnnIn();
 		this.toActive();
+		this.setHoleCards([]);
 	}
 	cSeatControlView.prototype.toFold = function()
 	{
@@ -388,6 +389,8 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	{
 		this.leaveAnnIn();
 		this.toActive();
+		this.setHoleCards([]);
+		this.ElementWinRate.innerHTML= "";
 	}
 	cSeatLiveView.prototype.toFold = function()
 	{
@@ -506,6 +509,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	{
 		if(this.Alive)
 		{
+			this.CurrentHoleCards = [];
 			this.SeatControl.toDealed();
 			this.SeatLive.toDealed();
 		}
@@ -517,6 +521,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 			this.Active = false;
 			this.SeatControl.toFold();
 			this.SeatLive.toFold();
+			PokerBrowser.engine.broadcastWinrate();
 		}
 	}
 	cSeatView.prototype.toActive = function()
@@ -526,6 +531,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 			this.Active = true;
 			this.SeatControl.toActive();
 			this.SeatLive.toActive();
+			PokerBrowser.engine.broadcastWinrate();
 		}
 	}
 	cSeatView.prototype.toDead = function()
@@ -534,6 +540,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 		this.AllIn = false;
 		this.SeatControl.toDead();
 		this.SeatLive.toDead();
+		PokerBrowser.engine.broadcastWinrate();
 	}
 	cSeatView.prototype.toAlive = function()
 	{
@@ -541,6 +548,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 		this.AllIn = false;
 		this.SeatControl.toAlive();
 		this.SeatLive.toAlive();
+		PokerBrowser.engine.broadcastWinrate();
 	}
 	cSeatView.prototype.enterAllIn = function()
 	{
@@ -804,6 +812,18 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 	{
 		return this.BoardFlop.concat(this.BoardTurn, this.BoardRiver);
 	}
+	cDealerView.prototype.toDealed = function()
+	{
+		this.BoardFlop = [];
+		this.BoardTurn = [];
+		this.BoardRiver = [];
+		this.ControlView.setBoardFlop([]);
+		this.LiveView.setBoardFlop([]);
+		this.ControlView.setBoardTurn([]);
+		this.LiveView.setBoardTurn([]);
+		this.ControlView.setBoardRiver([]);
+		this.LiveView.setBoardRiver([]);
+	}
 
 	// =====================================================================
 	// engine オブジェクト
@@ -1027,6 +1047,7 @@ PokerBrowser.engine = PokerBrowser.engine || (function(){
 		this.DealerView.setHandCount(PokerModel.getCurrentHandCount());
 
 		// シートの状態の初期化
+		this.DealerView.toDealed();
 		for(const seat of this.SeatViews)
 		{
 			seat.toDealed();
