@@ -6,10 +6,16 @@
         <link type="text/css" rel="stylesheet" href="./style_dealer_view.css">
         <link type="text/css" rel="stylesheet" href="./style_player_control.css">
         <link type="text/css" rel="stylesheet" href="./style_player_view.css">
-        <script src="./HtmlUtil.js" type="text/javascript"></script>
-        <script src="./winrate.js" type="text/javascript"></script>
-        <script src="./PokerModel.js" type="text/javascript"></script>
-        <script src="./PokerBrowserEngine.js" type="text/javascript"></script>
+        <script defer src="./HtmlUtil.js" type="text/javascript"></script>
+        <script defer src="./winrate.js" type="text/javascript"></script>
+        <script defer src="./PokerModel.js" type="text/javascript"></script>
+        <script defer src="./PokerBrowserEngine_Bootstrap.js" type="text/javascript"></script>
+        <script defer src="./PokerBrowserEngine_Utils.js" type="text/javascript"></script>
+        <script defer src="./PokerBrowserEngine_Probe.js" type="text/javascript"></script>
+        <script defer src="./PokerBrowserEngine_SeatControlView.js" type="text/javascript"></script>
+        <script defer src="./PokerBrowserEngine_SeatLiveView.js" type="text/javascript"></script>
+        <script defer src="./PokerBrowserEngine_SeatView.js" type="text/javascript"></script>
+        <script defer src="./PokerBrowserEngine.js" type="text/javascript"></script>
         <title>Poker Table Monitor Browser</title>
     </head>
     <body>
@@ -27,6 +33,7 @@
                     <button id="command_dev_deal_flop">[D]Flop</button>
                     <button id="command_dev_deal_turn">[D]Turn</button>
                     <button id="command_dev_deal_river">[D]River</button><br>
+                    <button id="command_dev_setup">[D]Setup</button>
                     <p>
                         <div id="template_panel_dealer_control" class="template_panel_dealer_probe_base">
                             <div class="template_panel_dealer_probe_name_label">Board</div>
@@ -96,8 +103,8 @@
                 <div id="template_panel_probe" class="template_panel_probe_base">
                     <div class="template_panel_probe_value_seat">
                         <div class="template_panel_probe_value_seat_id_value">ID</div>
-                        <div class="template_panel_probe_value_rssi">Rssi</div>
-                        <div class="template_panel_probe_value_battery">Battery</div>
+                        <div class="template_panel_probe_value_rssi">📶240</div>
+                        <div class="template_panel_probe_value_battery">🔋100</div>
                         <input class="template_panel_probe_value_seat_name_input">
                         <input type="number" class="template_panel_probe_value_bet_amount_input" placeholder="BET">
                         <input type="number" class="template_panel_probe_value_stack_input" placeholder="Stack">

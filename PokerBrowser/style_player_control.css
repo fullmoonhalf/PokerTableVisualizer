@@ -55,13 +55,13 @@
 {
     position: absolute;   /* 親を基準に */
     top: 0px;
-    left: 42px;
+    left: 40px;
 }
 .template_panel_probe_value_battery
 {
     position: absolute;   /* 親を基準に */
     top: 0px;
-    left: 70px;
+    left: 62px;
 }
 
 .template_panel_probe_value_bet_amount_input

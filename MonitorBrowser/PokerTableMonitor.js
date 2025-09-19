@@ -20,7 +20,8 @@ PokerTableMonitor.engine = (function(){{
 	const HTML_ID_COMMAND_DEV_FLOP = "command_dev_flop";
 	const HTML_ID_COMMAND_DEV_TURN = "command_dev_turn";
 	const HTML_ID_COMMAND_DEV_RIVER = "command_dev_river";
-
+	const HTML_ID_COMMAND_DEV_SETUP = "command_dev_setup";
+	
 	// HTML の構造まわり
 	const HTML_ID_SECTOR_PLAYER = "sector_player";
 	const HTML_ID_PLAYER_VIEEPANEL_PREFIX = "view_panel_player_";
@@ -1066,6 +1067,9 @@ PokerTableMonitor.engine = (function(){{
 		this.GlobalStatusModel.setRiver([this.GlobalStatusModel.drawCard()]);
 		this.GlobalStatusViewPanel.draw();
 	}
+	cManager.prototype.onDevSetup = function()
+	{
+	}
 
 	// ---------------------------------------------------------------------
 	// engine オブジェクト
@@ -1093,6 +1097,7 @@ PokerTableMonitor.engine = (function(){{
 			add_button_event_listener(HTML_ID_COMMAND_DEV_FLOP, engine.Manager.onDevFlop.bind(engine.Manager));
 			add_button_event_listener(HTML_ID_COMMAND_DEV_TURN, engine.Manager.onDevTurn.bind(engine.Manager));
 			add_button_event_listener(HTML_ID_COMMAND_DEV_RIVER, engine.Manager.onDevRiver.bind(engine.Manager));
+			add_button_event_listener(HTML_ID_COMMAND_DEV_SETUP, engine.Manager.onDevSetup.bind(engine.Manager));
 		},
 	};
 	
