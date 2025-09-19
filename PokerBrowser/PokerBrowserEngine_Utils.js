@@ -3,6 +3,9 @@
     if(ns.createHoleCardsHTML) return;
     if(ns.cDragableElement) return;
 
+	// ディーラープローブ名
+	ns.BLE_DEVICE_PROBE_NAME_DEALER = "Dealer01";
+
 	// カードにつかうcssクラス名
 	ns.CLASS_CARD_SMALL = "template_card_hand_small";
 	ns.CLASS_CARD_NORMAL = "template_card_hand";

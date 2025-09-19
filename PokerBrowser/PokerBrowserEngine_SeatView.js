@@ -24,7 +24,7 @@
 	}
 
 	// ---------------------------------------------------------------------
-	// 
+	// コマンド処理
 	// ---------------------------------------------------------------------
 	// フォールド
 	cSeatView.prototype.onCommandActivityFold = function(event)
@@ -146,24 +146,69 @@
 	{
 		return this.Alive == true && this.Active == true;
 	}
+
+	// ---------------------------------------------------------------------
+	// プローブまわりの管理
+	// ---------------------------------------------------------------------
 	cSeatView.prototype.getScanCount = function()
 	{
 		return 2;
+	}
+	cSeatView.prototype.setRSSI = function(argRSSI)
+	{
+		this.SeatControl.setRSSI(argRSSI);
+	}
+	cSeatView.prototype.setBattery = function(argBattery)
+	{
+		this.SeatControl.setBattery(argBattery);
+	}
+
+	// ---------------------------------------------------------------------
+	// 名前管理
+	// ---------------------------------------------------------------------
+	cSeatView.prototype.setSeatName = function(argSeatName)
+	{
+		this.SeatName = argSeatName;
+		this.SeatControl.setSeatName(argSeatName);
+		this.SeatLive.setName(argSeatName);
+		if(!this.PlayerName)
+		{
+			this.PlayerName = argSeatName;
+		}
 	}
 	// プレイヤー名を取得する
 	cSeatView.prototype.getPlayerName = function()
 	{
 		return this.PlayerName;
 	}
-	// スタックを取得する
-	cSeatView.prototype.getStack = function()
-	{
-		return this.SeatControl.getStack();
-	}
-	// ベッティング量を取得する
-	cSeatView.prototype.getBetAmount = function()
-	{
 
+	// ---------------------------------------------------------------------
+	// ゲーム状況
+	// ---------------------------------------------------------------------
+	cSeatView.prototype.setRound = function(argRound)
+	{
+		this.Round = argRound;
+		switch(this.Round)
+		{
+			case PokerConst.BettingRound.Preflop:
+				PokerModel.useHoleCards(this.PlayerName, this.CurrentHoleCards);
+				break;
+		}
+	}
+	cSeatView.prototype.setWinRate = function(argWinRate)
+	{
+		this.SeatLive.setWinRate(argWinRate);
+	}
+
+	// ---------------------------------------------------------------------
+	// ポジション関連
+	// ---------------------------------------------------------------------
+	cSeatView.prototype.setPosition = function(argPositionIndex, argAlivePlayerCount)
+	{
+		this.PositionIndex = argPositionIndex;
+		this.AlivePlayerCount = argAlivePlayerCount;
+		this.SeatControl.setPosition(argPositionIndex, argAlivePlayerCount);
+		this.SeatLive.setPosition(argPositionIndex, argAlivePlayerCount);
 	}
 	// BB かどうか
 	cSeatView.prototype.isBB = function()
@@ -185,27 +230,10 @@
 		}
 		return false;
 	}
+
 	// ---------------------------------------------------------------------
-	// 状態の設定
+	// ホールカード
 	// ---------------------------------------------------------------------
-	cSeatView.prototype.setSeatName = function(argSeatName)
-	{
-		this.SeatName = argSeatName;
-		this.SeatControl.setSeatName(argSeatName);
-		this.SeatLive.setName(argSeatName);
-		if(!this.PlayerName)
-		{
-			this.PlayerName = argSeatName;
-		}
-	}
-	cSeatView.prototype.setRSSI = function(argRSSI)
-	{
-		this.SeatControl.setRSSI(argRSSI);
-	}
-	cSeatView.prototype.setBattery = function(argBattery)
-	{
-		this.SeatControl.setBattery(argBattery);
-	}
 	cSeatView.prototype.setHoleCards = function(argHoleCards)
 	{
 		if(this.Round == PokerConst.BettingRound.DealHand)
@@ -216,26 +244,24 @@
 			this.CurrentHoleCards = disp_hole_cards;
 		}
 	}
-	cSeatView.prototype.setPosition = function(argPositionIndex, argAlivePlayerCount)
+
+	// ---------------------------------------------------------------------
+	// スタック管理
+	// ---------------------------------------------------------------------
+	// スタックを取得する
+	cSeatView.prototype.getStack = function()
 	{
-		this.PositionIndex = argPositionIndex;
-		this.AlivePlayerCount = argAlivePlayerCount;
-		this.SeatControl.setPosition(argPositionIndex, argAlivePlayerCount);
-		this.SeatLive.setPosition(argPositionIndex, argAlivePlayerCount);
+		return this.SeatControl.getStack();
 	}
-	cSeatView.prototype.setRound = function(argRound)
+	// スタックを設定する
+	cSeatView.prototype.setStack = function(argStack)
 	{
-		this.Round = argRound;
-		switch(this.Round)
-		{
-			case PokerConst.BettingRound.Preflop:
-				PokerModel.useHoleCards(this.PlayerName, this.CurrentHoleCards);
-				break;
-		}
+		this.SeatControl.setStack(argStack)
 	}
-	cSeatView.prototype.setWinRate = function(argWinRate)
+	// ベッティング量を取得する
+	cSeatView.prototype.getBetAmount = function()
 	{
-		this.SeatLive.setWinRate(argWinRate);
+
 	}
 	cSeatView.prototype.postBlind = function(argAmount)
 	{
@@ -251,6 +277,9 @@
 		return actual_amount;
 	}
 
-    ns.cSeatView = cSeatView
+	// ---------------------------------------------------------------------
+	// コンストラクタの公開
+	// ---------------------------------------------------------------------
+	ns.cSeatView = cSeatView
 
 })(PokerBrowser = PokerBrowser || {});

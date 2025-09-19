@@ -63,7 +63,11 @@
 	{
 		this.ElementHand.innerHTML = `Hand: ${argHandCount}`;
 	}
-	cDealerControlView.prototype.setBoardFlop = function(argCards)
+
+    // ---------------------------------------------------------------------
+	// ボード関連
+    // ---------------------------------------------------------------------
+    cDealerControlView.prototype.setBoardFlop = function(argCards)
 	{
 		this.ElementBoardFlop.innerHTML = ns.createHoleCardsHTML(argCards, ns.CLASS_CARD_NORMAL, 3);
 	}
@@ -75,22 +79,35 @@
 	{
 		this.ElementBoardRiver.innerHTML = ns.createHoleCardsHTML(argCards, ns.CLASS_CARD_NORMAL, 1);
 	}
-	cDealerControlView.prototype.addPot = function(argChip)
+
+    // ---------------------------------------------------------------------
+	// ポット関連
+    // ---------------------------------------------------------------------
+    cDealerControlView.prototype.addPot = function(argChip)
 	{
 		let pot = Number(this.InputPot.value) || 0;
 		pot += argChip;
 		this.InputPot.value = pot;
 	}
-	cDealerControlView.prototype.getBlind = function()
+	cDealerControlView.prototype.getPot = function()
+	{
+		return this.InputPot.value;
+	}
+
+    // ---------------------------------------------------------------------
+	// ブラインド関連
+    // ---------------------------------------------------------------------
+    cDealerControlView.prototype.getBlind = function()
 	{
 		let sb = Number(this.InputSB.value) || 0;
 		let bb = Number(this.InputBB.value) || 0;
 		return {"sb":sb, "bb":bb};
 	}
-	cDealerControlView.prototype.getPot = function()
-	{
-		return this.InputPot.value;
-	}
+    cDealerControlView.prototype.setBlind = function(argSB, argBB)
+    {
+        this.InputSB.value = Number(argSB) || 0;
+        this.InputBB.value = Number(argBB) || 0;
+    }
 
 
     ns.cDealerControlView = cDealerControlView;

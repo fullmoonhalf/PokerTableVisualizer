@@ -23,6 +23,7 @@
 	const COMMAND_DEV_DEAL_FLOP = "command_dev_deal_flop"; // [開発] ハンド配布
 	const COMMAND_DEV_DEAL_TURN = "command_dev_deal_turn"; // [開発] ハンド配布
 	const COMMAND_DEV_DEAL_RIVER = "command_dev_deal_river"; // [開発] ハンド配布
+	const COMMAND_DEV_SETUP = "command_dev_setup";
 
 	const SCREEN_USER_LIST = "screen_management_user_list"; // ユーザーリスト表示領域
 	const SCREEN_DISPLAY = "screen_display";
@@ -59,6 +60,7 @@
 		HtmlUtil.addButtonEventListenerByID(COMMAND_DEV_DEAL_FLOP, this.onCommandDevDealFlop.bind(this));
 		HtmlUtil.addButtonEventListenerByID(COMMAND_DEV_DEAL_TURN, this.onCommandDevDealTurn.bind(this));
 		HtmlUtil.addButtonEventListenerByID(COMMAND_DEV_DEAL_RIVER, this.onCommandDevDealRiver.bind(this));
+		HtmlUtil.addButtonEventListenerByID(COMMAND_DEV_SETUP, this.onCommandDevSetup.bind(this));
 		
 		this.ScreenUserList = document.getElementById(SCREEN_USER_LIST);
 		this.ScreenDisplay = document.getElementById(SCREEN_DISPLAY);
@@ -100,7 +102,7 @@
 	// シートビューの取得
 	cEngine.prototype.getSeatView = function(argName)
 	{
-		if(argName == BLE_DEVICE_PROBE_NAME_DEALER)
+		if(argName == ns.BLE_DEVICE_PROBE_NAME_DEALER)
 		{
 			return this.DealerView;
 		}
@@ -184,6 +186,17 @@
 	cEngine.prototype.onCommandEndHand = function()
 	{
 		this.broadcastRound(PokerConst.BettingRound.EndHand);
+	}
+	// テスト用セットアップ
+	cEngine.prototype.onCommandDevSetup = function()
+	{
+		this.DealerView.setBlind(50, 100);
+		for(const seat_name of ["Seat01","Seat02","Seat04","Seat06","Seat07","Seat08"])
+		{
+			const seat = this.getSeatView(seat_name);
+			seat.onCommandAlive(null);
+			seat.setStack(20000);
+		}
 	}
 
 	// ---------------------------------------------------------------------

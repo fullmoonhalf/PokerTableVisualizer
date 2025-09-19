@@ -85,18 +85,19 @@
 		this.CommandAllIn.innerHTML = "All-In";
 	}
 	// ---------------------------------------------------------------------
-	// 状態取得
+	// プローブ管理
 	// ---------------------------------------------------------------------
-	cSeatControlView.prototype.getStack = function()
+	cSeatControlView.prototype.setRSSI = function(argRSSI)
 	{
-		return Number(this.InputStack.value) || 0;
+		this.ElementRssi.innerHTML = ns.convertRSSIExpression(argRSSI);
 	}
-	cSeatControlView.prototype.getBetAmount = function()
+	cSeatControlView.prototype.setBattery = function(argBattery)
 	{
-		return Number(this.InputBetAmount.value) || 0;
+		this.ElementBattery.innerHTML = ns.convertBatteryExpression(argBattery);
 	}
+
 	// ---------------------------------------------------------------------
-	// 状態設定
+	// 名前管理
 	// ---------------------------------------------------------------------
 	cSeatControlView.prototype.setSeatName = function(argSeatName)
 	{
@@ -106,24 +107,42 @@
 		this.InputBetAmount.id = "panel_seat_betamount_" + argSeatName;
 		this.InputStack.id = "panel_seat_stack_" + argSeatName;
 	}
-	cSeatControlView.prototype.setRSSI = function(argRSSI)
-	{
-		this.ElementRssi.innerHTML = ns.convertRSSIExpression(argRSSI);
-	}
-	cSeatControlView.prototype.setBattery = function(argBattery)
-	{
-		this.ElementBattery.innerHTML = ns.convertBatteryExpression(argBattery);
-	}
+
+	// ---------------------------------------------------------------------
+	// 手札管理
+	// ---------------------------------------------------------------------
 	cSeatControlView.prototype.setHoleCards = function(argHoleCards)
 	{
 		this.ElementHand.innerHTML = ns.createHoleCardsHTML(argHoleCards, ns.CLASS_CARD_SMALL, 2);
 	}
+
+	// ---------------------------------------------------------------------
+	// ポジション管理
+	// ---------------------------------------------------------------------
 	cSeatControlView.prototype.setPosition = function(argPositionIndex, argAlivePlayerCount)
 	{
 		const position_name = ns.convertPositionName(argAlivePlayerCount, argPositionIndex);
 		this.CommandPosition.innerHTML = position_name;
 		this.ElementBase.classList.toggle("button", argPositionIndex == 0);
 		this.ElementBase.classList.toggle("utg", position_name == ns.POKER_POSITION_UTG);
+	}
+
+	// ---------------------------------------------------------------------
+	// スタック管理
+	// ---------------------------------------------------------------------
+	// スタックを取得する
+	cSeatControlView.prototype.getStack = function()
+	{
+		return Number(this.InputStack.value) || 0;
+	}
+	// スタックを設定する
+	cSeatControlView.prototype.setStack = function(argAmount)
+	{
+		this.InputStack.value = Number(argAmount) || 0;
+	}
+	cSeatControlView.prototype.getBetAmount = function()
+	{
+		return Number(this.InputBetAmount.value) || 0;
 	}
 	cSeatControlView.prototype.setBetAmount = function(argAmount)
 	{

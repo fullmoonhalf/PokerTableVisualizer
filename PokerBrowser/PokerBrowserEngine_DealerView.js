@@ -2,7 +2,6 @@
     "use strict";
     if(ns.cDealerView) return;
 
-	const BLE_DEVICE_PROBE_NAME_DEALER = "Dealer01";
 
     // =====================================================================
 	// Dealer オブジェクト
@@ -15,7 +14,7 @@
 		this.BoardFlop = [];
 		this.BoardTurn = [];
 		this.BoardRiver = [];
-		this.SeatName = BLE_DEVICE_PROBE_NAME_DEALER;
+		this.SeatName = ns.BLE_DEVICE_PROBE_NAME_DEALER;
 		this.CurrentRound = PokerConst.BettingRound.Invalid;
 	}
 	cDealerView.prototype.setRSSI = function(argRSSI)
@@ -25,33 +24,6 @@
 	cDealerView.prototype.setBattery = function(argBattery)
 	{
 		this.ControlView.setBattery(argBattery);
-	}
-	cDealerView.prototype.setHoleCards = function(argHoleCards)
-	{
-		const disp_hole_cards = argHoleCards.sort((a, b) => ns.getCardOrder[a] - ns.getCardOrder[b]);
-		switch(this.CurrentRound)
-		{
-			case PokerConst.BettingRound.Flop:
-				this.BoardFlop = disp_hole_cards;
-				this.ControlView.setBoardFlop(disp_hole_cards);
-				this.LiveView.setBoardFlop(disp_hole_cards);
-				PokerBrowser.engine.broadcastWinrate();
-				break;
-			case PokerConst.BettingRound.Turn:
-				this.BoardTurn = disp_hole_cards;
-				this.ControlView.setBoardTurn(disp_hole_cards);
-				this.LiveView.setBoardTurn(disp_hole_cards);
-				PokerBrowser.engine.broadcastWinrate();
-				break;
-			case PokerConst.BettingRound.River:
-				this.BoardRiver = disp_hole_cards;
-				this.ControlView.setBoardRiver(disp_hole_cards);
-				this.LiveView.setBoardRiver(disp_hole_cards);
-				PokerBrowser.engine.broadcastWinrate();
-				break;
-			default:
-				break;
-		}
 	}
 	cDealerView.prototype.setRound = function(argRound)
 	{
@@ -92,10 +64,6 @@
 				return 0;
 		}
 	}
-	cDealerView.prototype.getCurrentCommunityCards = function()
-	{
-		return this.BoardFlop.concat(this.BoardTurn, this.BoardRiver);
-	}
 	cDealerView.prototype.toDealed = function()
 	{
 		this.BoardFlop = [];
@@ -109,17 +77,70 @@
 		this.LiveView.setBoardRiver([]);
 		this.LiveView.setBlind(this.ControlView.getBlind());
 	}
-	// ブラインドの取得
-	cDealerView.prototype.getBlind = function()
+
+
+    // ---------------------------------------------------------------------
+	// ボード関連
+    // ---------------------------------------------------------------------
+	cDealerView.prototype.getCurrentCommunityCards = function()
 	{
-		return this.ControlView.getBlind();
+		return this.BoardFlop.concat(this.BoardTurn, this.BoardRiver);
 	}
+	cDealerView.prototype.setHoleCards = function(argHoleCards)
+	{
+		const disp_hole_cards = argHoleCards.sort((a, b) => ns.getCardOrder[a] - ns.getCardOrder[b]);
+		switch(this.CurrentRound)
+		{
+			case PokerConst.BettingRound.Flop:
+				this.BoardFlop = disp_hole_cards;
+				this.ControlView.setBoardFlop(disp_hole_cards);
+				this.LiveView.setBoardFlop(disp_hole_cards);
+				PokerBrowser.engine.broadcastWinrate();
+				break;
+			case PokerConst.BettingRound.Turn:
+				this.BoardTurn = disp_hole_cards;
+				this.ControlView.setBoardTurn(disp_hole_cards);
+				this.LiveView.setBoardTurn(disp_hole_cards);
+				PokerBrowser.engine.broadcastWinrate();
+				break;
+			case PokerConst.BettingRound.River:
+				this.BoardRiver = disp_hole_cards;
+				this.ControlView.setBoardRiver(disp_hole_cards);
+				this.LiveView.setBoardRiver(disp_hole_cards);
+				PokerBrowser.engine.broadcastWinrate();
+				break;
+			default:
+				break;
+		}
+	}
+
+    // ---------------------------------------------------------------------
+	// ポット関連
+    // ---------------------------------------------------------------------
 	// ポットの追加
 	cDealerView.prototype.addPot = function(argChip)
 	{
 		this.ControlView.addPot(argChip);
 		this.LiveView.setPot(this.ControlView.getPot());
 	}
+
+    // ---------------------------------------------------------------------
+	// ブラインド関連
+    // ---------------------------------------------------------------------
+	// ブラインドの取得
+	cDealerView.prototype.getBlind = function()
+	{
+		return this.ControlView.getBlind();
+	}
+
+    // ブラインドの設定
+    cDealerView.prototype.setBlind = function(argSB, argBB)
+    {
+        this.ControlView.setBlind(argSB, argBB);
+		this.LiveView.setBlind(this.ControlView.getBlind());
+    }
+
+
 
 
     ns.cDealerView = cDealerView;
