@@ -8,7 +8,6 @@
 
 	// BLEデバイス関係
 	const BLE_DEVICE_NAME_PREFIX = "PTV_PP_";
-	const BLE_DEVICE_PROBE_NAME_DEALER = "Dealer01";
 	const UUID_SERVICE = "cbaabb28-4e81-49c4-b775-aedfd27d8db0";
 	const UUID_CHARACTERISTIC = "45f116ee-b087-4271-888d-a15eebebd2eb";
 
@@ -32,259 +31,11 @@
 	const TEMPLATE_PANEL_PROBE = "template_panel_probe";
 
 	const TEMPLATE_DEALER_CONTROL = "template_panel_dealer_control";
-	const TEMPLATE_DEALER_CONTROL_HAND = "template_panel_dealer_probe_hand";
-	const TEMPLATE_DEALER_CONTROL_ROUND = "template_panel_dealer_probe_round";
-	const TEMPLATE_DEALER_CONTROL_BOARD_FLOP = "template_panel_dealer_probe_flop";
-	const TEMPLATE_DEALER_CONTROL_BOARD_TURN = "template_panel_dealer_probe_turn";
-	const TEMPLATE_DEALER_CONTROL_BOARD_RIVER = "template_panel_dealer_probe_river";
-	const TEMPLATE_DEALER_CONTROL_RSSI = "template_panel_dealer_probe_rssi";
-	const TEMPLATE_DEALER_CONTROL_Battery = "template_panel_dealer_probe_battery";
-	const TEMPLATE_DEALER_CONTROL_SB_INPUT = "template_panel_dealer_probe_sb_input";
-	const TEMPLATE_DEALER_CONTROL_BB_INPUT = "template_panel_dealer_probe_bb_input";
-	const TEMPLATE_DEALER_CONTROL_POT_INPUT = "template_panel_dealer_probe_pot_input";
-
 	const TEMPLATE_DEALER_VIEW = "template_panel_dealer_view";
-	const TEMPLATE_DEALER_VIEW_DRAG = "template_panel_dealer_view_drag";
-	const TEMPLATE_DEALER_VIEW_BOARD_FLOP = "template_panel_dealer_view_flop";
-	const TEMPLATE_DEALER_VIEW_BOARD_TURN = "template_panel_dealer_view_turn";
-	const TEMPLATE_DEALER_VIEW_BOARD_RIVER = "template_panel_dealer_view_river";
-	const TEMPLATE_DEALER_VIEW_BLIND_VALUE = "template_panel_dealer_view_blind_value";
-	const TEMPLATE_DEALER_VIEW_POT_VALUE = "template_panel_dealer_view_pot_value";
 
 	const ELEMENT_PANEL_PROBE = "element_panel_probe";
 
 	
-	// =====================================================================
-	// Dealer 表示オブジェクト
-	// =====================================================================
-	function cDealerLiveView(argBaseElement)
-	{
-		this.ElementBase = argBaseElement;
-		this.ElementDrag = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_DRAG); 
-		this.ElementBoardFlop = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_BOARD_FLOP);
-		this.ElementBoardTurn = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_BOARD_TURN);
-		this.ElementBoardRiver = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_BOARD_RIVER);
-		this.DragControl = new ns.cDragableElement(this.ElementDrag);
-		this.ElementBlindValue = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_BLIND_VALUE, "");
-		this.ElementPotValue = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_POT_VALUE, "0");
-	}
-	cDealerLiveView.prototype.setBoardFlop = function(argCards)
-	{
-		this.ElementBoardFlop.innerHTML = ns.createHoleCardsHTML(argCards, ns.CLASS_CARD_NORMAL, 3);
-	}
-	cDealerLiveView.prototype.setBoardTurn = function(argCards)
-	{
-		this.ElementBoardTurn.innerHTML = ns.createHoleCardsHTML(argCards, ns.CLASS_CARD_NORMAL, 1);
-	}
-	cDealerLiveView.prototype.setBoardRiver = function(argCards)
-	{
-		this.ElementBoardRiver.innerHTML = ns.createHoleCardsHTML(argCards, ns.CLASS_CARD_NORMAL, 1);
-	}
-	cDealerLiveView.prototype.setPot = function(argPot)
-	{
-		this.ElementPotValue.innerHTML = argPot;
-	}
-	cDealerLiveView.prototype.setBlind = function(argBlind)
-	{
-		this.ElementBlindValue.innerHTML = `Blind: ${argBlind.sb}/${argBlind.bb}`;
-	}
-
-	// =====================================================================
-	// Dealer 制御オブジェクト
-	// =====================================================================
-	function cDealerControlView(argBaseElement)
-	{
-		this.ElementBase = argBaseElement;
-		this.ElementHand = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_HAND, "");
-		this.ElementRound = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_ROUND, "");
-		this.ElementBoardFlop = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_BOARD_FLOP);
-		this.ElementBoardTurn = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_BOARD_TURN);
-		this.ElementBoardRiver = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_BOARD_RIVER);
-		this.ElementRssi = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_RSSI, "");
-		this.ElementBattery = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_Battery, "");
-		this.InputSB = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_SB_INPUT);
-		this.InputBB = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_BB_INPUT);
-		this.InputPot = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_POT_INPUT);
-	}
-	cDealerControlView.prototype.setRound = function(argRound)
-	{
-		switch(argRound)
-		{
-			case PokerConst.BettingRound.DealHand:
-				this.ElementRound.innerHTML = "Preflop(deal)";
-				break;
-			case PokerConst.BettingRound.Preflop:
-				this.ElementRound.innerHTML = "Preflop";
-				break;
-			case PokerConst.BettingRound.Flop:
-				this.ElementRound.innerHTML = "Flop";
-				break;
-			case PokerConst.BettingRound.Turn:
-				this.ElementRound.innerHTML = "Turn";
-				break;
-			case PokerConst.BettingRound.River:
-				this.ElementRound.innerHTML = "River";
-				break;
-		}
-	}
-	cDealerControlView.prototype.setRSSI = function(argRSSI)
-	{
-		this.ElementRssi.innerHTML = "R:" + argRSSI;
-	}
-	cDealerControlView.prototype.setBattery = function(argBattery)
-	{
-		this.ElementBattery.innerHTML ="B:" + argBattery + "%";
-	}
-	cDealerControlView.prototype.setHandCount = function(argHandCount)
-	{
-		this.ElementHand.innerHTML = `Hand: ${argHandCount}`;
-	}
-	cDealerControlView.prototype.setBoardFlop = function(argCards)
-	{
-		this.ElementBoardFlop.innerHTML = ns.createHoleCardsHTML(argCards, ns.CLASS_CARD_NORMAL, 3);
-	}
-	cDealerControlView.prototype.setBoardTurn = function(argCards)
-	{
-		this.ElementBoardTurn.innerHTML = ns.createHoleCardsHTML(argCards, ns.CLASS_CARD_NORMAL, 1);
-	}
-	cDealerControlView.prototype.setBoardRiver = function(argCards)
-	{
-		this.ElementBoardRiver.innerHTML = ns.createHoleCardsHTML(argCards, ns.CLASS_CARD_NORMAL, 1);
-	}
-	cDealerControlView.prototype.addPot = function(argChip)
-	{
-		let pot = Number(this.InputPot.value) || 0;
-		pot += argChip;
-		this.InputPot.value = pot;
-	}
-	cDealerControlView.prototype.getBlind = function()
-	{
-		let sb = Number(this.InputSB.value) || 0;
-		let bb = Number(this.InputBB.value) || 0;
-		return {"sb":sb, "bb":bb};
-	}
-	cDealerControlView.prototype.getPot = function()
-	{
-		return this.InputPot.value;
-	}
-
-	// =====================================================================
-	// Dealer オブジェクト
-	// =====================================================================
-	function cDealerView(argControlBaseElement, argLiveBaseElement)
-	{
-		this.ControlView = new cDealerControlView(argControlBaseElement);
-		this.LiveView = new cDealerLiveView(argLiveBaseElement);
-		this.Round = PokerConst.BettingRound.Invalid;
-		this.BoardFlop = [];
-		this.BoardTurn = [];
-		this.BoardRiver = [];
-		this.SeatName = BLE_DEVICE_PROBE_NAME_DEALER;
-		this.CurrentRound = PokerConst.BettingRound.Invalid;
-	}
-	cDealerView.prototype.setRSSI = function(argRSSI)
-	{
-		this.ControlView.setRSSI(argRSSI);
-	}
-	cDealerView.prototype.setBattery = function(argBattery)
-	{
-		this.ControlView.setBattery(argBattery);
-	}
-	cDealerView.prototype.setHoleCards = function(argHoleCards)
-	{
-		const disp_hole_cards = argHoleCards.sort((a, b) => ns.getCardOrder[a] - ns.getCardOrder[b]);
-		switch(this.CurrentRound)
-		{
-			case PokerConst.BettingRound.Flop:
-				this.BoardFlop = disp_hole_cards;
-				this.ControlView.setBoardFlop(disp_hole_cards);
-				this.LiveView.setBoardFlop(disp_hole_cards);
-				PokerBrowser.engine.broadcastWinrate();
-				break;
-			case PokerConst.BettingRound.Turn:
-				this.BoardTurn = disp_hole_cards;
-				this.ControlView.setBoardTurn(disp_hole_cards);
-				this.LiveView.setBoardTurn(disp_hole_cards);
-				PokerBrowser.engine.broadcastWinrate();
-				break;
-			case PokerConst.BettingRound.River:
-				this.BoardRiver = disp_hole_cards;
-				this.ControlView.setBoardRiver(disp_hole_cards);
-				this.LiveView.setBoardRiver(disp_hole_cards);
-				PokerBrowser.engine.broadcastWinrate();
-				break;
-			default:
-				break;
-		}
-	}
-	cDealerView.prototype.setRound = function(argRound)
-	{
-		this.CurrentRound = argRound;
-		this.ControlView.setRound(argRound);
-		switch(this.CurrentRound)
-		{
-			case PokerConst.BettingRound.Flop:
-				break;
-			case PokerConst.BettingRound.Turn:
-				PokerModel.useFlopCards(this.BoardFlop);
-				break;
-			case PokerConst.BettingRound.River:
-				PokerModel.useTurnCards(this.BoardTurn);
-				break;
-			case PokerConst.BettingRound.EndHand:
-				PokerModel.useRiverCards(this.BoardRiver);
-				break;
-			default:
-				break;
-		}
-	}
-	cDealerView.prototype.setHandCount = function(argHandCount)
-	{
-		this.ControlView.setHandCount(argHandCount);
-	}
-	cDealerView.prototype.getScanCount = function()
-	{
-		switch(this.CurrentRound)
-		{
-			case PokerConst.BettingRound.Flop:
-				return 3;
-			case PokerConst.BettingRound.Turn:
-				return 1;
-			case PokerConst.BettingRound.River:
-				return 1;
-			default:
-				return 0;
-		}
-	}
-	cDealerView.prototype.getCurrentCommunityCards = function()
-	{
-		return this.BoardFlop.concat(this.BoardTurn, this.BoardRiver);
-	}
-	cDealerView.prototype.toDealed = function()
-	{
-		this.BoardFlop = [];
-		this.BoardTurn = [];
-		this.BoardRiver = [];
-		this.ControlView.setBoardFlop([]);
-		this.LiveView.setBoardFlop([]);
-		this.ControlView.setBoardTurn([]);
-		this.LiveView.setBoardTurn([]);
-		this.ControlView.setBoardRiver([]);
-		this.LiveView.setBoardRiver([]);
-		this.LiveView.setBlind(this.ControlView.getBlind());
-	}
-	// ブラインドの取得
-	cDealerView.prototype.getBlind = function()
-	{
-		return this.ControlView.getBlind();
-	}
-	// ポットの追加
-	cDealerView.prototype.addPot = function(argChip)
-	{
-		this.ControlView.addPot(argChip);
-		this.LiveView.setPot(this.ControlView.getPot());
-	}
-
 	// =====================================================================
 	// engine オブジェクト
 	// =====================================================================
@@ -321,7 +72,7 @@
 
 		// ディーラー系コントロールパネルの初期化
 		const dealer_live_view = this.TemplateDealerLive.cloneNode(true);
-		this.DealerView = new cDealerView(this.DealerControlElementBase, dealer_live_view);
+		this.DealerView = new ns.cDealerView(this.DealerControlElementBase, dealer_live_view);
 		this.ScreenDisplay.appendChild(dealer_live_view);
 
 		// ユーザー系コントロールパネルの初期化
@@ -360,7 +111,7 @@
 			return view;
 		}
 
-		const new_view = new cSeatView(argName, this.TemplateProbe);
+		const new_view = new ns.cSeatView(argName, this.TemplateProbe);
 		this.SeatViews.push(new_view);
 		return new_view;
 	}
