@@ -73,7 +73,7 @@
 	}
 
 	// =====================================================================
-	// ユーティリティ
+	// HTML 系のユーティリティ
 	// =====================================================================
     ns.createHoleCardsHTML = function (argHoleCards, argClassName, argCapacity)
 	{
@@ -91,7 +91,14 @@
 		}
 		return html;
 	}
-
+	ns.convertRSSIExpression = function(argRSSI)
+	{
+		return "📶" + argRSSI;
+	}
+	ns.convertBatteryExpression = function(argBattery)
+	{
+		return "🔋" + argBattery;
+	}
 
 	// =====================================================================
 	// DnDまわり

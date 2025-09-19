@@ -108,11 +108,11 @@
 	}
 	cSeatControlView.prototype.setRSSI = function(argRSSI)
 	{
-		this.ElementRssi.innerHTML = "📶" + argRSSI;
+		this.ElementRssi.innerHTML = ns.convertRSSIExpression(argRSSI);
 	}
 	cSeatControlView.prototype.setBattery = function(argBattery)
 	{
-		this.ElementBattery.innerHTML ="🔋" + argBattery;
+		this.ElementBattery.innerHTML = ns.convertBatteryExpression(argBattery);
 	}
 	cSeatControlView.prototype.setHoleCards = function(argHoleCards)
 	{

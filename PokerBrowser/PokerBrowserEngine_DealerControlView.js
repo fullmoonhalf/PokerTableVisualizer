@@ -53,11 +53,11 @@
 	}
 	cDealerControlView.prototype.setRSSI = function(argRSSI)
 	{
-		this.ElementRssi.innerHTML = "R:" + argRSSI;
+		this.ElementRssi.innerHTML = ns.convertRSSIExpression(argRSSI);
 	}
 	cDealerControlView.prototype.setBattery = function(argBattery)
 	{
-		this.ElementBattery.innerHTML ="B:" + argBattery + "%";
+		this.ElementBattery.innerHTML = ns.convertBatteryExpression(argBattery);
 	}
 	cDealerControlView.prototype.setHandCount = function(argHandCount)
 	{
