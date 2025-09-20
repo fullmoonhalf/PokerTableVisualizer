@@ -48,9 +48,9 @@
 .template_panel_dealer_view_pot_label
 {
     position: absolute;
-    font-size: 10px;
+    font-size: 8px;
     color: #fff;
-    top: 10px;
+    top: 2px;
     left: 100px;
 }
 .template_panel_dealer_view_pot_value
@@ -59,14 +59,23 @@
     font-size: 12px;
     color: #ff0;
     top: 10px;
-    left: 120px;
-    width: 60px;
+    left: 100px;
+    width: 80px;
     text-align: right;
+}
+
+.template_panel_dealer_view_blind_label
+{
+    position: absolute;
+    font-size: 8px;
+    color: #ccc;
+    top: 2px;
+    left: 10px;
 }
 .template_panel_dealer_view_blind_value
 {
     position: absolute;
-    font-size: 8px;
+    font-size: 12px;
     color: #ccc;
     top: 10px;
     left: 10px;

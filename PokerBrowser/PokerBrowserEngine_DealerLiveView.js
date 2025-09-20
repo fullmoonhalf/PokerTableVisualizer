@@ -44,7 +44,7 @@
 	}
 	cDealerLiveView.prototype.setBlind = function(argBlind)
 	{
-		this.ElementBlindValue.innerHTML = `Blind: ${argBlind.sb}/${argBlind.bb}`;
+		this.ElementBlindValue.innerHTML = `${argBlind.sb}/${argBlind.bb}`;
 	}
 
     ns.cDealerLiveView = cDealerLiveView;
