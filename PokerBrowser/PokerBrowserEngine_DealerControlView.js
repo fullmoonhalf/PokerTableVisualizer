@@ -85,13 +85,17 @@
     // ---------------------------------------------------------------------
     cDealerControlView.prototype.addPot = function(argChip)
 	{
-		let pot = Number(this.InputPot.value) || 0;
+		let pot = this.getPot();
 		pot += argChip;
-		this.InputPot.value = pot;
+		this.setPot(pot);
 	}
 	cDealerControlView.prototype.getPot = function()
 	{
-		return this.InputPot.value;
+		return Number(this.InputPot.value) || 0;
+	}
+	cDealerControlView.prototype.setPot = function(argChip)
+	{
+		this.InputPot.value = argChip;
 	}
 
     // ---------------------------------------------------------------------

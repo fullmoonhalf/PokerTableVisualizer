@@ -340,13 +340,23 @@
 	// スタックを設定する
 	cSeatView.prototype.setStack = function(argStack)
 	{
-		this.SeatControl.setStack(argStack)
+		this.SeatControl.setStack(argStack);
+		this.SeatLive.setStack(argStack);
+	}
+	// スタックを追加する
+	cSeatView.prototype.addStack = function(argAmount)
+	{
+		let stack = this.getStack();
+		stack += argAmount;
+		this.setStack(stack);
+		this.SeatLive.setAction("Win", argAmount);
 	}
 	// ベッティング量を取得する
 	cSeatView.prototype.getBetAmount = function()
 	{
 
 	}
+
 	cSeatView.prototype.postBlind = function(argAmount)
 	{
 		const actual_amount = this.SeatControl.setBetAmount(argAmount);
@@ -360,6 +370,7 @@
 		this.SeatLive.setStack(this.SeatControl.getStack());
 		return actual_amount;
 	}
+
 
 	// ---------------------------------------------------------------------
 	// コンストラクタの公開

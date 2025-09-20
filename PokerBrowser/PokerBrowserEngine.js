@@ -80,6 +80,7 @@
 		// ユーザー系コントロールパネルの初期化
 		this.SeatViews = [];
 		this.DealerSeat = null;
+		this.CurrentRound = PokerConst.BettingRound.Invalid;
 		const element_panel_probes = document.getElementsByClassName(ELEMENT_PANEL_PROBE);
 		for(const element of element_panel_probes)
 		{
@@ -333,13 +334,50 @@
 		this.broadcastRound(PokerConst.BettingRound.River);
 		PokerModel.startRiver();
 	}
+	// ハンドの決着がついた
 	cEngine.prototype.startEndHand = function()
 	{
+		const FinishRound = this.CurrentRound;
 		this.broadcastRound(PokerConst.BettingRound.EndHand);
+
+		// ノーコールで決着
+		if(this.winByNoCall())
+		{
+			this.DealerView.resetPot();
+		}
+
+		// ショウダウン
+		if(FinishRound == PokerConst.BettingRound.River)
+		{
+		}
 	}
 
+	// ノーコールで決着がついた場合の処理
+	cEngine.prototype.winByNoCall = function()
+	{
+		let active_count = this.getActiveCount();
+		if(active_count > 1)
+		{
+			return false;
+		}
+
+		const pot = this.DealerView.getPot();
+		const winner_seat = this.SeatViews.find(x => x.isActive());
+		if(winner_seat)
+		{
+			winner_seat.addStack(pot);
+		}
+		return true;
+	}
+
+
+
+
+
+
+
 	// ---------------------------------------------------------------------
-	// 
+	// アクター関連
 	// ---------------------------------------------------------------------
 	cEngine.prototype.setCurrentActorSeat = function(argSeat)
 	{
@@ -383,7 +421,20 @@
 		}
 		return null;
 	}
-
+	// アクティブプレイヤーの数を数える
+	cEngine.prototype.getActiveCount = function()
+	{
+		let count = 0;
+		for(let index=0; index<this.SeatViews.length; ++index)
+		{
+			const seat = this.SeatViews[index];
+			if(seat.isActive())
+			{
+				count++;
+			}
+		}
+		return count;
+	}
 
 
 	// ---------------------------------------------------------------------
@@ -434,6 +485,7 @@
 	// ラウンドの設定
 	cEngine.prototype.broadcastRound = function(argRound)
 	{
+		this.CurrentRound = argRound;
 		this.DealerView.setRound(argRound);
 		this.SeatViews.forEach(x => x.setRound(argRound));
 		this.Probes.forEach(x => x.proceedRound());

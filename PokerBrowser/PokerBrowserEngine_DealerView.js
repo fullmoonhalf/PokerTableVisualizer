@@ -126,6 +126,17 @@
 		this.ControlView.addPot(argChip);
 		this.LiveView.setPot(this.ControlView.getPot());
 	}
+	// ポットの取得
+	cDealerView.prototype.getPot = function()
+	{
+		return this.ControlView.getPot();
+	}
+	// ポットのリセット
+	cDealerView.prototype.resetPot = function()
+	{
+		this.ControlView.setPot(0);
+		this.LiveView.setPot(0);
+	}
 
     // ---------------------------------------------------------------------
 	// ブラインド関連

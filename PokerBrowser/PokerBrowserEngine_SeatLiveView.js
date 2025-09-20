@@ -43,6 +43,7 @@
 		this.ElementName.classList.toggle("fold", true);
 		this.ElementHand.classList.toggle("fold", true);
 		this.ElementWinRate.innerHTML= "";
+		this.resetAction();
 	}
 	cSeatLiveView.prototype.toActive = function()
 	{
@@ -98,6 +99,11 @@
 			amount = argChipAmount;
 		}
 		this.ElementBetAmount.innerHTML = amount;
+	}
+	cSeatLiveView.prototype.resetAction = function()
+	{
+		this.ElementAction.innerHTML = "";
+		this.ElementBetAmount.innerHTML = "";
 	}
 
 	// ---------------------------------------------------------------------
