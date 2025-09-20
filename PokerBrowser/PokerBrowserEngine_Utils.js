@@ -129,24 +129,33 @@
 	}
 	cDragableElement.prototype.onDragMove = function(event)
 	{
-		const grid_size = 16;
 		if(this.Draggning)
 		{
 			let dx = event.clientX - this.DragPrevX;
 			let dy = event.clientY - this.DragPrevY;
-			this.TransX += dx;
-			this.TransY += dy;
+			this.setPosition(this.TransX + dx, this.TransY + dy);
 			this.DragPrevX = event.clientX;
 			this.DragPrevY = event.clientY;
-			const nx = Math.round(this.TransX/grid_size)*grid_size;
-			const ny = Math.round(this.TransY/grid_size)*grid_size;
-			this.TargetElement.style.transform = `translate(${nx}px, ${ny}px)`;
+			this.apply();
 		}
 	}
 	cDragableElement.prototype.onDragEnd = function(event)
 	{
 		this.Draggning = false;
 	}
+	cDragableElement.prototype.setPosition = function(x, y)
+	{
+		this.TransX = x;
+		this.TransY = y;
+	}
+	cDragableElement.prototype.apply = function()
+	{
+		const grid_size = 16;
+		const nx = Math.round(this.TransX/grid_size)*grid_size;
+		const ny = Math.round(this.TransY/grid_size)*grid_size;
+		this.TargetElement.style.transform = `translate(${nx}px, ${ny}px)`;
+	}
+
 
 
     ns.cDragableElement = cDragableElement;

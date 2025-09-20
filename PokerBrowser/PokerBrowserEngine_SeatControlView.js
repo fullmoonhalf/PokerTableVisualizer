@@ -62,6 +62,7 @@
 	{
 		this.ElementBase.classList.toggle("fold", false);
 		this.CommandActivityFold.innerHTML = "Fold";
+		this.resetBetAmount();
 	}
 	cSeatControlView.prototype.toDead = function()
 	{
@@ -150,10 +151,13 @@
 	{
 		this.InputStack.value = Number(argAmount) || 0;
 	}
+
+	// 現在のベット額を取得する
 	cSeatControlView.prototype.getBetAmount = function()
 	{
 		return Number(this.InputBetAmount.value) || 0;
 	}
+	// 現在のベット額を設定する
 	cSeatControlView.prototype.setBetAmount = function(argAmount)
 	{
 		const stack = this.getStack();
@@ -162,6 +166,12 @@
 		this.InputStack.value = stack - amount;
 		return amount;
 	}
+	// 現在のベット額をリセットする
+	cSeatControlView.prototype.resetBetAmount = function()
+	{
+		this.InputBetAmount.value = 0;
+	}
+
 	cSeatControlView.prototype.postAnti = function(argAmount)
 	{
 		const stack = this.getStack();

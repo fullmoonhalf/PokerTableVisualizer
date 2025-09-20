@@ -197,13 +197,27 @@
 	// テスト用セットアップ
 	cEngine.prototype.onCommandDevSetup = function()
 	{
-		const seat_list = ["Seat01","Seat02","Seat04","Seat06","Seat07","Seat08"];
+		const seat_list = [
+			{"target": "Seat01", "stack": 20000, "dealer":false, "view_panel_x": 176, "view_panel_y": 176, },
+			{"target": "Seat02", "stack": 20000, "dealer":false, "view_panel_x": 320, "view_panel_y": 240, },
+			{"target": "Seat04", "stack": 20000, "dealer":true , "view_panel_x": 320, "view_panel_y": 304, },
+			{"target": "Seat06", "stack": 20000, "dealer":false, "view_panel_x": 176, "view_panel_y": 368, },
+			{"target": "Seat07", "stack": 20000, "dealer":false, "view_panel_x":  48, "view_panel_y": 304, },
+			{"target": "Seat08", "stack": 20000, "dealer":false, "view_panel_x":  48, "view_panel_y": 240, },
+		]
+		
 		this.DealerView.setBlind(50, 100);
-		for(const seat_name of seat_list)
+		for(const seat_conf of seat_list)
 		{
-			const seat = this.getSeatView(seat_name);
+			const seat = this.getSeatView(seat_conf.target);
 			seat.onCommandAlive(null);
-			seat.setStack(20000);
+			seat.setStack(seat_conf.stack);
+			if(seat_conf.dealer)
+			{
+				this.setButton(seat);
+			}
+			seat.SeatLive.DragControl.setPosition(seat_conf.view_panel_x, seat_conf.view_panel_y);
+			seat.SeatLive.DragControl.apply();
 		}
 	}
 
@@ -338,18 +352,14 @@
 	cEngine.prototype.startEndHand = function()
 	{
 		const FinishRound = this.CurrentRound;
-		this.broadcastRound(PokerConst.BettingRound.EndHand);
 
 		// ノーコールで決着
 		if(this.winByNoCall())
 		{
-			this.DealerView.resetPot();
+			this.broadcastRound(PokerConst.BettingRound.EndHand);
 		}
 
 		// ショウダウン
-		if(FinishRound == PokerConst.BettingRound.River)
-		{
-		}
 	}
 
 	// ノーコールで決着がついた場合の処理
@@ -370,6 +380,14 @@
 		return true;
 	}
 
+	cEngine.prototype.winByShowdown = function()
+	{
+		if(FinishRound == PokerConst.BettingRound.River)
+		{
+		}
+
+		return false;
+	}
 
 
 

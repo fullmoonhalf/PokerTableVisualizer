@@ -44,6 +44,7 @@
 				break;
 			case PokerConst.BettingRound.EndHand:
 				PokerModel.useRiverCards(this.BoardRiver);
+				this.resetPot();
 				break;
 			default:
 				break;
