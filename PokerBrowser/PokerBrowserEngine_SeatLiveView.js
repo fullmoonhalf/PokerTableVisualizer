@@ -34,7 +34,7 @@
 		this.leaveAnnIn();
 		this.toActive();
 		this.setHoleCards([]);
-		this.setAction("", 0);
+		this.resetAction();
 		this.ElementWinRate.innerHTML= "";
 	}
 	cSeatLiveView.prototype.toFold = function()
@@ -42,8 +42,8 @@
 		this.ElementInfos.classList.toggle("fold", true);
 		this.ElementName.classList.toggle("fold", true);
 		this.ElementHand.classList.toggle("fold", true);
-		this.ElementWinRate.innerHTML= "";
 		this.resetAction();
+		this.ElementWinRate.innerHTML= "";
 	}
 	cSeatLiveView.prototype.toActive = function()
 	{

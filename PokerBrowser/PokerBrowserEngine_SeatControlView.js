@@ -51,12 +51,13 @@
 		this.leaveAnnIn();
 		this.toActive();
 		this.setHoleCards([]);
-		this.InputBetAmount.value = 0;
+		this.resetBetAmount();
 	}
 	cSeatControlView.prototype.toFold = function()
 	{
 		this.ElementBase.classList.toggle("fold", true);
 		this.CommandActivityFold.innerHTML = "";
+		this.resetBetAmount();
 	}
 	cSeatControlView.prototype.toActive = function()
 	{
@@ -169,7 +170,7 @@
 	// 現在のベット額をリセットする
 	cSeatControlView.prototype.resetBetAmount = function()
 	{
-		this.InputBetAmount.value = 0;
+		this.InputBetAmount.value = "";
 	}
 
 	cSeatControlView.prototype.postAnti = function(argAmount)
