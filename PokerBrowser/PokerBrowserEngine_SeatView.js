@@ -67,6 +67,16 @@
 			this.toActive();
 		}
 	}
+	// フォールド
+	cSeatView.prototype.onCommandActivityCall = function(event)
+	{
+		if(this.Active)
+		{
+			this.toCall();
+		}
+	}
+
+
 	// オールイン
 	cSeatView.prototype.onCommandAllIn = function(event)
 	{
@@ -129,6 +139,15 @@
 			this.ActionReceiver?.notifySeatFold(this);
 		}
 	}
+	cSeatView.prototype.toCall = function()
+	{
+		if(this.Alive)
+		{
+			this.ActionReceiver?.notifySeatCall(this);
+		}
+	}
+
+
 	cSeatView.prototype.toActive = function()
 	{
 		if(this.Alive)
@@ -240,7 +259,13 @@
 			case PokerConst.BettingRound.Preflop:
 				PokerModel.useHoleCards(this.PlayerName, this.CurrentHoleCards);
 				break;
-		}
+			case PokerConst.BettingRound.Flop:
+			case PokerConst.BettingRound.Turn:
+			case PokerConst.BettingRound.River:
+				this.SeatControl.resetBetAmount();
+				this.SeatLive.resetAction();
+				break;
+			}
 	}
 	cSeatView.prototype.setWinRate = function(argWinRate)
 	{
@@ -354,20 +379,59 @@
 	// ベッティング量を取得する
 	cSeatView.prototype.getBetAmount = function()
 	{
-
+		return this.SeatControl.getBetAmount();
 	}
-
-	cSeatView.prototype.postBlind = function(argAmount)
+	// ベット額の追加
+	cSeatView.prototype.addBetAmount = function(argAction, argAmount)
 	{
-		const actual_amount = this.SeatControl.setBetAmount(argAmount);
+		// ベット(追加)にともなうスタック変化を計算
+		const previous_stack = this.getStack();
+		const actual_amount = Math.min(previous_stack, argAmount);
+		const current_stack = previous_stack - actual_amount;
+		const current_bet = this.getBetAmount() + actual_amount;
+
+		// コントロールに反映
+		this.SeatControl.setBetAmount(current_bet);
+		this.SeatControl.setStack(current_stack);
+
+		// 表示側に反映
 		this.SeatLive.setStack(this.SeatControl.getStack());
-		this.SeatLive.setAction("Blind", this.SeatControl.getBetAmount());
+		this.SeatLive.setAction(argAction, this.SeatControl.getBetAmount());
+
 		return actual_amount;
 	}
+	// ブラインドの強制ベット
+	cSeatView.prototype.postBlind = function(argAmount)
+	{
+		// ブラインド支払いにともなうスタック変化を計算
+		const previous_stack = this.getStack();
+		const actual_amount = Math.min(previous_stack, argAmount);
+		const current_stack = previous_stack - actual_amount;
+
+		// コントロールに反映
+		this.SeatControl.setBetAmount(actual_amount);
+		this.SeatControl.setStack(current_stack);
+
+		// 表示側に反映
+		this.SeatLive.setStack(this.SeatControl.getStack());
+		this.SeatLive.setAction("Blind", this.SeatControl.getBetAmount());
+
+		return actual_amount;
+	}
+	// アンティの支払い
 	cSeatView.prototype.postAnti = function(argAmount)
 	{
-		const actual_amount = this.SeatControl.postAnti(argAmount);
+		// ブラインド支払いにともなうスタック変化を計算
+		const previous_stack = this.getStack();
+		const actual_amount = Math.min(previous_stack, argAmount);
+		const current_stack = previous_stack - actual_amount;
+
+		// コントロールに反映
+		this.SeatControl.setStack(current_stack);
+
+		// 表示側に反映
 		this.SeatLive.setStack(this.SeatControl.getStack());
+		
 		return actual_amount;
 	}
 

@@ -234,6 +234,43 @@
 		this.setCurrentActorSeat(this.getNextActiveSeat(argSeatView));
 		this.broadcastWinrate();
 	}
+	// コール
+	cEngine.prototype.notifySeatCall = function(argSeatView)
+	{
+		const to_call_amount = this.DealerView.getToCallAmount();
+
+		// check になる場合
+		if(to_call_amount == 0)
+		{
+			argSeatView.addBetAmount("Check", 0);
+			this.setCurrentActorSeat(this.getNextActiveSeat(argSeatView));
+			return true;
+		}
+
+		// コールになる場合
+		const stack = argSeatView.getStack();
+		if(to_call_amount > stack)
+		{
+			return false;
+		}
+
+		const current_bet = argSeatView.getBetAmount();
+		const call_amount = to_call_amount - current_bet;
+		if(call_amount <= 0)
+		{
+			return false;
+		}
+
+		// コールが成立したので、ポットに追加する。
+		const actual_bet_amount = argSeatView.addBetAmount("CALL", call_amount);
+		this.DealerView.addPot(actual_bet_amount);
+
+		// 次のシートへ
+		this.setCurrentActorSeat(this.getNextActiveSeat(argSeatView));
+
+		return true;
+	}
+
 	cEngine.prototype.notifySeatAllin = function(argSeatView)
 	{
 		this.broadcastWinrate();
@@ -331,27 +368,30 @@
 				this.setCurrentActorSeat(this.getNextAliveSeat(seat));
 			}
 		}
-		this.AmountToCall = blind.bb;
 	}
 
 	cEngine.prototype.startFixHand = function()
 	{
 		this.broadcastRound(PokerConst.BettingRound.Preflop);
 	}
+	// Flop 開始時の処理
 	cEngine.prototype.startFlop = function()
 	{
-		this.broadcastRound(PokerConst.BettingRound.Flop);
 		PokerModel.startFlop();
+		this.setCurrentActorSeat(this.getFirstActorAfterPreflop());
+		this.broadcastRound(PokerConst.BettingRound.Flop);
 	}
 	cEngine.prototype.startTurn = function()
 	{
-		this.broadcastRound(PokerConst.BettingRound.Turn);
 		PokerModel.startTurn();
+		this.setCurrentActorSeat(this.getFirstActorAfterPreflop());
+		this.broadcastRound(PokerConst.BettingRound.Turn);
 	}
 	cEngine.prototype.startRiver = function()
 	{
-		this.broadcastRound(PokerConst.BettingRound.River);
 		PokerModel.startRiver();
+		this.setCurrentActorSeat(this.getFirstActorAfterPreflop());
+		this.broadcastRound(PokerConst.BettingRound.River);
 	}
 	// ハンドの決着がついた
 	cEngine.prototype.startEndHand = function()
@@ -436,6 +476,20 @@
 			{
 				return seat;
 			}
+		}
+		return null;
+	}
+	// プリフロップ以降の最初のプレイヤーを取得
+	cEngine.prototype.getFirstActorAfterPreflop = function()
+	{
+		const first_actor = this.getNextActiveSeat(this.DealerSeat);
+		if(first_actor)
+		{
+			return first_actor;
+		}
+		if(this.DealerSeat.isActive())
+		{
+			return this.DealerSeat;
 		}
 		return null;
 	}

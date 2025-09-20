@@ -12,6 +12,9 @@
 	const TEMPLATE_DEALER_CONTROL_SB_INPUT = "template_panel_dealer_probe_sb_input";
 	const TEMPLATE_DEALER_CONTROL_BB_INPUT = "template_panel_dealer_probe_bb_input";
 	const TEMPLATE_DEALER_CONTROL_POT_INPUT = "template_panel_dealer_probe_pot_input";
+	const TEMPLATE_DEALER_CONTROL_TOCALL_VALUE = "template_panel_dealer_probe_to_call_value";
+	const TEMPLATE_DEALER_CONTROL_MIMRAISE_LABEL = "template_panel_dealer_probe_to_miraise_label";
+	const TEMPLATE_DEALER_CONTROL_MIMRAISE_VALUE = "template_panel_dealer_probe_to_miraise_value";
 
     // =====================================================================
 	// Dealer 制御オブジェクト
@@ -26,9 +29,15 @@
 		this.ElementBoardRiver = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_BOARD_RIVER);
 		this.ElementRssi = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_RSSI, "");
 		this.ElementBattery = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_Battery, "");
+		this.ElementToCallValue = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_TOCALL_VALUE, "");
+		this.ElementMinraiseLabel = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_MIMRAISE_LABEL);
+		this.ElementMinraiseValue = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_MIMRAISE_VALUE, "");
+
 		this.InputSB = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_SB_INPUT);
 		this.InputBB = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_BB_INPUT);
 		this.InputPot = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_POT_INPUT);
+
+		this.ToCallAmount = 0;
 	}
 	cDealerControlView.prototype.setRound = function(argRound)
 	{
@@ -62,9 +71,23 @@
 	{
 		this.ElementBattery.innerHTML = ns.convertBatteryExpression(argBattery);
 	}
+
+
+    // ---------------------------------------------------------------------
+	// 状況関連
+    // ---------------------------------------------------------------------
 	cDealerControlView.prototype.setHandCount = function(argHandCount)
 	{
 		this.ElementHand.innerHTML = `Hand: ${argHandCount}`;
+	}
+	cDealerControlView.prototype.setToCallAmount = function(argAmount)
+	{
+		this.ToCallAmount = argAmount;
+		this.ElementToCallValue.innerHTML = this.ToCallAmount;
+	}
+	cDealerControlView.prototype.getToCallAmount = function()
+	{
+		return this.ToCallAmount;
 	}
 
     // ---------------------------------------------------------------------

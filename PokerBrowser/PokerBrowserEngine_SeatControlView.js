@@ -37,6 +37,8 @@
 		this.InputStack = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_STACK_INPUT);
 	
 		HtmlUtil.addEventListenerToElement(this.CommandActivityFold, "click", argSeatView.onCommandActivityFold.bind(argSeatView));
+		HtmlUtil.addEventListenerToElement(this.CommandActivityCall, "click", argSeatView.onCommandActivityCall.bind(argSeatView));
+
 		HtmlUtil.addEventListenerToElement(this.CommandAllIn, "click", argSeatView.onCommandAllIn.bind(argSeatView));
 
 		HtmlUtil.addEventListenerToElement(this.CommandPosition, "click", argSeatView.onCommandPosition.bind(argSeatView));
@@ -161,11 +163,7 @@
 	// 現在のベット額を設定する
 	cSeatControlView.prototype.setBetAmount = function(argAmount)
 	{
-		const stack = this.getStack();
-		const amount = Math.min(stack, argAmount);
-		this.InputBetAmount.value = amount;
-		this.InputStack.value = stack - amount;
-		return amount;
+		this.InputBetAmount.value = Number(argAmount);
 	}
 	// 現在のベット額をリセットする
 	cSeatControlView.prototype.resetBetAmount = function()

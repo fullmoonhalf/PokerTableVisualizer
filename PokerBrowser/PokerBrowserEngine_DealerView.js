@@ -25,35 +25,6 @@
 	{
 		this.ControlView.setBattery(argBattery);
 	}
-	cDealerView.prototype.setRound = function(argRound)
-	{
-		this.CurrentRound = argRound;
-		this.ControlView.setRound(argRound);
-		switch(this.CurrentRound)
-		{
-			case PokerConst.BettingRound.DealHand:
-				this.toDealed();
-				break;
-			case PokerConst.BettingRound.Flop:
-				break;
-			case PokerConst.BettingRound.Turn:
-				PokerModel.useFlopCards(this.BoardFlop);
-				break;
-			case PokerConst.BettingRound.River:
-				PokerModel.useTurnCards(this.BoardTurn);
-				break;
-			case PokerConst.BettingRound.EndHand:
-				PokerModel.useRiverCards(this.BoardRiver);
-				this.resetPot();
-				break;
-			default:
-				break;
-		}
-	}
-	cDealerView.prototype.setHandCount = function(argHandCount)
-	{
-		this.ControlView.setHandCount(argHandCount);
-	}
 	cDealerView.prototype.getScanCount = function()
 	{
 		switch(this.CurrentRound)
@@ -82,6 +53,55 @@
 		this.LiveView.setBlind(this.ControlView.getBlind());
 	}
 
+    // ---------------------------------------------------------------------
+	// 状況関連
+    // ---------------------------------------------------------------------
+	cDealerView.prototype.setHandCount = function(argHandCount)
+	{
+		this.ControlView.setHandCount(argHandCount);
+	}
+	cDealerView.prototype.setRound = function(argRound)
+	{
+		this.CurrentRound = argRound;
+		this.ControlView.setRound(argRound);
+		switch(this.CurrentRound)
+		{
+			case PokerConst.BettingRound.DealHand:
+				{
+					const blind = this.getBlind();
+					this.setToCallAmount(blind.bb);
+					this.toDealed();
+				}
+				break;
+			case PokerConst.BettingRound.Flop:
+				this.setToCallAmount(0);
+				break;
+			case PokerConst.BettingRound.Turn:
+				PokerModel.useFlopCards(this.BoardFlop);
+				this.setToCallAmount(0);
+				break;
+			case PokerConst.BettingRound.River:
+				PokerModel.useTurnCards(this.BoardTurn);
+				this.setToCallAmount(0);
+				break;
+			case PokerConst.BettingRound.EndHand:
+				PokerModel.useRiverCards(this.BoardRiver);
+				this.resetPot();
+				break;
+			default:
+				break;
+		}
+	}
+	// 必要コール額の設定
+	cDealerView.prototype.setToCallAmount = function(argAmount)
+	{
+		this.ControlView.setToCallAmount(argAmount);
+	}
+	// 必要コール額の取得
+	cDealerView.prototype.getToCallAmount = function()
+	{
+		return this.ControlView.getToCallAmount();
+	}
 
     // ---------------------------------------------------------------------
 	// ボード関連
