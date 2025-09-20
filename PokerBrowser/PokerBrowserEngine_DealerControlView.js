@@ -49,6 +49,9 @@
 			case PokerConst.BettingRound.River:
 				this.ElementRound.innerHTML = "River";
 				break;
+			case PokerConst.BettingRound.EndHand:
+				this.ElementRound.innerHTML = "End";
+				break;
 		}
 	}
 	cDealerControlView.prototype.setRSSI = function(argRSSI)
