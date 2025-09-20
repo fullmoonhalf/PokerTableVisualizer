@@ -207,6 +207,7 @@
 		]
 		
 		this.DealerView.setBlind(50, 100);
+		let dealer_seat = null;
 		for(const seat_conf of seat_list)
 		{
 			const seat = this.getSeatView(seat_conf.target);
@@ -214,10 +215,14 @@
 			seat.setStack(seat_conf.stack);
 			if(seat_conf.dealer)
 			{
-				this.setButton(seat);
+				dealer_seat = seat;
 			}
 			seat.SeatLive.DragControl.setPosition(seat_conf.view_panel_x, seat_conf.view_panel_y);
 			seat.SeatLive.DragControl.apply();
+		}
+		if(dealer_seat)
+		{
+			this.setButton(dealer_seat);
 		}
 	}
 
