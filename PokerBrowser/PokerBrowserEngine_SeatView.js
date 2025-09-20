@@ -7,20 +7,49 @@
 	// =====================================================================
 	function cSeatView(argSeatName, argSeatControlViewElement, argSeatLiveViewElemwent)
 	{
+		// 管理オブジェクト
 		this.SeatControl = new ns.cSeatControlView(this, argSeatControlViewElement);
 		this.SeatLive = new ns.cSeatLiveView(argSeatLiveViewElemwent);
-		this.Active = true;
-		this.Alive = false;
-		this.AllIn = false;
+		this.NextSeat = null;
+		this.ActionReceiver = null;
+
+		// シートの状態
+		this.Alive = true; // toDead を通すために true で初期化
+		this.PlayerName = "";
+
+		// ポジションやアクション
 		this.PositionIndex = 0; // ディーラーまでの人数
 		this.AlivePlayerCount = 0;
+		this.CurrentActor = false;
+
+		// ハンドごとの状態
+		this.Active = true;
+		this.AllIn = false;
 		this.Round = PokerConst.BettingRound.Invalid;
-		this.PlayerName = "";
 		this.CurrentHoleCards = [];
 		this.HandStartChip = 0;
 
+		// 通知などして整合性をとる
 		this.setSeatName(argSeatName);
 		this.toDead();
+	}
+	// ---------------------------------------------------------------------
+	// 基本構造
+	// ---------------------------------------------------------------------
+	// 次のシートを設定する
+	cSeatView.prototype.setNextSeat = function(argNextSeat)
+	{
+		this.NextSeat = argNextSeat;
+	}
+	// 次のシートを取得する
+	cSeatView.prototype.getNextSeat = function()
+	{
+		return this.NextSeat;
+	}
+	// アクションレシーバー
+	cSeatView.prototype.setActionReceiver = function(argReceiver)
+	{
+		this.ActionReceiver = argReceiver;
 	}
 
 	// ---------------------------------------------------------------------
@@ -38,10 +67,24 @@
 			this.toActive();
 		}
 	}
+	// オールイン
+	cSeatView.prototype.onCommandAllIn = function(event)
+	{
+		if(this.AllIn)
+		{
+			this.leaveAnnIn();
+		}
+		else
+		{
+			this.enterAllIn();
+		}
+	}
+
+
 	// ボタンをこのシートに設定する
 	cSeatView.prototype.onCommandPosition = function(event)
 	{
-		PokerBrowser.engine.setButton(this.SeatName);
+		this.ActionReceiver?.setButton(this);
 	}
 	// 生死
 	cSeatView.prototype.onCommandAlive = function(event)
@@ -53,18 +96,6 @@
 		else
 		{
 			this.toAlive();
-		}
-	}
-	// オールイン
-	cSeatView.prototype.onCommandAllIn = function(event)
-	{
-		if(this.AllIn)
-		{
-			this.leaveAnnIn();
-		}
-		else
-		{
-			this.enterAllIn();
 		}
 	}
 	// 名前入力イベントの処理
@@ -80,6 +111,7 @@
 	{
 		if(this.Alive)
 		{
+			this.toActive();
 			this.CurrentHoleCards = [];
 			this.SeatControl.toDealed();
 			this.SeatLive.toDealed();
@@ -94,7 +126,7 @@
 			this.Active = false;
 			this.SeatControl.toFold();
 			this.SeatLive.toFold();
-			PokerBrowser.engine.broadcastWinrate();
+			this.ActionReceiver?.notifySeatFold(this);
 		}
 	}
 	cSeatView.prototype.toActive = function()
@@ -104,36 +136,48 @@
 			this.Active = true;
 			this.SeatControl.toActive();
 			this.SeatLive.toActive();
-			PokerBrowser.engine.broadcastWinrate();
 		}
 	}
 	cSeatView.prototype.toDead = function()
 	{
-		this.Alive = false;
-		this.AllIn = false;
-		this.SeatControl.toDead();
-		this.SeatLive.toDead();
-		PokerBrowser.engine.broadcastWinrate();
+		if(this.Alive)
+		{
+			this.Alive = false;
+			this.AllIn = false;
+			this.SeatControl.toDead();
+			this.SeatLive.toDead();
+			this.ActionReceiver?.notifySeatOpen(this);
+		}
 	}
 	cSeatView.prototype.toAlive = function()
 	{
-		this.Alive = true;
-		this.AllIn = false;
-		this.SeatControl.toAlive();
-		this.SeatLive.toAlive();
-		PokerBrowser.engine.broadcastWinrate();
+		if(!this.Alive)
+		{
+			this.Alive = true;
+			this.AllIn = false;
+			this.SeatControl.toAlive();
+			this.SeatLive.toAlive();
+			this.ActionReceiver?.notifySeatEntry(this);
+		}
 	}
 	cSeatView.prototype.enterAllIn = function()
 	{
-		this.AllIn = true;
-		this.SeatControl.enterAllIn();
-		this.SeatLive.enterAllIn();
+		if(!this.AllIn)
+		{
+			this.AllIn = true;
+			this.SeatControl.enterAllIn();
+			this.SeatLive.enterAllIn();
+			this.ActionReceiver?.notifySeatAllin(this);
+		}
 	}
 	cSeatView.prototype.leaveAnnIn = function()
 	{
-		this.AllIn = false;
-		this.SeatControl.leaveAnnIn();
-		this.SeatLive.leaveAnnIn();
+		if(this.AllIn)
+		{
+			this.AllIn = false;
+			this.SeatControl.leaveAnnIn();
+			this.SeatLive.leaveAnnIn();
+		}
 	}
 	// ---------------------------------------------------------------------
 	// 状態の取得
@@ -190,6 +234,9 @@
 		this.Round = argRound;
 		switch(this.Round)
 		{
+			case PokerConst.BettingRound.DealHand:
+				this.toDealed();
+				break;
 			case PokerConst.BettingRound.Preflop:
 				PokerModel.useHoleCards(this.PlayerName, this.CurrentHoleCards);
 				break;
@@ -229,6 +276,43 @@
 			return true;
 		}
 		return false;
+	}
+	// プリフロップ時の一番最初のプレイヤー
+	cSeatView.prototype.isFirstActorInPreflop = function()
+	{
+		const position_name = ns.convertPositionName(this.AlivePlayerCount, this.PositionIndex);
+		if(position_name == ns.POKER_POSITION_UTG)
+		{
+			return true;
+		}
+		if(this.AlivePlayerCount == 2 && position_name == ns.POKER_POSITION_DEALER)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	// ---------------------------------------------------------------------
+	// アクター処理
+	// ---------------------------------------------------------------------
+	// カレントアクタに設定する
+	cSeatView.prototype.setCurrentActor = function()
+	{
+		this.CurrentActor = true;
+		this.SeatControl.setCurrentActor();
+		this.SeatLive.setCurrentActor();
+	}
+	// カレントアクタからリセット
+	cSeatView.prototype.resetCurrentActor = function()
+	{
+		this.CurrentActor = false;
+		this.SeatControl.resetCurrentActor();
+		this.SeatLive.resetCurrentActor();
+	}
+	// カレントアクタかどうかを調べる
+	cSeatView.prototype.isCurrentActor = function()
+	{
+		return this.CurrentActor;
 	}
 
 	// ---------------------------------------------------------------------

@@ -16,6 +16,10 @@
 {
     background: #8f8;
 }
+.template_panel_probe_base.acting
+{
+    background: #ff8;
+}
 .template_panel_probe_base.allin
 {
     background: #faa;

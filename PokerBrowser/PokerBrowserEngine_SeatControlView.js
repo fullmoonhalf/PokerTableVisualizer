@@ -37,9 +37,10 @@
 		this.InputStack = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_STACK_INPUT);
 	
 		HtmlUtil.addEventListenerToElement(this.CommandActivityFold, "click", argSeatView.onCommandActivityFold.bind(argSeatView));
+		HtmlUtil.addEventListenerToElement(this.CommandAllIn, "click", argSeatView.onCommandAllIn.bind(argSeatView));
+
 		HtmlUtil.addEventListenerToElement(this.CommandPosition, "click", argSeatView.onCommandPosition.bind(argSeatView));
 		HtmlUtil.addEventListenerToElement(this.CommandAlive, "click", argSeatView.onCommandAlive.bind(argSeatView));
-		HtmlUtil.addEventListenerToElement(this.CommandAllIn, "click", argSeatView.onCommandAllIn.bind(argSeatView));
 		HtmlUtil.addEventListenerToElement(this.InputName, "change", argSeatView.onInputName.bind(argSeatView));
 	}
 	// ---------------------------------------------------------------------
@@ -123,8 +124,17 @@
 	{
 		const position_name = ns.convertPositionName(argAlivePlayerCount, argPositionIndex);
 		this.CommandPosition.innerHTML = position_name;
-		this.ElementBase.classList.toggle("button", argPositionIndex == 0);
-		this.ElementBase.classList.toggle("utg", position_name == ns.POKER_POSITION_UTG);
+		this.ElementBase.classList.toggle("button", argAlivePlayerCount > 0 && argPositionIndex == 0);
+	}
+	// カレントアクタに設定する
+	cSeatControlView.prototype.setCurrentActor = function()
+	{
+		this.ElementBase.classList.toggle("acting", true);
+	}
+	// カレントアクタからリセット
+	cSeatControlView.prototype.resetCurrentActor = function()
+	{
+		this.ElementBase.classList.toggle("acting", false);
 	}
 
 	// ---------------------------------------------------------------------

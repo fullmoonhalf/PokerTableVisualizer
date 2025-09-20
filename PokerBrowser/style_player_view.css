@@ -21,7 +21,7 @@
 .template_panel_user_current_hand_infos
 {
     background: #030;
-    border: 2px solid #ff8;
+    border: 2px solid #8ff;
     border-radius: 6px;
     width: 200px;
     height: 54px;
@@ -35,6 +35,11 @@
 {
     background: #400;
     border: 2px solid #800;
+}
+.template_panel_user_current_hand_infos.acting
+{
+    background: #330;
+    border: 2px solid #ff8;
 }
 
 .template_panel_user_current_hand_value_name

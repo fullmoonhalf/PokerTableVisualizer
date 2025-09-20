@@ -29,20 +29,12 @@
 		this.ElementBetAmount = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_CURRENT_HAND_VALUE_BETAMOUNT, "");
 		this.ElementStack = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_CURRENT_HAND_VALUE_STACK, "");
 	}
-	cSeatLiveView.prototype.setName = function(argName)
-	{
-		this.ElementName.innerHTML = argName;
-	}
-	cSeatLiveView.prototype.setPosition = function(argPositionIndex, argAlivePlayerCount)
-	{
-		const position_name = ns.convertPositionName(argAlivePlayerCount, argPositionIndex);
-		this.ElementPosition.innerHTML = position_name;
-	}
 	cSeatLiveView.prototype.toDealed = function()
 	{
 		this.leaveAnnIn();
 		this.toActive();
 		this.setHoleCards([]);
+		this.setAction("", 0);
 		this.ElementWinRate.innerHTML= "";
 	}
 	cSeatLiveView.prototype.toFold = function()
@@ -77,6 +69,14 @@
 		this.ElementInfos.classList.toggle("allin", false);
 		this.ElementInfos.classList.toggle("fold", false);
 	}
+
+	// ---------------------------------------------------------------------
+	// 状態設定
+	// ---------------------------------------------------------------------
+	cSeatLiveView.prototype.setName = function(argName)
+	{
+		this.ElementName.innerHTML = argName;
+	}
 	cSeatLiveView.prototype.setHoleCards = function(argHoleCards)
 	{
 		this.ElementHand.innerHTML = ns.createHoleCardsHTML(argHoleCards, ns.CLASS_CARD_NORMAL);
@@ -92,7 +92,7 @@
 	cSeatLiveView.prototype.setAction = function(argActionName, argChipAmount)
 	{
 		this.ElementAction.innerHTML = argActionName;
-			let amount = "";
+		let amount = "";
 		if(argActionName && argChipAmount > 0)
 		{
 			amount = argChipAmount;
@@ -100,5 +100,27 @@
 		this.ElementBetAmount.innerHTML = amount;
 	}
 
+	// ---------------------------------------------------------------------
+	// ポジション関係
+	// ---------------------------------------------------------------------
+	cSeatLiveView.prototype.setPosition = function(argPositionIndex, argAlivePlayerCount)
+	{
+		const position_name = ns.convertPositionName(argAlivePlayerCount, argPositionIndex);
+		this.ElementPosition.innerHTML = position_name;
+	}
+	// カレントアクタに設定する
+	cSeatLiveView.prototype.setCurrentActor = function()
+	{
+		this.ElementInfos.classList.toggle("acting", true);
+	}
+	// カレントアクタからリセット
+	cSeatLiveView.prototype.resetCurrentActor = function()
+	{
+		this.ElementInfos.classList.toggle("acting", false);
+	}
+
+	// ---------------------------------------------------------------------
+	// 公開
+	// ---------------------------------------------------------------------
     ns.cSeatLiveView = cSeatLiveView;
 })(PokerBrowser = PokerBrowser || {});

@@ -134,6 +134,7 @@ var PokerModel = PokerModel || (function(){
     cModel.prototype.startHand = function(argAlivePlayers)
     {
         this.CurrentHand = new cHand(this.CurrentHand.HandCount+1);
+        this.BettingRound = PokerConst.BettingRound.Preflop;
     }
     cModel.prototype.startFlop = function()
     {
@@ -147,6 +148,11 @@ var PokerModel = PokerModel || (function(){
     {
         this.BettingRound = PokerConst.BettingRound.River;
     }
+    cModel.prototype.getBettingRound = function()
+    {
+        return this.BettingRound;
+    }
+
     // ---------------------------------------------------------------------
     // カード状態の設定
 	// ---------------------------------------------------------------------

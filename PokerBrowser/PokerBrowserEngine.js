@@ -79,7 +79,7 @@
 
 		// ユーザー系コントロールパネルの初期化
 		this.SeatViews = [];
-		this.DealerSeatName = "";
+		this.DealerSeat = null;
 		const element_panel_probes = document.getElementsByClassName(ELEMENT_PANEL_PROBE);
 		for(const element of element_panel_probes)
 		{
@@ -87,6 +87,7 @@
 			const seat_control_element = this.TemplateSeatControl.cloneNode(true);
 			const seat_view_element = this.TemplateSeatLive.cloneNode(true);
 			const view = new ns.cSeatView(id, seat_control_element, seat_view_element);
+			view.setActionReceiver(this);
 			this.SeatViews.push(view);
 
 			// HTML の書き換え
@@ -95,7 +96,16 @@
 			this.ScreenDisplay.appendChild(seat_view_element);
 		}
 
-		//
+		// シートの構造設定
+		for(let index=0; index<this.SeatViews.length; ++index)
+		{
+			const next_index = (index + 1) % this.SeatViews.length;
+			const next_seat = this.SeatViews[next_index];
+			const seat = this.SeatViews[index];
+			seat.setNextSeat(next_seat);
+		}
+
+		// プローブリスト
 		this.Probes = [];
 		console.log("cEngine.prototype.init - ok");
 	}
@@ -157,41 +167,38 @@
 	cEngine.prototype.onCommandDealHand = function()
 	{
 		this.startHand();
-		this.broadcastRound(PokerConst.BettingRound.DealHand);
 	}
 	// ハンド開始コマンド
 	cEngine.prototype.onCommandFixHand = function()
 	{
-		this.broadcastRound(PokerConst.BettingRound.Preflop);
+		this.startFixHand();
 	}
 	// フロップ開始コマンド
 	cEngine.prototype.onCommandStartFlop = function()
 	{
-		this.broadcastRound(PokerConst.BettingRound.Flop);
-		PokerModel.startFlop();
+		this.startFlop();
 	}
 	// ターン開始コマンド
 	cEngine.prototype.onCommandStartTurn = function()
 	{
-		this.broadcastRound(PokerConst.BettingRound.Turn);
-		PokerModel.startTurn();
+		this.startTurn();
 	}
 	// リバー開始コマンド
 	cEngine.prototype.onCommandStartRiver = function()
 	{
-		this.broadcastRound(PokerConst.BettingRound.River);
-		PokerModel.startRiver();
+		this.startRiver();
 	}
 	// ハンド終了コマンド
 	cEngine.prototype.onCommandEndHand = function()
 	{
-		this.broadcastRound(PokerConst.BettingRound.EndHand);
+		this.startEndHand();
 	}
 	// テスト用セットアップ
 	cEngine.prototype.onCommandDevSetup = function()
 	{
+		const seat_list = ["Seat01","Seat02","Seat04","Seat06","Seat07","Seat08"];
 		this.DealerView.setBlind(50, 100);
-		for(const seat_name of ["Seat01","Seat02","Seat04","Seat06","Seat07","Seat08"])
+		for(const seat_name of seat_list)
 		{
 			const seat = this.getSeatView(seat_name);
 			seat.onCommandAlive(null);
@@ -200,12 +207,32 @@
 	}
 
 	// ---------------------------------------------------------------------
+	// 通知受け
+	// ---------------------------------------------------------------------
+	cEngine.prototype.notifySeatFold = function(argSeatView)
+	{
+		this.setCurrentActorSeat(this.getNextActiveSeat(argSeatView));
+		this.broadcastWinrate();
+	}
+	cEngine.prototype.notifySeatAllin = function(argSeatView)
+	{
+		this.broadcastWinrate();
+	}
+	cEngine.prototype.notifySeatEntry = function(argSeatView)
+	{
+		this.broadcastWinrate();
+	}
+	cEngine.prototype.notifySeatOpen = function(argSeatView)
+	{
+		this.broadcastWinrate();
+	}
+
+	// ---------------------------------------------------------------------
 	// コマンド処理まわり(開発オンリー)
 	// ---------------------------------------------------------------------
 	cEngine.prototype.onCommandDevDealHand = function()
 	{
 		this.startHand();
-		this.broadcastRound(PokerConst.BettingRound.DealHand);
 		for(const seat of  this.SeatViews)
 		{
 			if(seat.isActive())
@@ -244,8 +271,9 @@
 		];
 		this.DealerView.setHoleCards(holdcard);
 	}
+
 	// ---------------------------------------------------------------------
-	// 論理設定
+	// フェイズ処理
 	// ---------------------------------------------------------------------
 	// ハンド開始時の処理
 	cEngine.prototype.startHand = function()
@@ -253,50 +281,124 @@
 		// ボタンを更新して、ポジション情報を更新する。
 		if(PokerModel.getCurrentHandCount() > 0)
 		{
-			const button_index = this.SeatViews.findIndex(x => x.SeatName == this.DealerSeatName);
-			if(button_index >= 0)
-			{
-				for(let count=0; count<this.SeatViews.length; ++count)
-				{
-					let index = (button_index + count + 1) % this.SeatViews.length;
-					const seat = this.SeatViews[index];
-					if(seat.isAlive())
-					{
-						this.setButton(seat.SeatName);
-						break;
-					}
-				}
-			}
+			this.setButton(this.getNextAliveSeat(this.DealerSeat));
 		}
 
 		// ハンドカウントを進める
 		PokerModel.startHand();
 		this.DealerView.setHandCount(PokerModel.getCurrentHandCount());
 
-		// シートの状態の初期化
+		// フェーズ開始の通知
+		this.broadcastRound(PokerConst.BettingRound.DealHand);
+
+		// ブラインドの支払いとアクターシートを決める
+		this.CurrentActorSeat = null;
 		const blind = this.DealerView.getBlind();
-		this.DealerView.toDealed();
-		for(const seat of this.SeatViews)
+		for(let index=0; index<this.SeatViews.length; ++index)
 		{
-			seat.toDealed();
-			if(seat.isBB())
+			const seat = this.SeatViews[index];
+			if(seat.isSB())
+			{
+				let post_chip = seat.postBlind(blind.sb);
+				this.DealerView.addPot(post_chip);
+			}
+			else if(seat.isBB())
 			{
 				let post_chip = seat.postBlind(blind.bb);
 				this.DealerView.addPot(post_chip);
 				post_chip = seat.postAnti(blind.bb);
 				this.DealerView.addPot(post_chip);
-			}
-			else if(seat.isSB())
-			{
-				let post_chip = seat.postBlind(blind.sb);
-				this.DealerView.addPot(post_chip);
+				this.setCurrentActorSeat(this.getNextAliveSeat(seat));
 			}
 		}
+		this.AmountToCall = blind.bb;
 	}
-	// ボタンの設定
-	cEngine.prototype.setButton = function(argSeatName)
+
+	cEngine.prototype.startFixHand = function()
 	{
-		this.DealerSeatName = "";
+		this.broadcastRound(PokerConst.BettingRound.Preflop);
+	}
+	cEngine.prototype.startFlop = function()
+	{
+		this.broadcastRound(PokerConst.BettingRound.Flop);
+		PokerModel.startFlop();
+	}
+	cEngine.prototype.startTurn = function()
+	{
+		this.broadcastRound(PokerConst.BettingRound.Turn);
+		PokerModel.startTurn();
+	}
+	cEngine.prototype.startRiver = function()
+	{
+		this.broadcastRound(PokerConst.BettingRound.River);
+		PokerModel.startRiver();
+	}
+	cEngine.prototype.startEndHand = function()
+	{
+		this.broadcastRound(PokerConst.BettingRound.EndHand);
+	}
+
+	// ---------------------------------------------------------------------
+	// 
+	// ---------------------------------------------------------------------
+	cEngine.prototype.setCurrentActorSeat = function(argSeat)
+	{
+		this.CurrentActorSeat = argSeat;
+		if(!this.CurrentActorSeat)
+		{
+			return;
+		}
+
+		this.CurrentActorSeat.setCurrentActor();
+		for(let seat = argSeat.getNextSeat(); seat != argSeat; seat = seat.getNextSeat())
+		{
+			seat.resetCurrentActor();
+		}
+	}
+
+	// ---------------------------------------------------------------------
+	// 
+	// ---------------------------------------------------------------------
+	// 次の生存を取得する
+	cEngine.prototype.getNextAliveSeat = function(argSeat)
+	{
+		for(let seat = argSeat.getNextSeat(); seat != argSeat; seat = seat.getNextSeat())
+		{
+			if(seat.isAlive())
+			{
+				return seat;
+			}
+		}
+		return null;
+	}
+	// 次のアクティブを取得する
+	cEngine.prototype.getNextActiveSeat = function(argSeat)
+	{
+		for(let seat = argSeat.getNextSeat(); seat != argSeat; seat = seat.getNextSeat())
+		{
+			if(seat.isActive())
+			{
+				return seat;
+			}
+		}
+		return null;
+	}
+
+
+
+	// ---------------------------------------------------------------------
+	// 
+	// ---------------------------------------------------------------------
+	// ボタンの設定
+	cEngine.prototype.setButton = function(argSeat)
+	{
+		this.DealerSeat = argSeat;
+		if(!this.DealerSeat)
+		{
+			return;
+		}
+
+		// 生存者カウント
 		let alive_player_num = 0;
 		for(const seat of this.SeatViews)
 		{
@@ -306,13 +408,8 @@
 			}
 		}
 
-		const button_index = this.SeatViews.findIndex(x => x.SeatName == argSeatName);
-		if(button_index < 0)
-		{
-			return;
-		}
-
-		this.DealerSeatName = argSeatName;
+		// ポジションの計算(ディーラーに対する残り人数)
+		const button_index = this.SeatViews.findIndex(x => x == argSeat)
 		let position_index = alive_player_num - 1;
 		for(let count=0; count<this.SeatViews.length; ++count)
 		{
@@ -323,16 +420,25 @@
 				seat.setPosition(position_index, alive_player_num);
 				position_index--;
 			}
+			else
+			{
+				// シートオープンを意味する。
+				seat.setPosition(0, 0);
+			}
 		}
 	}
+
+	// ---------------------------------------------------------------------
+	// 各要素への通達
+	// ---------------------------------------------------------------------
 	// ラウンドの設定
 	cEngine.prototype.broadcastRound = function(argRound)
 	{
-		this.SeatViews.forEach(x => x.setRound(argRound));
 		this.DealerView.setRound(argRound);
+		this.SeatViews.forEach(x => x.setRound(argRound));
 		this.Probes.forEach(x => x.proceedRound());
 	}
-
+	// 勝率の通知
 	cEngine.prototype.broadcastWinrate = function()
 	{
 		// 現在の制約上、フロップが開くまでは確率表示できない。

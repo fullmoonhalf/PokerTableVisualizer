@@ -31,6 +31,9 @@
 		this.ControlView.setRound(argRound);
 		switch(this.CurrentRound)
 		{
+			case PokerConst.BettingRound.DealHand:
+				this.toDealed();
+				break;
 			case PokerConst.BettingRound.Flop:
 				break;
 			case PokerConst.BettingRound.Turn:
