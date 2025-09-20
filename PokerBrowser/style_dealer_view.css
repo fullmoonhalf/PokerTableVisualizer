@@ -43,7 +43,7 @@
 
 .template_panel_dealer_view_pot_group.disable
 {
-    visibility: hidden;
+    display: none;
 }
 .template_panel_dealer_view_pot_label
 {
@@ -63,7 +63,6 @@
     width: 80px;
     text-align: right;
 }
-
 .template_panel_dealer_view_blind_label
 {
     position: absolute;

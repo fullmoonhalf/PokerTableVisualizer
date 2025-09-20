@@ -8,6 +8,7 @@
 	const TEMPLATE_DEALER_VIEW_BOARD_RIVER = "template_panel_dealer_view_river";
 	const TEMPLATE_DEALER_VIEW_BLIND_VALUE = "template_panel_dealer_view_blind_value";
 	const TEMPLATE_DEALER_VIEW_POT_VALUE = "template_panel_dealer_view_pot_value";
+	const TEMPLATE_DEALER_VIEW_POT_LABEL = "template_panel_dealer_view_pot_label";
 	const TEMPLATE_DEALER_VIEW_POT_GROUP = "template_panel_dealer_view_pot_group";
 
     // =====================================================================
@@ -23,6 +24,7 @@
 		this.DragControl = new ns.cDragableElement(this.ElementDrag);
 		this.ElementBlindValue = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_BLIND_VALUE, "");
 		this.ElementPotValue = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_POT_VALUE, "0");
+		this.ElementPotLabel = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_POT_LABEL);
 		this.ElementPotGroup = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_POT_GROUP);
 	}
 	cDealerLiveView.prototype.setBoardFlop = function(argCards)
