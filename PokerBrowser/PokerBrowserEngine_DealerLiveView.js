@@ -8,6 +8,7 @@
 	const TEMPLATE_DEALER_VIEW_BOARD_RIVER = "template_panel_dealer_view_river";
 	const TEMPLATE_DEALER_VIEW_BLIND_VALUE = "template_panel_dealer_view_blind_value";
 	const TEMPLATE_DEALER_VIEW_POT_VALUE = "template_panel_dealer_view_pot_value";
+	const TEMPLATE_DEALER_VIEW_POT_GROUP = "template_panel_dealer_view_pot_group";
 
     // =====================================================================
 	// Dealer 表示オブジェクト
@@ -22,6 +23,7 @@
 		this.DragControl = new ns.cDragableElement(this.ElementDrag);
 		this.ElementBlindValue = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_BLIND_VALUE, "");
 		this.ElementPotValue = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_POT_VALUE, "0");
+		this.ElementPotGroup = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_VIEW_POT_GROUP);
 	}
 	cDealerLiveView.prototype.setBoardFlop = function(argCards)
 	{
@@ -37,6 +39,7 @@
 	}
 	cDealerLiveView.prototype.setPot = function(argPot)
 	{
+		this.ElementPotGroup.classList.toggle("disable", argPot == 0);
 		this.ElementPotValue.innerHTML = argPot;
 	}
 	cDealerLiveView.prototype.setBlind = function(argBlind)

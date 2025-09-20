@@ -22,7 +22,7 @@
 .template_panel_dealer_view_flop
 {
     position: absolute;
-    top: 10px;
+    top: 24px;
     left: 10px;
     width: 100px;
 }
@@ -30,32 +30,36 @@
 .template_panel_dealer_view_turn
 {
     position: absolute;
-    top: 10px;
+    top: 24px;
     left: 115px;
 }
 
 .template_panel_dealer_view_river
 {
     position: absolute;
-    top: 10px;
+    top: 24px;
     left: 160px;
 }
 
+.template_panel_dealer_view_pot_group.disable
+{
+    visibility: hidden;
+}
 .template_panel_dealer_view_pot_label
 {
     position: absolute;
     font-size: 10px;
     color: #fff;
-    top: 60px;
-    left: 40px;
+    top: 10px;
+    left: 100px;
 }
 .template_panel_dealer_view_pot_value
 {
     position: absolute;
     font-size: 12px;
     color: #ff0;
-    top: 57px;
-    left: 70px;
+    top: 10px;
+    left: 120px;
     width: 60px;
     text-align: right;
 }
@@ -63,7 +67,7 @@
 {
     position: absolute;
     font-size: 8px;
-    color: #aaa;
-    top: 2px;
-    left: 40px;
+    color: #ccc;
+    top: 10px;
+    left: 10px;
 }
