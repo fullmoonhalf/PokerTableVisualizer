@@ -135,7 +135,7 @@
 	}
 	cDealerView.prototype.setHoleCards = function(argHoleCards)
 	{
-		const disp_hole_cards = argHoleCards.sort((a, b) => ns.getCardOrder[a] - ns.getCardOrder[b]);
+		const disp_hole_cards = argHoleCards.sort((a, b) => ns.getCardOrder(a) - ns.getCardOrder(b));
 		switch(this.CurrentRound)
 		{
 			case PokerConst.BettingRound.Flop:

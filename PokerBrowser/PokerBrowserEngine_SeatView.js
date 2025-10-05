@@ -386,7 +386,7 @@
 	{
 		if(this.Round == PokerConst.BettingRound.DealHand)
 		{
-			const disp_hole_cards = argHoleCards.sort((a, b) => ns.getCardOrder[a] - ns.getCardOrder[b]);
+			const disp_hole_cards = argHoleCards.sort((a, b) => ns.getCardOrder(a) - ns.getCardOrder(b));
 			this.SeatControl.setHoleCards(disp_hole_cards);
 			this.SeatLive.setHoleCards(disp_hole_cards);
 			this.CurrentHoleCards = disp_hole_cards;

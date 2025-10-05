@@ -72,7 +72,7 @@
 	]
 	ns.getCardOrder = function(argCardIndex)
 	{
-		return -CARD_ORDER[argCardIndex];
+		return CARD_ORDER[argCardIndex];
 	}
 
 	// =====================================================================
