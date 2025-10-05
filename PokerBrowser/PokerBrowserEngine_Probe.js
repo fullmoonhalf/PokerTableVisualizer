@@ -12,6 +12,11 @@
 		this.SeatView = null;
 		this.ReceiveHistory = [];
 	}
+	// 切断時処理
+	cProbe.prototype.onDisconnected = function(event)
+	{
+		this.SeatView.setDisconnect();
+	}
 	// 各プローブからのデータ受信時の処理
 	cProbe.prototype.onCharacteristicValueChanged = function(event)
 	{

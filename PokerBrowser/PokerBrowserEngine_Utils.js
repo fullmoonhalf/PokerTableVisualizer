@@ -72,7 +72,7 @@
 	]
 	ns.getCardOrder = function(argCardIndex)
 	{
-		return CARD_ORDER[argCardIndex];
+		return -CARD_ORDER[argCardIndex];
 	}
 
 	// =====================================================================
@@ -94,9 +94,13 @@
 		}
 		return html;
 	}
+	ns.convertDisconnectExpression = function()
+	{
+		return "🚫";
+	}
 	ns.convertRSSIExpression = function(argRSSI)
 	{
-		return "📶" + argRSSI;
+		return argRSSI > 190 ? "✨" : "📶";
 	}
 	ns.convertBatteryExpression = function(argBattery)
 	{

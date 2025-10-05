@@ -253,6 +253,10 @@
 	{
 		this.SeatControl.setBattery(argBattery);
 	}
+	cSeatView.prototype.setDisconnect = function()
+	{
+		this.SeatControl.setDisconnect();
+	}
 
 	// ---------------------------------------------------------------------
 	// 名前管理

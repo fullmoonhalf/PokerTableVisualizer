@@ -145,7 +145,7 @@
 					{ namePrefix : [BLE_DEVICE_NAME_PREFIX], }
 				]
 			});
-		
+
 			// 2. GATT サーバへ接続
 			const server = await device.gatt.connect();
 		
@@ -157,6 +157,7 @@
 
 			// 管理オブジェクトとの紐付けを行ない引き渡す
 			const probe = new ns.cProbe(characteristic);
+			device.addEventListener('gattserverdisconnected', probe.onDisconnected.bind(probe));
 			characteristic.addEventListener('characteristicvaluechanged', probe.onCharacteristicValueChanged.bind(probe));
 			characteristic.startNotifications();
 			this.Probes.push(probe);

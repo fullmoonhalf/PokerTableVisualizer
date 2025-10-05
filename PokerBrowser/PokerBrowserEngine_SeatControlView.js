@@ -26,8 +26,8 @@
 		this.ElementBase = argElementBase; 
 		this.ElementSeatValueID = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_SEAT_ID);
 		this.ElementHand = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_HAND);
-		this.ElementRssi = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_RSSI, "offline");
-		this.ElementBattery = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_BATTERY, "-");
+		this.ElementRssi = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_RSSI, ns.convertDisconnectExpression());
+		this.ElementBattery = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_BATTERY, "");
 		this.CommandActivityFold = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase,  TEMPLATE_PANEL_PROBE_COMMANBD_ACTIVITY_FOLD);
 		this.CommandActivityAggressiveAction = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase,  TEMPLATE_PANEL_PROBE_COMMANBD_ACTIVITY_BET);
 		this.CommandActivityCall = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase,  TEMPLATE_PANEL_PROBE_COMMANBD_ACTIVITY_CALL);
@@ -129,6 +129,11 @@
 	cSeatControlView.prototype.setBattery = function(argBattery)
 	{
 		this.ElementBattery.innerHTML = ns.convertBatteryExpression(argBattery);
+	}
+	cSeatControlView.prototype.setDisconnect = function()
+	{
+		this.ElementRssi.innerHTML = ns.convertDisconnectExpression();
+		this.ElementBattery.innerHTML = "";
 	}
 
 	// ---------------------------------------------------------------------
