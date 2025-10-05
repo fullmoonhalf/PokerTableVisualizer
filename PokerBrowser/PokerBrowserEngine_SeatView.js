@@ -28,6 +28,7 @@
 		this.Round = PokerConst.BettingRound.Invalid;
 		this.CurrentHoleCards = [];
 		this.HandStartChip = 0;
+		this.WinRate = 0;
 
 		// 通知などして整合性をとる
 		this.setSeatName(argSeatName);
@@ -144,6 +145,7 @@
 			this.SeatLive.toDealed();
 			this.HandStartChip = this.SeatControl.getStack();
 			this.SeatLive.setStack(this.SeatControl.getStack());
+			this.WinRate = 0;
 		}
 	}
 	// フォルド
@@ -293,9 +295,16 @@
 				break;
 			}
 	}
+	// 勝率の設定
 	cSeatView.prototype.setWinRate = function(argWinRate)
 	{
+		this.WinRate = argWinRate;
 		this.SeatLive.setWinRate(argWinRate);
+	}
+	// 勝率の取得
+	cSeatView.prototype.getWinRate = function()
+	{
+		return this.WinRate;
 	}
 
 	// ---------------------------------------------------------------------
@@ -401,6 +410,7 @@
 		stack += argAmount;
 		this.setStack(stack);
 		this.SeatLive.setAction("Win", argAmount);
+		this.SeatLive.setWin();
 	}
 	// ベッティング量を取得する
 	cSeatView.prototype.getBetAmount = function()

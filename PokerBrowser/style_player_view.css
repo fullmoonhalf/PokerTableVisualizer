@@ -18,6 +18,9 @@
     position: relative;
 }
 
+
+/* パネルの状態 */
+/* 通常時 */
 .template_panel_user_current_hand_infos
 {
     background: #030;
@@ -26,17 +29,26 @@
     width: 200px;
     height: 54px;
 }
+/* フォールド時 */
 .template_panel_user_current_hand_infos.fold
 {
     background: #000;
     border: 1px solid black;
 }
+/* オールイン時 */
 .template_panel_user_current_hand_infos.allin
 {
     background: #400;
     border: 2px solid #800;
 }
+/* 行動時 */
 .template_panel_user_current_hand_infos.acting
+{
+    background: #048;
+    border: 2px solid #8ff;
+}
+/* 勝利時 */
+.template_panel_user_current_hand_infos.win
 {
     background: #330;
     border: 2px solid #ff8;

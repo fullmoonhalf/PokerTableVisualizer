@@ -70,6 +70,13 @@
 		this.ElementInfos.classList.toggle("allin", false);
 		this.ElementInfos.classList.toggle("fold", false);
 	}
+	cSeatLiveView.prototype.setWin = function()
+	{
+		this.ElementInfos.classList.toggle("allin", false);
+		this.ElementInfos.classList.toggle("fold", false);
+		this.ElementInfos.classList.toggle("acting", false);
+		this.ElementInfos.classList.toggle("win", true);
+	}
 
 	// ---------------------------------------------------------------------
 	// 状態設定
@@ -104,6 +111,8 @@
 	{
 		this.ElementAction.innerHTML = "";
 		this.ElementBetAmount.innerHTML = "";
+		this.ElementInfos.classList.toggle("acting", false);
+		this.ElementInfos.classList.toggle("win", false);
 	}
 
 	// ---------------------------------------------------------------------

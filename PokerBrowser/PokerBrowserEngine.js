@@ -313,9 +313,40 @@
 
 		return true;
 	}
-
+	// オールインの処理
 	cEngine.prototype.notifySeatAllin = function(argSeatView)
 	{
+		const stack = argSeatView.getStack();
+		const actual_bet_amount = argSeatView.addBetAmount("ALL-IN", stack);
+
+		// ポットに追加
+		this.DealerView.addPot(actual_bet_amount);
+
+		// ショートオールインの場合
+		const current_bet = argSeatView.getBetAmount();
+		const to_call_amount = this.DealerView.getToCallAmount();
+		const to_minimum_raise = this.DealerView.getMinimumRaiseAmount();
+		if(current_bet <= to_call_amount)
+		{
+			// サイドポッドを作りたい
+		}
+		// コール額は越えているが、最小レイズ額に見たない場合
+		else if(current_bet< to_minimum_raise)
+		{
+			const raise_amonut = to_minimum_raise - to_call_amount;
+			this.DealerView.setToCallAmount(current_bet);
+			this.DealerView.setMinimumRaiseAmount("Minimum Raise: ", current_bet + raise_amonut);
+		}
+		// レイズも満たしているオールインの場合
+		else
+		{
+			const next_minimum_raize_amount = current_bet + current_bet - to_call_amount;
+			this.DealerView.setToCallAmount(current_bet);
+			this.DealerView.setMinimumRaiseAmount("Minimum Raise: ", next_minimum_raize_amount);
+		}
+
+		// 次のシートへ
+		this.setCurrentActorSeat(this.getNextActiveSeat(argSeatView));
 		this.broadcastWinrate();
 	}
 	cEngine.prototype.notifySeatEntry = function(argSeatView)
@@ -439,8 +470,6 @@
 	// ハンドの決着がついた
 	cEngine.prototype.startEndHand = function()
 	{
-		const FinishRound = this.CurrentRound;
-
 		// ノーコールで決着
 		if(this.winByNoCall())
 		{
@@ -448,6 +477,10 @@
 		}
 
 		// ショウダウン
+		if(this.winByShowdown())
+		{
+			this.broadcastRound(PokerConst.BettingRound.EndHand);
+		}
 	}
 
 	// ノーコールで決着がついた場合の処理
@@ -467,14 +500,28 @@
 		}
 		return true;
 	}
-
+	// ショーダウンで決着がついた場合の処理
 	cEngine.prototype.winByShowdown = function()
 	{
-		if(FinishRound == PokerConst.BettingRound.River)
+		if(this.CurrentRound != PokerConst.BettingRound.River)
 		{
+			return false;
 		}
 
-		return false;
+		const winner_seat_list = this.SeatViews.filter(x => x.getWinRate() >= 100);
+		if(winner_seat_list.length < 1)
+		{
+			return false;
+		}
+
+		const pot = this.DealerView.getPot();
+		const given = pot / winner_seat_list.length;
+		for(const winner_seat of winner_seat_list)
+		{
+			winner_seat.addStack(given);
+		}
+
+		return true;
 	}
 
 	// ---------------------------------------------------------------------
