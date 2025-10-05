@@ -6,6 +6,7 @@ var HtmlUtil = HtmlUtil || (function(){
         {
             const element = document.getElementById(id);
             HtmlUtil.addEventListenerToElement(element, 'click', event);
+            return element;
         },
 
         // エレメントにイベントを追加する

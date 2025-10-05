@@ -35,6 +35,7 @@
 		this.InputName = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_NAME_INPUT);
 		this.InputBetAmount = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_BET_AMOUNT_INPUT);
 		this.InputStack = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_STACK_INPUT);
+		this.CommandElementList = [this.CommandActivityFold, this.CommandActivityAggressiveAction, this.CommandActivityCall, this.CommandPosition, this.CommandAlive, this.CommandAllIn]
 	
 		HtmlUtil.addEventListenerToElement(this.CommandActivityFold, "click", argSeatView.onCommandActivityFold.bind(argSeatView));
 		HtmlUtil.addEventListenerToElement(this.CommandActivityCall, "click", argSeatView.onCommandActivityCall.bind(argSeatView));
@@ -48,6 +49,17 @@
 
 		this.BetAmount = 0;
 	}
+
+
+	cSeatControlView.prototype.resetCommandDisplayStatus = function()
+	{
+		for(const element of this.CommandElementList)
+		{
+			element.classList.toggle("command_active", false);
+			element.classList.toggle("command_inactive", false);
+		}
+	}
+
 	// ---------------------------------------------------------------------
 	// 進行処理関連
 	// ---------------------------------------------------------------------
@@ -61,11 +73,19 @@
 	cSeatControlView.prototype.toFold = function()
 	{
 		this.ElementBase.classList.toggle("fold", true);
+
+		this.CommandActivityFold.classList.toggle("command_inactive", true);
+		this.CommandActivityAggressiveAction.classList.toggle("command_inactive", true);
+		this.CommandActivityCall.classList.toggle("command_inactive", true);
+		this.CommandPosition.classList.toggle("command_inactive", true);
+		this.CommandAllIn.classList.toggle("command_inactive", true);
+
 		this.CommandActivityFold.innerHTML = "";
 		this.resetBetAmount();
 	}
 	cSeatControlView.prototype.toActive = function()
 	{
+		this.resetCommandDisplayStatus();
 		this.ElementBase.classList.toggle("fold", false);
 		this.CommandActivityFold.innerHTML = "Fold";
 		this.resetBetAmount();

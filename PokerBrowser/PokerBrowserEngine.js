@@ -50,18 +50,19 @@
 +
 		// HTML 構造の取得
 		HtmlUtil.addButtonEventListenerByID(COMMAND_PROBE_ADD, this.onCommandProbeAdd.bind(this));
-		HtmlUtil.addButtonEventListenerByID(COMMAND_DEAL_HAND, this.onCommandDealHand.bind(this));
-		HtmlUtil.addButtonEventListenerByID(COMMAND_FIX_HAND, this.onCommandFixHand.bind(this));
-		HtmlUtil.addButtonEventListenerByID(COMMAND_START_FLOP, this.onCommandStartFlop.bind(this));
-		HtmlUtil.addButtonEventListenerByID(COMMAND_START_TURN, this.onCommandStartTurn.bind(this));
-		HtmlUtil.addButtonEventListenerByID(COMMAND_START_RIVER, this.onCommandStartRiver.bind(this));
-		HtmlUtil.addButtonEventListenerByID(COMMAND_END_HAND, this.onCommandEndHand.bind(this));
+		this.CommandPhaseStartDealHand = HtmlUtil.addButtonEventListenerByID(COMMAND_DEAL_HAND, this.onCommandDealHand.bind(this));
+		this.CommandPhaseStartDealFixHand = HtmlUtil.addButtonEventListenerByID(COMMAND_FIX_HAND, this.onCommandFixHand.bind(this));
+		this.CommandPhaseStartFlop = HtmlUtil.addButtonEventListenerByID(COMMAND_START_FLOP, this.onCommandStartFlop.bind(this));
+		this.CommandPhaseStartTurn = HtmlUtil.addButtonEventListenerByID(COMMAND_START_TURN, this.onCommandStartTurn.bind(this));
+		this.CommandPhaseStartRiver = HtmlUtil.addButtonEventListenerByID(COMMAND_START_RIVER, this.onCommandStartRiver.bind(this));
+		this.CommandPhaseStartEndHand = HtmlUtil.addButtonEventListenerByID(COMMAND_END_HAND, this.onCommandEndHand.bind(this));
 		HtmlUtil.addButtonEventListenerByID(COMMAND_DEV_DEAL_HAND, this.onCommandDevDealHand.bind(this));
 		HtmlUtil.addButtonEventListenerByID(COMMAND_DEV_DEAL_FLOP, this.onCommandDevDealFlop.bind(this));
 		HtmlUtil.addButtonEventListenerByID(COMMAND_DEV_DEAL_TURN, this.onCommandDevDealTurn.bind(this));
 		HtmlUtil.addButtonEventListenerByID(COMMAND_DEV_DEAL_RIVER, this.onCommandDevDealRiver.bind(this));
 		HtmlUtil.addButtonEventListenerByID(COMMAND_DEV_SETUP, this.onCommandDevSetup.bind(this));
 		
+		this.CommandPhaseButtons = [this.CommandPhaseStartDealHand, this.CommandPhaseStartDealFixHand, this.CommandPhaseStartFlop, this.CommandPhaseStartTurn, this.CommandPhaseStartRiver, this.CommandPhaseStartEndHand ];
 		this.ScreenUserList = document.getElementById(SCREEN_USER_LIST);
 		this.ScreenDisplay = document.getElementById(SCREEN_DISPLAY);
 		this.DealerControlElementBase = document.getElementById(TEMPLATE_DEALER_CONTROL);
@@ -592,6 +593,7 @@
 			}
 		}
 	}
+
 
 	// ---------------------------------------------------------------------
 	// 各要素への通達

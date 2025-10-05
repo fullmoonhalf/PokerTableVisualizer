@@ -49,6 +49,46 @@
 }
 
 
+/* アクティブ表示 */
+.command_active
+{
+    outline: none;
+    background-color: #fdd;
+    box-shadow: none;
+}
+.command_active:hover
+{
+    outline: #000;
+    background-color: #faa;
+    box-shadow: none;
+}
+.command_active:active {
+    outline: none;
+    background-color: #f88;
+    box-shadow: 0 0 0 1px #fdd;
+}
+
+/* 非アクティブ表示 */
+.command_inactive
+{
+    outline: none;
+    background-color: #999;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 2px;
+    box-shadow: none;
+}
+.command_inactive:hover
+{
+    outline: #000;
+    background-color: #777;
+    box-shadow: none;
+}
+.command_inactive:active {
+    outline: none;
+    background-color: #444;
+    box-shadow: 0 0 0 1px #333;
+}
 
 /* Chrome, Safari, Edge (WebKit系) */
 input::-webkit-outer-spin-button,
