@@ -453,20 +453,20 @@
 	cEngine.prototype.startFlop = function()
 	{
 		PokerModel.startFlop();
-		this.setCurrentActorSeat(this.getFirstActorAfterPreflop());
 		this.broadcastRound(PokerConst.BettingRound.Flop);
+		this.setCurrentActorSeat(this.getFirstActorAfterPreflop());
 	}
 	cEngine.prototype.startTurn = function()
 	{
 		PokerModel.startTurn();
-		this.setCurrentActorSeat(this.getFirstActorAfterPreflop());
 		this.broadcastRound(PokerConst.BettingRound.Turn);
+		this.setCurrentActorSeat(this.getFirstActorAfterPreflop());
 	}
 	cEngine.prototype.startRiver = function()
 	{
 		PokerModel.startRiver();
-		this.setCurrentActorSeat(this.getFirstActorAfterPreflop());
 		this.broadcastRound(PokerConst.BettingRound.River);
+		this.setCurrentActorSeat(this.getFirstActorAfterPreflop());
 	}
 	// ハンドの決着がついた
 	cEngine.prototype.startEndHand = function()
@@ -536,11 +536,11 @@
 			return;
 		}
 
-		this.CurrentActorSeat.setCurrentActor();
 		for(let seat = argSeat.getNextSeat(); seat != argSeat; seat = seat.getNextSeat())
 		{
 			seat.resetCurrentActor();
 		}
+		this.CurrentActorSeat.setCurrentActor();
 	}
 
 	// ---------------------------------------------------------------------
