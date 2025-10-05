@@ -27,7 +27,7 @@
 		this.ElementRssi = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_RSSI, "offline");
 		this.ElementBattery = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_BATTERY, "-");
 		this.CommandActivityFold = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase,  TEMPLATE_PANEL_PROBE_COMMANBD_ACTIVITY_FOLD);
-		this.CommandActivityBet = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase,  TEMPLATE_PANEL_PROBE_COMMANBD_ACTIVITY_BET);
+		this.CommandActivityAggressiveAction = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase,  TEMPLATE_PANEL_PROBE_COMMANBD_ACTIVITY_BET);
 		this.CommandActivityCall = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase,  TEMPLATE_PANEL_PROBE_COMMANBD_ACTIVITY_CALL);
 		this.CommandPosition = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase,  TEMPLATE_PANEL_PROBE_COMMANBD_POSITION);
 		this.CommandAlive = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase,  TEMPLATE_PANEL_PROBE_COMMANBD_ALIVE);
@@ -38,12 +38,15 @@
 	
 		HtmlUtil.addEventListenerToElement(this.CommandActivityFold, "click", argSeatView.onCommandActivityFold.bind(argSeatView));
 		HtmlUtil.addEventListenerToElement(this.CommandActivityCall, "click", argSeatView.onCommandActivityCall.bind(argSeatView));
+		HtmlUtil.addEventListenerToElement(this.CommandActivityAggressiveAction, "click", argSeatView.onCommandActivityAggressiveAction.bind(argSeatView));
 
 		HtmlUtil.addEventListenerToElement(this.CommandAllIn, "click", argSeatView.onCommandAllIn.bind(argSeatView));
 
 		HtmlUtil.addEventListenerToElement(this.CommandPosition, "click", argSeatView.onCommandPosition.bind(argSeatView));
 		HtmlUtil.addEventListenerToElement(this.CommandAlive, "click", argSeatView.onCommandAlive.bind(argSeatView));
 		HtmlUtil.addEventListenerToElement(this.InputName, "change", argSeatView.onInputName.bind(argSeatView));
+
+		this.BetAmount = 0;
 	}
 	// ---------------------------------------------------------------------
 	// 進行処理関連
@@ -154,29 +157,27 @@
 	{
 		this.InputStack.value = Number(argAmount) || 0;
 	}
-
 	// 現在のベット額を取得する
 	cSeatControlView.prototype.getBetAmount = function()
 	{
-		return Number(this.InputBetAmount.value) || 0;
+		return this.BetAmount;
 	}
 	// 現在のベット額を設定する
 	cSeatControlView.prototype.setBetAmount = function(argAmount)
 	{
+		this.BetAmount = argAmount;
 		this.InputBetAmount.value = Number(argAmount);
 	}
 	// 現在のベット額をリセットする
 	cSeatControlView.prototype.resetBetAmount = function()
 	{
+		this.BetAmount = 0;
 		this.InputBetAmount.value = "";
 	}
-
-	cSeatControlView.prototype.postAnti = function(argAmount)
+	// 現在の入力ベット額を取得する
+	cSeatControlView.prototype.getBetInputAmount = function(argAmount)
 	{
-		const stack = this.getStack();
-		const amount = Math.min(stack, argAmount);
-		this.InputStack.value = stack - amount;
-		return amount;
+		return Number(this.InputBetAmount.value) || 0;
 	}
 
     ns.cSeatControlView = cSeatControlView;

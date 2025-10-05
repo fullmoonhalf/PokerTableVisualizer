@@ -75,8 +75,14 @@
 			this.toCall();
 		}
 	}
-
-
+	// アグレッシブアクション系
+	cSeatView.prototype.onCommandActivityAggressiveAction = function(event)
+	{
+		if(this.Active)
+		{
+			this.toAggressiveAction();
+		}
+	}
 	// オールイン
 	cSeatView.prototype.onCommandAllIn = function(event)
 	{
@@ -117,6 +123,7 @@
 	// ---------------------------------------------------------------------
 	// 
 	// ---------------------------------------------------------------------
+	// ホールカード配布時
 	cSeatView.prototype.toDealed = function()
 	{
 		if(this.Alive)
@@ -129,6 +136,7 @@
 			this.SeatLive.setStack(this.SeatControl.getStack());
 		}
 	}
+	// フォルド
 	cSeatView.prototype.toFold = function()
 	{
 		if(this.Alive)
@@ -139,6 +147,7 @@
 			this.ActionReceiver?.notifySeatFold(this);
 		}
 	}
+	// コール処理
 	cSeatView.prototype.toCall = function()
 	{
 		if(this.Alive)
@@ -146,7 +155,14 @@
 			this.ActionReceiver?.notifySeatCall(this);
 		}
 	}
-
+	// アグレッシブアクション処理
+	cSeatView.prototype.toAggressiveAction = function()
+	{
+		if(this.Alive)
+		{
+			this.ActionReceiver?.notifySeatAggressiveAction(this);
+		}
+	}
 
 	cSeatView.prototype.toActive = function()
 	{
@@ -380,6 +396,11 @@
 	cSeatView.prototype.getBetAmount = function()
 	{
 		return this.SeatControl.getBetAmount();
+	}
+	// 入力ベッティング量を取得する
+	cSeatView.prototype.getBetInputAmount = function()
+	{
+		return this.SeatControl.getBetInputAmount();
 	}
 	// ベット額の追加
 	cSeatView.prototype.addBetAmount = function(argAction, argAmount)

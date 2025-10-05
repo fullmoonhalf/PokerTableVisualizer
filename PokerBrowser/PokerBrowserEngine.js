@@ -270,6 +270,48 @@
 
 		return true;
 	}
+	// アグレッシブアクション系
+	cEngine.prototype.notifySeatAggressiveAction = function(argSeatView)
+	{
+		const threshold = this.DealerView.getMinimumRaiseAmount();
+		const input_amount = argSeatView.getBetInputAmount();
+		
+		// 基準額に達しているかを確認
+		if(input_amount < threshold)
+		{
+			return false;
+		}
+
+		// スタック足りてるかを確認
+		const stack = argSeatView.getStack();
+		if(input_amount > stack)
+		{
+			return false;
+		}
+
+		// 実際のベット額を計算
+		const current_bet = argSeatView.getBetAmount();
+		const bet_amount = input_amount - current_bet;
+		if(bet_amount <= 0)
+		{
+			return false;
+		}
+
+		// ベットが成立したので、ポッドに追加する
+		const actual_bet_amount = argSeatView.addBetAmount("Raise", bet_amount);
+		this.DealerView.addPot(actual_bet_amount);
+
+		// 必要コール額・レイズ額の更新
+		const to_call_amount = this.DealerView.getToCallAmount();
+		const next_minimum_raize_amount = input_amount + input_amount - to_call_amount;
+		this.DealerView.setToCallAmount(input_amount);
+		this.DealerView.setMinimumRaiseAmount("Minimum Raise: ", next_minimum_raize_amount);
+
+		// 次のシートへ
+		this.setCurrentActorSeat(this.getNextActiveSeat(argSeatView));
+
+		return true;
+	}
 
 	cEngine.prototype.notifySeatAllin = function(argSeatView)
 	{

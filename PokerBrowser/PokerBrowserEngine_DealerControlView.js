@@ -38,6 +38,7 @@
 		this.InputPot = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_DEALER_CONTROL_POT_INPUT);
 
 		this.ToCallAmount = 0;
+		this.ToMinimumRaiseAmount = 0;
 	}
 	cDealerControlView.prototype.setRound = function(argRound)
 	{
@@ -88,6 +89,18 @@
 	cDealerControlView.prototype.getToCallAmount = function()
 	{
 		return this.ToCallAmount;
+	}
+	// 必要レイズ額の設定
+	cDealerControlView.prototype.setMinimumRaiseAmount = function(argLabel, argAmount)
+	{
+		this.ToMinimumRaiseAmount = argAmount;
+		this.ElementMinraiseLabel.innerHTML = argLabel;
+		this.ElementMinraiseValue.innerHTML = this.ToMinimumRaiseAmount;
+	}
+	// 必要レイズ額の取得
+	cDealerControlView.prototype.getMinimumRaiseAmount = function()
+	{
+		return this.ToMinimumRaiseAmount;
 	}
 
     // ---------------------------------------------------------------------

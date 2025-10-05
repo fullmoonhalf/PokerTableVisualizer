@@ -70,19 +70,32 @@
 				{
 					const blind = this.getBlind();
 					this.setToCallAmount(blind.bb);
+					this.setMinimumRaiseAmount("Minimum raize: ", blind.bb * 2);
 					this.toDealed();
 				}
 				break;
 			case PokerConst.BettingRound.Flop:
-				this.setToCallAmount(0);
+				{
+					const blind = this.getBlind();
+					this.setToCallAmount(0);
+					this.setMinimumRaiseAmount("To bet: ", blind.bb);
+				}
 				break;
 			case PokerConst.BettingRound.Turn:
-				PokerModel.useFlopCards(this.BoardFlop);
-				this.setToCallAmount(0);
+				{
+					const blind = this.getBlind();
+					this.setToCallAmount(0);
+					this.setMinimumRaiseAmount("To bet: ", blind.bb);
+					PokerModel.useFlopCards(this.BoardFlop);
+				}
 				break;
 			case PokerConst.BettingRound.River:
-				PokerModel.useTurnCards(this.BoardTurn);
-				this.setToCallAmount(0);
+				{
+					const blind = this.getBlind();
+					this.setToCallAmount(0);
+					this.setMinimumRaiseAmount("To bet: ", blind.bb);
+					PokerModel.useTurnCards(this.BoardTurn);
+				}
 				break;
 			case PokerConst.BettingRound.EndHand:
 				PokerModel.useRiverCards(this.BoardRiver);
@@ -102,6 +115,16 @@
 	{
 		return this.ControlView.getToCallAmount();
 	}
+	// 必要レイズ額の設定
+	cDealerView.prototype.setMinimumRaiseAmount = function(argLabel, argAmount)
+	{
+		this.ControlView.setMinimumRaiseAmount(argLabel, argAmount);
+	}
+	// 必要レイズ額の取得
+	cDealerView.prototype.getMinimumRaiseAmount = function()
+	{
+		return this.ControlView.getMinimumRaiseAmount();
+	}	
 
     // ---------------------------------------------------------------------
 	// ボード関連
