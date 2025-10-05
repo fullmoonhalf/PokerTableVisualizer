@@ -119,6 +119,16 @@
 	{
 		this.SeatLive.setName(event.target.value);
 	}
+	// ベット額イベントの処理
+	cSeatView.prototype.onInputBetAmount = function(event)
+	{
+	}
+	// スタックウ入力の処理
+	cSeatView.prototype.onInputStack = function(event)
+	{
+		let stack = this.getStack();
+		this.SeatLive.setStack(stack);
+	}
 
 	// ---------------------------------------------------------------------
 	// 

@@ -21,6 +21,8 @@
 	// =====================================================================
 	function cSeatControlView(argSeatView, argElementBase)
 	{
+		this.BetAmount = 0;
+
 		this.ElementBase = argElementBase; 
 		this.ElementSeatValueID = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_SEAT_ID);
 		this.ElementHand = HtmlUtil.searchNodeByClassNameFromChildren(this.ElementBase, TEMPLATE_PANEL_PROBE_VALUE_HAND);
@@ -45,9 +47,10 @@
 
 		HtmlUtil.addEventListenerToElement(this.CommandPosition, "click", argSeatView.onCommandPosition.bind(argSeatView));
 		HtmlUtil.addEventListenerToElement(this.CommandAlive, "click", argSeatView.onCommandAlive.bind(argSeatView));
-		HtmlUtil.addEventListenerToElement(this.InputName, "change", argSeatView.onInputName.bind(argSeatView));
 
-		this.BetAmount = 0;
+		HtmlUtil.addEventListenerToElement(this.InputName, "change", argSeatView.onInputName.bind(argSeatView));
+		HtmlUtil.addEventListenerToElement(this.InputBetAmount, "change", argSeatView.onInputBetAmount.bind(argSeatView));
+		HtmlUtil.addEventListenerToElement(this.InputStack, "change", argSeatView.onInputStack.bind(argSeatView));
 	}
 
 
@@ -58,6 +61,14 @@
 			element.classList.toggle("command_active", false);
 			element.classList.toggle("command_inactive", false);
 		}
+	}
+	cSeatControlView.prototype.setCommandDisplayStatusToInactive = function()
+	{
+		this.CommandActivityFold.classList.toggle("command_inactive", true);
+		this.CommandActivityAggressiveAction.classList.toggle("command_inactive", true);
+		this.CommandActivityCall.classList.toggle("command_inactive", true);
+		this.CommandPosition.classList.toggle("command_inactive", true);
+		this.CommandAllIn.classList.toggle("command_inactive", true);
 	}
 
 	// ---------------------------------------------------------------------
@@ -72,14 +83,8 @@
 	}
 	cSeatControlView.prototype.toFold = function()
 	{
+		this.setCommandDisplayStatusToInactive();
 		this.ElementBase.classList.toggle("fold", true);
-
-		this.CommandActivityFold.classList.toggle("command_inactive", true);
-		this.CommandActivityAggressiveAction.classList.toggle("command_inactive", true);
-		this.CommandActivityCall.classList.toggle("command_inactive", true);
-		this.CommandPosition.classList.toggle("command_inactive", true);
-		this.CommandAllIn.classList.toggle("command_inactive", true);
-
 		this.CommandActivityFold.innerHTML = "";
 		this.resetBetAmount();
 	}
@@ -92,12 +97,14 @@
 	}
 	cSeatControlView.prototype.toDead = function()
 	{
+		this.setCommandDisplayStatusToInactive();
 		this.ElementBase.classList.toggle("dead", true);
 		this.ElementBase.classList.toggle("allin", false);
 		this.CommandAlive.innerHTML = "Join";
 	}
 	cSeatControlView.prototype.toAlive = function()
 	{
+		this.resetCommandDisplayStatus();
 		this.ElementBase.classList.toggle("dead", false);
 		this.ElementBase.classList.toggle("allin", false);
 		this.CommandAlive.innerHTML = "Leave";
