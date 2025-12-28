@@ -1,0 +1,21 @@
+(function (ns) {
+	if(	ns.Defines )
+	{
+		return;
+	}
+
+    ns.Defines = {}
+    ns.Defines.VERSION = "00.03.00";
+
+    // ブルートゥース関連
+	ns.Defines.BLE_DEVICE_NAME_PREFIX = "PTV_PP_";
+	ns.Defines.BLE_UUID_SERVICE = "cbaabb28-4e81-49c4-b775-aedfd27d8db0";
+	ns.Defines.BLE_UUID_CHARACTERISTIC_TX = "45f116ee-b087-4271-888d-a15eebebd2eb"; // デバイス→ブラウザ
+	ns.Defines.BLE_UUID_CHARACTERISTIC_RX = "45f116ee-b087-4271-888d-a15eebebd2ee"; // ブラウザ→デバイス
+
+    // HTML コマンド実行関連
+    ns.Defines.COMMAND_PROVE_DEVICE_MANAGER_SCAN = "COMMAND_PROVE_DEVICE_MANAGER_SCAN";
+    ns.Defines.COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_DUMP_STATUS = "COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_DUMP_STATUS";
+	ns.Defines.COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_TEST_SEND = "COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_TEST_SEND";
+
+})(Monitor = Monitor || {});

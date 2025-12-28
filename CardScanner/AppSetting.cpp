@@ -17,7 +17,9 @@ void AppSetting::init()
     _Setting.set(SETTING_KEY_PROBE_CARD_CAPACITY, "2");  
     _Setting.set(SETTING_KEY_BLE_IDENTIFIER, "PTV_PP_001");
     _Setting.set(SETTING_KEY_BLE_SERVICE_UUID, "cbaabb28-4e81-49c4-b775-aedfd27d8db0");
-    _Setting.set(SETTING_KEY_BLE_CHARACTERISTICS_UUID, "45f116ee-b087-4271-888d-a15eebebd2eb");
+    _Setting.set(SETTING_KEY_BLE_CHARACTERISTICS_TX_UUID, "45f116ee-b087-4271-888d-a15eebebd2eb");
+    _Setting.set(SETTING_KEY_BLE_CHARACTERISTICS_RX_UUID, "45f116ee-b087-4271-888d-a15eebebd2ee");
+
     if(SD.begin(GPIO_NUM_4, SPI, 15000000))
     {
         SysLog::printf(__NAMEOF__(AppSetting), "SD initialize success.");

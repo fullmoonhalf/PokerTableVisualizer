@@ -29,7 +29,8 @@ private: // BLE まわり
     char _ProbeName[64];
     char _BLE_identifier[64];
     char _BLE_service_uuid[64];
-    char _BLE_characteristics_uuid[64];
+    char _BLE_characteristics_tx_uuid[64];
+    char _BLE_characteristics_rx_uuid[64];
 
 private: // 表示まわり
     AppBatteryGauge *_BatteryGauge;

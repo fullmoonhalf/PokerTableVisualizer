@@ -13,10 +13,10 @@ public:
 
 
 
-class SysBLEControl : public BLEServerCallbacks
+class SysBLEControl : public BLEServerCallbacks,  BLECharacteristicCallbacks
 {
 public:
-    SysBLEControl(const char *identifier, const char *service_uuid, const char *characteristics_uuid);
+    SysBLEControl(const char *identifier, const char *service_uuid, const char *characteristics_tx_uuid, const char *characteristics_rx_uuid);
 
     void notify(const char *source);
     void bind(SysBLECharacteristicValueSourceable *source);
@@ -25,11 +25,14 @@ public:
 private:
     void onConnect(BLEServer *pServer);
     void onDisconnect(BLEServer *pServer);
+    void onWrite(BLECharacteristic* pChar);
 
 private:
     BLEServer *_BLEServer;
     BLEService *_BLEService;
-    BLECharacteristic *_BLECharacteristic;
+    BLECharacteristic *_BLECharacteristicTX; // デバイス→ブラウザ
+    BLECharacteristic *_BLECharacteristicRX; // ブラウザ→デバイス
+
     BLEAdvertising *_BLEAdvertising;
     SysBLECharacteristicValueSourceable *_CharacteristicValueSourceable;
     int _ConnectionConut;

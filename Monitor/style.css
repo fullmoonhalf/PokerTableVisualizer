@@ -1,0 +1,11 @@
+#all
+{
+    background-color:white;
+}
+
+/* 全体構成 */
+.poker_browser
+{
+    display: flex;
+    border: 1px solid gray;
+}

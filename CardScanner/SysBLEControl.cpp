@@ -5,24 +5,30 @@
 
 /// @brief コンストラクタ
 /// @param card_reader 
-SysBLEControl::SysBLEControl(const char *identifier, const char *service_uuid, const char *characteristics_uuid)
+SysBLEControl::SysBLEControl(const char *identifier, const char *service_uuid, const char *characteristics_tx_uuid, const char *characteristics_rx_uuid)
     : _BLEServer( nullptr )
     , _BLEService( nullptr )
-    , _BLECharacteristic( nullptr )
+    , _BLECharacteristicTX( nullptr )
+    , _BLECharacteristicRX( nullptr )
     , _BLEAdvertising( nullptr )
     , _CharacteristicValueSourceable( nullptr )
     , _ConnectionConut( 0 )
 {
-    SysLog::printf(__NAMEOF__(SysBLEControl), "identifier=%s service_uuid=%s characteristics_uuid=%s", identifier, service_uuid, characteristics_uuid);
+    SysLog::printf(__NAMEOF__(SysBLEControl), "identifier=%s service_uuid=%s characteristics_uuid=[tx=%s/rx=%s]", identifier, service_uuid, characteristics_tx_uuid, characteristics_rx_uuid);
     BLEDevice::init(identifier);
 
     _BLEServer = BLEDevice::createServer();
     _BLEServer->setCallbacks(this);
 
     _BLEService = _BLEServer->createService(service_uuid);
-    _BLECharacteristic = _BLEService->createCharacteristic(characteristics_uuid, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY );
-    _BLECharacteristic->addDescriptor(new BLE2902());
-    _BLECharacteristic->setValue("");
+    {
+        _BLECharacteristicTX = _BLEService->createCharacteristic(characteristics_tx_uuid, BLECharacteristic::PROPERTY_NOTIFY );
+        _BLECharacteristicTX->addDescriptor(new BLE2902());
+        _BLECharacteristicTX->setValue("");
+
+        _BLECharacteristicRX = _BLEService->createCharacteristic(characteristics_rx_uuid, BLECharacteristic::PROPERTY_WRITE );
+        _BLECharacteristicRX->setCallbacks(this);
+    }
     _BLEService->start();
 
     _BLEAdvertising = BLEDevice::getAdvertising();
@@ -47,8 +53,8 @@ void SysBLEControl::notify(const char *source)
 #if VERBOSE
     SysLog::printf(__NAMEOF__(SysBLEControl), "notify '%s'", source);
 #endif
-    _BLECharacteristic->setValue(source);
-    _BLECharacteristic->notify();
+    _BLECharacteristicTX->setValue(source);
+    _BLECharacteristicTX->notify();
 }
 
 
@@ -67,6 +73,15 @@ void SysBLEControl::onDisconnect(BLEServer *pServer)
 {
     SysLog::printf(__NAMEOF__(SysBLEControl), "Disconnected.");
     _ConnectionConut--;
+}
+
+
+/// @brief 受信
+/// @param pChar 
+void SysBLEControl::onWrite(BLECharacteristic* pChar)
+{
+    std::string v = pChar->getValue();         // 受け取った生データ
+    SysLog::printf(__NAMEOF__(SysBLEControl), "onWrite %s", v.c_str());
 }
 
 

@@ -34,8 +34,9 @@ void AppModeReader::start()
         AppSetting::getInstance().get(SETTING_KEY_PROBE_NAME, _ProbeName);
         AppSetting::getInstance().get(SETTING_KEY_BLE_IDENTIFIER, _BLE_identifier);
         AppSetting::getInstance().get(SETTING_KEY_BLE_SERVICE_UUID, _BLE_service_uuid);
-        AppSetting::getInstance().get(SETTING_KEY_BLE_CHARACTERISTICS_UUID, _BLE_characteristics_uuid);
-        _BLEController = new SysBLEControl(_BLE_identifier, _BLE_service_uuid, _BLE_characteristics_uuid);
+        AppSetting::getInstance().get(SETTING_KEY_BLE_CHARACTERISTICS_TX_UUID, _BLE_characteristics_tx_uuid);
+        AppSetting::getInstance().get(SETTING_KEY_BLE_CHARACTERISTICS_RX_UUID, _BLE_characteristics_rx_uuid);
+        _BLEController = new SysBLEControl(_BLE_identifier, _BLE_service_uuid, _BLE_characteristics_tx_uuid, _BLE_characteristics_rx_uuid);
     }
 
     // 表示まわりの初期化
