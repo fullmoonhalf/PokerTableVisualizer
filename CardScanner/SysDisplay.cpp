@@ -3,6 +3,9 @@
 
 /// @brief コンストラクタ
 SysDisplay::SysDisplay()
+    : _Width(-1)
+    , _Height(-1)
+    , _Brightness(-1)
 {
 }
 
@@ -61,4 +64,16 @@ void SysDisplay::destroySprite(SysSprite *sprite)
 void SysDisplay::clear()
 {
     Display.fillScreen(TFT_BLACK);
+}
+
+
+/// @brief 明るさ調整
+/// @param brightness 
+void SysDisplay::setBrightness(int brightness)
+{
+    if(_Brightness != brightness)
+    {
+        M5.Lcd.setBrightness(brightness);
+        _Brightness = brightness;
+    }
 }

@@ -5,10 +5,10 @@
 
 
 
-class SysBLECharacteristicValueSourceable
+class SysBLECallbackRX
 {
 public:
-    virtual bool tryGetBLECharacteristicValue(char *outTarget, int outBufferSize) = 0;
+    virtual void onBLEWrite(const char *buffer, int size) = 0;
 };
 
 
@@ -18,8 +18,8 @@ class SysBLEControl : public BLEServerCallbacks,  BLECharacteristicCallbacks
 public:
     SysBLEControl(const char *identifier, const char *service_uuid, const char *characteristics_tx_uuid, const char *characteristics_rx_uuid);
 
+    void bind(SysBLECallbackRX *argCallbackRX);
     void notify(const char *source);
-    void bind(SysBLECharacteristicValueSourceable *source);
     int getConnectionCount();
 
 private:
@@ -32,9 +32,9 @@ private:
     BLEService *_BLEService;
     BLECharacteristic *_BLECharacteristicTX; // デバイス→ブラウザ
     BLECharacteristic *_BLECharacteristicRX; // ブラウザ→デバイス
+    SysBLECallbackRX *_CallbackRX;
 
     BLEAdvertising *_BLEAdvertising;
-    SysBLECharacteristicValueSourceable *_CharacteristicValueSourceable;
     int _ConnectionConut;
 };
 

@@ -14,6 +14,8 @@ public:
     int getWidth();
     int getHeight();
     void clear();
+    void setBrightness(int brightness);
+    
     SysSprite *createSprite(int width, int height);
     void destroySprite(SysSprite *sprite);
 
@@ -23,6 +25,7 @@ private:
     M5GFX Display;
     int _Width;
     int _Height;
+    int _Brightness;
 };
 
 

@@ -7,13 +7,14 @@
 #include "AppBatteryGauge.h"
 
 
-class AppModeReader : public SysMode
+class AppModeReader : public SysMode, public SysBLECallbackRX
 {
 public:
     virtual void start();
     virtual void end();
     virtual void update();
     virtual void draw();
+    virtual void onBLEWrite(const char *buffer, int size);
 
 private:
     void start_indicator();
@@ -47,6 +48,8 @@ private: // 表示まわり
     int _LabelBLEPosY;
     int _LabelSensorPosX;
     int _LabelSensorPosY;
+    uint32_t _LastMillis;
+    uint32_t _ScreenSaveCounter;
 };
 
 

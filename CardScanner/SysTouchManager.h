@@ -20,6 +20,7 @@ public:
     void init();
     void update();
     bool isTouched(int x, int y, int w, int h);
+    bool isTouched();
 
 private:
     SysTouchManager();

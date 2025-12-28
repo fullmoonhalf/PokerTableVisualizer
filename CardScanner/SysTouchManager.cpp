@@ -36,7 +36,7 @@ void SysTouchManager::update()
 /// @param y 
 /// @param w 
 /// @param h 
-/// @return 
+/// @return タッチされたかどうか
 bool SysTouchManager::isTouched(int x, int y, int w, int h)
 {
     for(int index=0; index<_TouchCount; ++index)
@@ -50,4 +50,12 @@ bool SysTouchManager::isTouched(int x, int y, int w, int h)
     }
 
     return false;
+}
+
+
+/// @brief とにかくタッチされたかを調べる
+/// @return 
+bool SysTouchManager::isTouched()
+{
+    return _TouchCount > 0;
 }

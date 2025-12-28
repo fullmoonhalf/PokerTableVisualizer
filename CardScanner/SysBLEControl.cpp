@@ -10,8 +10,8 @@ SysBLEControl::SysBLEControl(const char *identifier, const char *service_uuid, c
     , _BLEService( nullptr )
     , _BLECharacteristicTX( nullptr )
     , _BLECharacteristicRX( nullptr )
+    , _CallbackRX( nullptr )
     , _BLEAdvertising( nullptr )
-    , _CharacteristicValueSourceable( nullptr )
     , _ConnectionConut( 0 )
 {
     SysLog::printf(__NAMEOF__(SysBLEControl), "identifier=%s service_uuid=%s characteristics_uuid=[tx=%s/rx=%s]", identifier, service_uuid, characteristics_tx_uuid, characteristics_rx_uuid);
@@ -38,14 +38,6 @@ SysBLEControl::SysBLEControl(const char *identifier, const char *service_uuid, c
 }
 
 
-/// @brief 
-/// @param source 
-void SysBLEControl::bind(SysBLECharacteristicValueSourceable *source)
-{
-    _CharacteristicValueSourceable = source;
-}
-
-
 /// @brief 送信
 /// @param source 
 void SysBLEControl::notify(const char *source)
@@ -55,6 +47,14 @@ void SysBLEControl::notify(const char *source)
 #endif
     _BLECharacteristicTX->setValue(source);
     _BLECharacteristicTX->notify();
+}
+
+
+/// @brief 
+/// @param argCallbackRX 
+void SysBLEControl::bind(SysBLECallbackRX *argCallbackRX)
+{
+    _CallbackRX = argCallbackRX;
 }
 
 
@@ -82,6 +82,10 @@ void SysBLEControl::onWrite(BLECharacteristic* pChar)
 {
     std::string v = pChar->getValue();         // 受け取った生データ
     SysLog::printf(__NAMEOF__(SysBLEControl), "onWrite %s", v.c_str());
+    if(_CallbackRX != nullptr)
+    {
+        _CallbackRX->onBLEWrite(v.c_str(), v.size());
+    }
 }
 
 

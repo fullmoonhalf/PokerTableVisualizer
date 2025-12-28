@@ -1,6 +1,7 @@
 #include "SysLog.h"
 #include "SysDisplay.h"
 #include "SysSpriteManager.h"
+#include "SysTouchManager.h"
 #include "AppSetting.h"
 #include "AppModeReader.h"
 
@@ -18,9 +19,14 @@
 #define SENSOR_LABEL_HEIGHT (8)
 
 
+/// @brief 開始処理
 void AppModeReader::start()
 {
     SysDisplay::getInstance().clear();
+
+    // 論理更新
+    _LastMillis = millis();
+    _ScreenSaveCounter = 0;
 
     // カードリーダー初期化
     {
@@ -37,6 +43,7 @@ void AppModeReader::start()
         AppSetting::getInstance().get(SETTING_KEY_BLE_CHARACTERISTICS_TX_UUID, _BLE_characteristics_tx_uuid);
         AppSetting::getInstance().get(SETTING_KEY_BLE_CHARACTERISTICS_RX_UUID, _BLE_characteristics_rx_uuid);
         _BLEController = new SysBLEControl(_BLE_identifier, _BLE_service_uuid, _BLE_characteristics_tx_uuid, _BLE_characteristics_rx_uuid);
+        _BLEController->bind(this);
     }
 
     // 表示まわりの初期化
@@ -44,6 +51,7 @@ void AppModeReader::start()
 }
 
 
+/// @brief インジケーターの開始処理
 void AppModeReader::start_indicator()
 {
     // バッテリーゲージ
@@ -81,6 +89,7 @@ void AppModeReader::start_indicator()
 }
 
 
+/// @brief モード終了処理
 void AppModeReader::end()
 {
     for(int index=0; index<_SensorCount; ++index)
@@ -94,8 +103,24 @@ void AppModeReader::end()
     delete _CardReader;
 }
 
+
+/// @brief 更新処理
 void AppModeReader::update()
 {
+    // スクリーン輝度
+    uint32_t current_millis = millis();
+    auto gap = current_millis - _LastMillis;
+    _LastMillis = current_millis;
+    if(gap > 0)
+    {
+        _ScreenSaveCounter += gap;
+    }
+    if(SysTouchManager::getInstance().isTouched())
+    {
+        _ScreenSaveCounter = 0;
+    }
+    SysDisplay::getInstance().setBrightness( _ScreenSaveCounter > 5000 ? 30 : 255);
+
     // スキャン処理
     if(_CardReader->scan() == false)
     {
@@ -114,6 +139,7 @@ void AppModeReader::update()
 }
 
 
+/// @brief インジケーターの更新
 void AppModeReader::update_indicator()
 {
     char buffer[32];
@@ -144,6 +170,7 @@ void AppModeReader::update_indicator()
 }
 
 
+/// @brief 描画処理
 void AppModeReader::draw()
 {
     _BatteryGauge->draw(_GaugeBatteryPosX, _GaugeBatteryPosY);
@@ -156,4 +183,13 @@ void AppModeReader::draw()
         y += SENSOR_LABEL_HEIGHT;
         _LabelSensorStatus[index]->draw(_LabelSensorPosX, y);
     }
+}
+
+
+/// @brief 
+/// @param buffer 
+/// @param size 
+void AppModeReader::onBLEWrite(const char *buffer, int size)
+{
+
 }
