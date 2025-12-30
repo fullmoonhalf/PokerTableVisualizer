@@ -19,6 +19,7 @@ public:
 private:
     void start_indicator();
     void update_indicator();
+    void send(bool send_scan_data);
 
 private: // センサーまわり
     AppCardListenerUnitRfid2Base *_CardReader;
@@ -37,6 +38,7 @@ private: // 表示まわり
     AppBatteryGauge *_BatteryGauge;
     SysSprite *_LabelSeat;
     SysSprite *_LabelBLEStatus;
+    SysSprite *_LabelMonitorStatus;
     SysSprite *_LabelSensorHeader;
     SysSprite *_LabelSensorStatus[8];
 
@@ -48,8 +50,12 @@ private: // 表示まわり
     int _LabelBLEPosY;
     int _LabelSensorPosX;
     int _LabelSensorPosY;
+    int _LabelMonitorPosX;
+    int _LabelMonitorPosY;
     uint32_t _LastMillis;
     uint32_t _ScreenSaveCounter;
+    uint32_t _HeartbeatCounter;
+    bool _Scannable;
 };
 
 

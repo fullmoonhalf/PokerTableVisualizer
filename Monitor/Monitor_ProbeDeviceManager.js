@@ -17,7 +17,8 @@
     cProbeDeviceManager.prototype.init = function()
     {
 		HtmlUtil.addButtonEventListenerByID(ns.Defines.COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_DUMP_STATUS, this.dumpStatus.bind(this));
-		HtmlUtil.addButtonEventListenerByID(ns.Defines.COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_TEST_SEND, this.testSend.bind(this));
+		HtmlUtil.addButtonEventListenerByID(ns.Defines.COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_TEST_SCAN_ON, this.testScanOn.bind(this));
+		HtmlUtil.addButtonEventListenerByID(ns.Defines.COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_TEST_SCAN_OFF, this.testScanOff.bind(this));
         HtmlUtil.addButtonEventListenerByID(ns.Defines.COMMAND_PROVE_DEVICE_MANAGER_SCAN, this.scan.bind(this));
     }
 
@@ -88,15 +89,25 @@
     /// <summary>
     /// テスト送信
     /// </summary>
-    cProbeDeviceManager.prototype.testSend = function()
+    cProbeDeviceManager.prototype.testScanOn = function()
     {
-        console.log("[cProbeDeviceManager] testSend - Start");
+        console.log("[cProbeDeviceManager] testScanOn - Start");
         for(const device of this.Devices)
         {
             console.log(device.Name);
-            device.write("TEST:"+device.Name);
+            device.write("1");
         }
-        console.log("[cProbeDeviceManager] testSend - End");
+        console.log("[cProbeDeviceManager] testScanOn - End");
+    }
+    cProbeDeviceManager.prototype.testScanOff = function()
+    {
+        console.log("[cProbeDeviceManager] testScanOff - Start");
+        for(const device of this.Devices)
+        {
+            console.log(device.Name);
+            device.write("0");
+        }
+        console.log("[cProbeDeviceManager] testScanOff - End");
     }
 
     ns.cProbeDeviceManager = cProbeDeviceManager;

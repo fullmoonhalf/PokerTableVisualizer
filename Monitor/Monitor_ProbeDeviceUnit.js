@@ -38,6 +38,7 @@
 		try {
 			let characteristic = event.target;
 			const str = HtmlUtil.TextDecoder.decode(characteristic.value);
+			console.log("[cProbeDeviceUnit]", str);
 			const json = JSON.parse(str);
 			console.log("[cProbeDeviceUnit]", json);
 		}

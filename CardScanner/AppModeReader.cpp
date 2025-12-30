@@ -12,7 +12,11 @@
 
 #define BLE_LABEL_ANCHOR (8)
 #define BLE_LABEL_WIDTH (192)
-#define BLE_LABEL_HEIGHT (64)
+#define BLE_LABEL_HEIGHT (32)
+
+#define MONITOR_LABEL_ANCHOR (8)
+#define MONITOR_LABEL_WIDTH (192)
+#define MONITOR_LABEL_HEIGHT (16)
 
 #define SENSOR_LABEL_ANCHOR (8)
 #define SENSOR_LABEL_WIDTH (192)
@@ -27,6 +31,8 @@ void AppModeReader::start()
     // 論理更新
     _LastMillis = millis();
     _ScreenSaveCounter = 0;
+    _Scannable = false;
+    _HeartbeatCounter = 0;
 
     // カードリーダー初期化
     {
@@ -73,6 +79,12 @@ void AppModeReader::start_indicator()
         _LabelBLEPosX = BLE_LABEL_ANCHOR;
         _LabelBLEPosY = _LabelSeatPosY + SEAT_LABEL_HEIGHT + BLE_LABEL_ANCHOR;
     }
+    // モニター側から受けてる情報
+    {
+        _LabelMonitorStatus = SysSpriteManager::getInstance().createSprite(MONITOR_LABEL_WIDTH, MONITOR_LABEL_HEIGHT);
+        _LabelMonitorPosX = MONITOR_LABEL_ANCHOR;
+        _LabelMonitorPosY = _LabelBLEPosY + BLE_LABEL_HEIGHT + MONITOR_LABEL_ANCHOR;;
+    }
     // センサーの情報
     {
         char buffer[32];
@@ -84,7 +96,7 @@ void AppModeReader::start_indicator()
             _LabelSensorStatus[index] = SysSpriteManager::getInstance().createSprite(SENSOR_LABEL_WIDTH, SENSOR_LABEL_HEIGHT);
         }
         _LabelSensorPosX = BLE_LABEL_ANCHOR;
-        _LabelSensorPosY = _LabelBLEPosY + BLE_LABEL_HEIGHT + BLE_LABEL_ANCHOR;
+        _LabelSensorPosY = _LabelMonitorPosY + MONITOR_LABEL_HEIGHT + BLE_LABEL_ANCHOR;
     }
 }
 
@@ -98,6 +110,8 @@ void AppModeReader::end()
     }
     SysSpriteManager::getInstance().destroySprite(_LabelSensorHeader);
     SysSpriteManager::getInstance().destroySprite(_LabelBLEStatus);
+    SysSpriteManager::getInstance().destroySprite(_LabelMonitorStatus);    
+    SysSpriteManager::getInstance().destroySprite(_LabelSeat);
     delete _BatteryGauge;
     delete _BLEController;
     delete _CardReader;
@@ -114,29 +128,61 @@ void AppModeReader::update()
     if(gap > 0)
     {
         _ScreenSaveCounter += gap;
+        _HeartbeatCounter += gap;
     }
     if(SysTouchManager::getInstance().isTouched())
     {
         _ScreenSaveCounter = 0;
     }
-    SysDisplay::getInstance().setBrightness( _ScreenSaveCounter > 5000 ? 30 : 255);
+    SysDisplay::getInstance().setBrightness( _ScreenSaveCounter > 50000 ? 30 : 255);
 
     // スキャン処理
-    if(_CardReader->scan() == false)
+    bool NeedToWait = true;
+    if(_Scannable)
+    {
+        if(_CardReader->scan())
+        {
+            send(true);
+        }
+        NeedToWait = false;
+    }
+    if(_HeartbeatCounter > 5000)
+    {
+        send(false);
+    }
+
+    // 待ち処理
+    if(NeedToWait)
     {
         wait(500);
     }
-    // ＢＬＥデバイスへの通知
-    {
-        char *seek = _SendInfoBuffer;
-        seek += sprintf(seek, "{\"probe\":\"%s\",\"battery\":\"%d\",", _ProbeName, _BatteryGauge->getBatteryLevel());
-        seek += _CardReader->encode(seek);
-        seek += sprintf(seek, "}");
-        _BLEController->notify(_SendInfoBuffer);
-    }
+
     // インジケーターの更新
     update_indicator();
 }
+
+
+/// @brief データ送信
+/// @param send_scan_data 
+void AppModeReader::send(bool send_scan_data)
+{
+    char *seek = _SendInfoBuffer;
+    seek += sprintf(seek, "{\"probe\":\"%s\",\"battery\":\"%d\"", _ProbeName, _BatteryGauge->getBatteryLevel());
+    if(send_scan_data)
+    {
+        seek += sprintf(seek, ",\"mode\":\"scan\",");
+        seek += _CardReader->encode(seek);
+    }
+    else
+    {
+        seek += sprintf(seek, ",\"mode\":\"heartbeat\"");
+    }
+
+    seek += sprintf(seek, "}");
+    _BLEController->notify(_SendInfoBuffer);
+    _HeartbeatCounter = 0;
+}
+
 
 
 /// @brief インジケーターの更新
@@ -148,14 +194,18 @@ void AppModeReader::update_indicator()
     {
         _BatteryGauge->update();
     }
-
+    // モニター情報更新
+    {
+        _LabelMonitorStatus->clear();
+        sprintf(buffer, "Monitor scan:%d", _Scannable);
+        _LabelMonitorStatus->drawText(0, 0, 1.f, TFT_RED, buffer);
+    }
     // BLE 情報更新
     {
         _LabelBLEStatus->clear();
         sprintf(buffer, "BLE connection %d", _BLEController->getConnectionCount());
         _LabelBLEStatus->drawText(0, 0, buffer);
     }
-
     // センサー情報更新
     for(int index=0; index<_SensorCount; ++index)
     {
@@ -175,6 +225,7 @@ void AppModeReader::draw()
 {
     _BatteryGauge->draw(_GaugeBatteryPosX, _GaugeBatteryPosY);
     _LabelSeat->draw(_LabelSeatPosX, _LabelSeatPosY);
+    _LabelMonitorStatus->draw(_LabelMonitorPosX, _LabelMonitorPosY);
     _LabelBLEStatus->draw(_LabelBLEPosX, _LabelBLEPosY);
     _LabelSensorHeader->draw(_LabelSensorPosX, _LabelSensorPosY);
     int y = _LabelSensorPosY;
@@ -191,5 +242,7 @@ void AppModeReader::draw()
 /// @param size 
 void AppModeReader::onBLEWrite(const char *buffer, int size)
 {
-
+    int scannable = 0;
+    ::sscanf(buffer, "%d", &scannable);
+    _Scannable = scannable > 0;
 }
