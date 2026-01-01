@@ -50,52 +50,53 @@ int SysSetting::getAsInt(const char *key)
 /// @return 成否
 bool SysSetting::load()
 {
-    if(!SD.exists(SETTING_FILEPATH)) 
+    SysSettingSDFileStream stream;
+    if(stream.load(SETTING_FILEPATH) == false)
     {
-        SysLog::printf(__NAMEOF__(SysSetting), "%s is not found.", SETTING_FILEPATH);
+        SysLog::printf(__NAMEOF__(SysSetting), "load failure");
         return false;
     }
 
-    delay(500);
-    File fp = SD.open(SETTING_FILEPATH, FILE_READ); 
-    if(!fp)
-    {
-        SysLog::printf(__NAMEOF__(SysSetting), "%s can not open.", SETTING_FILEPATH);
-        return false;
-    }
+    return loadFromStream(&stream);
+}
 
+
+bool SysSetting::loadFromStream(SysSettingSourceStream *stream)
+{
+    String token = "";
+    String key="";
+    bool is_valid = true;
+
+    while(stream->available())
     {
-        String token = "";
-        String key="";
-        while(fp.available())
+        char data = stream->read();
+        is_valid = false;
+        switch(data)
         {
-            char data = (char)fp.read();
-            switch(data)
-            {
-                case '=':
-                    key = String(token);
-                    token = "";
-                    break;
-                case '\r':
-                case '\n':
-                    if(key != "")
-                    {
-                        _Collection[key] = token;
-                    }
-                    key = "";
-                    token = "";
-                    break;
-                default:
-                    token = token + data;
-                    break;
-            }
+            case '=':
+                key = String(token);
+                token = "";
+                break;
+            case '\r':
+            case '\n':
+                if(key != "")
+                {
+                    _Collection[key] = token;
+                }
+                key = "";
+                token = "";
+                is_valid = true;
+                break;
+            default:
+                token = token + data;
+                break;
         }
     }
 
     dump();
-    
-    return false;
+    return is_valid;
 }
+
 
 
 /// @brief 設定値をシリアルに出力する
