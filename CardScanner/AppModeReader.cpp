@@ -33,6 +33,8 @@ void AppModeReader::start()
     _ScreenSaveCounter = 0;
     _Scannable = false;
     _HeartbeatCounter = 0;
+    _Timeout = 500;
+    _Idoltime = 5000;
 
     // カードリーダー初期化
     {
@@ -134,13 +136,13 @@ void AppModeReader::update()
     {
         _ScreenSaveCounter = 0;
     }
-    SysDisplay::getInstance().setBrightness( _ScreenSaveCounter > 50000 ? 30 : 255);
+    SysDisplay::getInstance().setBrightness( _ScreenSaveCounter > _Idoltime ? 30 : 255);
 
     // スキャン処理
     bool NeedToWait = true;
     if(_Scannable)
     {
-        if(_CardReader->scan())
+        if(_CardReader->scan(_Timeout))
         {
             send(true);
         }
@@ -197,7 +199,7 @@ void AppModeReader::update_indicator()
     // モニター情報更新
     {
         _LabelMonitorStatus->clear();
-        sprintf(buffer, "Monitor scan:%d", _Scannable);
+        sprintf(buffer, "Monitor scan:%d timeout:%d", _Scannable, _Timeout);
         _LabelMonitorStatus->drawText(0, 0, 1.f, TFT_RED, buffer);
     }
     // BLE 情報更新
@@ -242,7 +244,15 @@ void AppModeReader::draw()
 /// @param size 
 void AppModeReader::onBLEWrite(const char *buffer, int size)
 {
-    int scannable = 0;
-    ::sscanf(buffer, "%d", &scannable);
-    _Scannable = scannable > 0;
+    SysSettingStringStream stream(buffer);
+    SysSetting setting;
+
+    if(setting.loadFromStream(&stream))
+    {
+        setting.dump();
+        auto mode = setting.get("mode");
+        _Scannable = setting.getAsInt("scan") != 0 ? true : false; 
+        _Timeout = setting.getAsInt("timeout");
+        _Idoltime = setting.getAsInt("idol");
+    }
 }

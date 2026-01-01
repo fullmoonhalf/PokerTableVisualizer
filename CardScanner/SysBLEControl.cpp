@@ -81,7 +81,6 @@ void SysBLEControl::onDisconnect(BLEServer *pServer)
 void SysBLEControl::onWrite(BLECharacteristic* pChar)
 {
     std::string v = pChar->getValue();         // 受け取った生データ
-    SysLog::printf(__NAMEOF__(SysBLEControl), "onWrite %s", v.c_str());
     if(_CallbackRX != nullptr)
     {
         _CallbackRX->onBLEWrite(v.c_str(), v.size());

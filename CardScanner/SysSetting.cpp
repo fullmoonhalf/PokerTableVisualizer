@@ -93,7 +93,6 @@ bool SysSetting::loadFromStream(SysSettingSourceStream *stream)
         }
     }
 
-    dump();
     return is_valid;
 }
 

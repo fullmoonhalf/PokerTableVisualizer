@@ -95,7 +95,7 @@
         for(const device of this.Devices)
         {
             console.log(device.Name);
-            device.write("1");
+            device.write("mode=test\nscan=1\ntimeout=200\nidol=500000\n");
         }
         console.log("[cProbeDeviceManager] testScanOn - End");
     }
@@ -105,7 +105,7 @@
         for(const device of this.Devices)
         {
             console.log(device.Name);
-            device.write("0");
+            device.write("mode=test\nscan=0\ntimeout=200\nidol=500000\n");
         }
         console.log("[cProbeDeviceManager] testScanOff - End");
     }

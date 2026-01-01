@@ -24,6 +24,7 @@ void AppSetting::init()
     {
         SysLog::printf(__NAMEOF__(AppSetting), "SD initialize success.");
         _Setting.load();
+        _Setting.dump();
     }
     else
     {
