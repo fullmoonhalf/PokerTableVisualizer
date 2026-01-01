@@ -26,8 +26,7 @@ private:
 class SysSettingStringStream : public SysSettingSourceStream
 {
 public:
-    SysSettingStringStream();
-    virtual bool set(const char *source);
+    SysSettingStringStream(const char *source);
     virtual bool available();
     virtual char read();
 private:
