@@ -48,6 +48,13 @@
     margin-right: 10px;
 }
 
+.TEMPLATE_PROBEDEALER_PANEL_LASTUPDATE
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    top: 20px;
+    left: 10px;
+}
 
 .TEMPLATE_PROBEDEALER_PANEL_RIVER_VALUE
 {
@@ -98,3 +105,11 @@
 {
 }
 
+.TEMPLATE_PROBEDEALER_PANEL_LASTUPDATE
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    top: -5px;
+    left: 10px;
+    font-size: 6px;
+}

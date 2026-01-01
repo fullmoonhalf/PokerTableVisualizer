@@ -40,6 +40,7 @@
     {
         this.setStatus(true);
         this.setBattery(argValue.battery);
+        this.View.updateLastupdateTime();
     }
     
     ns.cProbePlayerModel = cProbePlayerModel;

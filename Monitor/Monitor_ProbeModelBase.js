@@ -21,7 +21,7 @@
     cProbeModelBase.prototype.setStatus = function(argStatus)
     {
         this.Status = argStatus;
-        this.View.setStatus(this.Status);
+        this.View.showStatus(this.Status);
     }
 
     /// <summary>

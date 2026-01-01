@@ -75,3 +75,12 @@
 .TEMPLATE_PROBEPLAYER_PANEL_HOLECARD_VALUE
 {
 }
+
+.TEMPLATE_PROBEPLAYER_PANEL_LASTUPDATE
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    top: -5px;
+    left: 10px;
+    font-size: 6px;
+}

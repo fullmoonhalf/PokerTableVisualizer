@@ -29,6 +29,7 @@
     {
         this.setStatus(true);
         this.setBattery(argValue.battery);
+        this.View.updateLastupdateTime();
     }
 
     /// 公開
