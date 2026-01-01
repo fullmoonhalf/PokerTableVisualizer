@@ -17,14 +17,7 @@
         this.BlindSBInput = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEDEALER_PANEL_BLIND_SB_INPUT);
         this.BlindBBInput = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEDEALER_PANEL_BLIND_BB_INPUT);
 
-        ns.cProbeViewBase.call(
-            this, 
-            this.HtmlRoot, 
-            ns.Defines.TEMPLATE_PROBEDEALER_PANEL_STATUS_LABEL, 
-            ns.Defines.TEMPLATE_PROBEDEALER_PANEL_STATUS_VALUE, 
-            ns.Defines.TEMPLATE_PROBEDEALER_PANEL_BATTERY_LABEL, 
-            ns.Defines.TEMPLATE_PROBEDEALER_PANEL_BATTERY_VALUE
-        );
+        ns.cProbeViewBase.call(this, this.HtmlRoot);
     }
     cProbeDealerView.prototype = Object.create(ns.cProbeViewBase.prototype);
     cProbeDealerView.prototype.constructor = cProbeDealerView;

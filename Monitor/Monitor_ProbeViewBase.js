@@ -8,12 +8,12 @@
     /// <summary>
     /// コンストラクタ
     /// </summary>
-    function cProbeViewBase(argHtmlRoot, argStatusLabelCssClass, argStatusValueCssClass, argBatteryLabelCssClass, argBatteryValueCssClass)
+    function cProbeViewBase(argHtmlRoot)
     {
-        this.StatusLabel = HtmlUtil.searchNodeByClassNameFromChildren(argHtmlRoot, argStatusLabelCssClass, "📶");
-        this.StatusValue = HtmlUtil.searchNodeByClassNameFromChildren(argHtmlRoot, argStatusValueCssClass, "🚫");
-        this.BatteryLabel = HtmlUtil.searchNodeByClassNameFromChildren(argHtmlRoot, argBatteryLabelCssClass, "🔋");
-        this.BatteryValue = HtmlUtil.searchNodeByClassNameFromChildren(argHtmlRoot, argBatteryValueCssClass, "-");
+        this.StatusLabel = HtmlUtil.searchNodeByClassNameFromChildren(argHtmlRoot, ns.Defines.TEMPLATE_PROBE_PANEL_STATUS_LABEL, "📶");
+        this.StatusValue = HtmlUtil.searchNodeByClassNameFromChildren(argHtmlRoot, ns.Defines.TEMPLATE_PROBE_PANEL_STATUS_VALUE, "🚫");
+        this.BatteryLabel = HtmlUtil.searchNodeByClassNameFromChildren(argHtmlRoot, ns.Defines.TEMPLATE_PROBE_PANEL_BATTERY_LABEL, "🔋");
+        this.BatteryValue = HtmlUtil.searchNodeByClassNameFromChildren(argHtmlRoot, ns.Defines.TEMPLATE_PROBE_PANEL_BATTERY_VALUE, "-");
     }
 
     /// <summary>

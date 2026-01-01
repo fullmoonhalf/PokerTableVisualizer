@@ -18,14 +18,7 @@
         this.NickLabel = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_NICK_LABEL, "");
         this.NickInput = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_NICK_INPUT);
 
-        ns.cProbeViewBase.call(
-            this, 
-            this.HtmlRoot, 
-            ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_STATUS_LABEL, 
-            ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_STATUS_VALUE, 
-            ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_BATTERY_LABEL, 
-            ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_BATTERY_VALUE
-        );
+        ns.cProbeViewBase.call(this, this.HtmlRoot);
 
         HtmlUtil.addEventListenerToElement(this.NickInput, "change", this.onInputNick.bind(this));
     }
