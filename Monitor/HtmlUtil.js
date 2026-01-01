@@ -34,6 +34,17 @@ var HtmlUtil = HtmlUtil || (function(){
             {
                 return null;
             }
+        },
+
+    	// ドキュメントから所定のクラスを持つノードを取得する
+        searchNodeByClassNameFromDocument : function(classname)
+        {
+            const elements = document.getElementsByClassName(classname);
+            if (elements.length > 0) {
+                return elements[0];
+            } else {
+                return null;
+            }
         }
     };
 

@@ -9,6 +9,7 @@
     function cEngine()
     {
         this.ProbeDeviceManager = null;
+        this.ViewManager = null;
     }
 
     /// <summary>
@@ -19,8 +20,15 @@
         console.log("init.");
         console.log(ns.Defines.VERSION);
 
+        // オブジェクト生成
         this.ProbeDeviceManager = new ns.cProbeDeviceManager();
+        this.ProbeManager = new ns.cProbeManager();
+        this.ViewManager = new ns.cViewManager();
+
+        // 初期化
         this.ProbeDeviceManager.init();
+        this.ProbeManager.init();
+        this.ViewManager.setup();
     }
 
     ns.cEngine = cEngine;

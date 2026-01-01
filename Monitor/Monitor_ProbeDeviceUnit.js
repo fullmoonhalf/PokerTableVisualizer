@@ -9,6 +9,7 @@
     {
 		this.Owner = argOwner;
 		this.Name = argName;
+		this.ProbeName = argName;
 		this.BLECharacteristicRX = argBLECharacteristicRX;
 		this.BLECharacteristicTX = argBLECharacteristicTX;
 
@@ -35,14 +36,16 @@
     /// </summary>
 	cProbeDeviceUnit.prototype.onCharacteristicValueChanged = function(event)
 	{
-		try {
+		try 
+		{
 			let characteristic = event.target;
 			const str = HtmlUtil.TextDecoder.decode(characteristic.value);
-			console.log("[cProbeDeviceUnit]", str);
 			const json = JSON.parse(str);
-			console.log("[cProbeDeviceUnit]", json);
+			this.ProbeName = json.probe;
+			this.Owner.onNofitied(json);
 		}
-		catch(e){
+		catch(e)
+		{
 			console.log("[cProbeDeviceUnit] onCharacteristicValueChanged error ", this.ProbeName, e);
 		}
 	}

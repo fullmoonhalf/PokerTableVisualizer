@@ -23,6 +23,27 @@
     }
 
     /// <summary>
+    /// デバイス → ブラウザへの通知
+    /// </summary>
+    cProbeDeviceManager.prototype.onNofitied = function(argValue)
+    {
+        const target = argValue.probe;
+        ns.Engine.ProbeManager.notifiedFromProbe(target, argValue);
+    }
+
+    cProbeDeviceManager.prototype.write = function()
+    {
+    }
+
+    cProbeDeviceManager.prototype.writeAll = function()
+    {
+    }
+
+
+
+
+
+    /// <summary>
     /// デバイスをスキャンする。
     /// </summary>
 	cProbeDeviceManager.prototype.scan = async function()
@@ -68,7 +89,8 @@
     /// </summary>
 	cProbeDeviceManager.prototype.remove = function(device)
     {
-		console.log("[cProbeDeviceManager] remove " + device.Name);
+		console.log("[cProbeDeviceManager] remove " + device.Name + "(" + device.ProbeName + ")");
+        ns.Engine.ProbeManager.onRemoveProbe(device.ProbeName);
         this.Devices = this.Devices.filter(x => x != device);
     }
 

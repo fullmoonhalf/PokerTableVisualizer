@@ -3,19 +3,35 @@
     <head>
         <link type="text/css" rel="stylesheet" href="./style.css">
         <link type="text/css" rel="stylesheet" href="./style_develop.css">
-        <script defer src="./HtmlUtil.js" type="text/javascript"></script>
-        <script defer src="./winrate.js" type="text/javascript"></script>
+        <link type="text/css" rel="stylesheet" href="./style_probe_player.css">
+        <link type="text/css" rel="stylesheet" href="./style_probe_dealer.css">
+        <!-- 絶対的に優先的に読みたい -->
         <script defer src="./Monitor_Bootstrap.js" type="text/javascript"></script>
         <script defer src="./Monitor_Defines.js" type="text/javascript"></script>
-        <script defer src="./Monitor_ProbeDeviceUnit.js" type="text/javascript"></script>
-        <script defer src="./Monitor_ProbeDeviceManager.js" type="text/javascript"></script>
+        <!-- 他ライブラリ -->
+        <script defer src="./HtmlUtil.js" type="text/javascript"></script>
+        <script defer src="./winrate.js" type="text/javascript"></script>
+        <!-- 基底系 -->
+        <script defer src="./Monitor_ProbeModelBase.js" type="text/javascript"></script>
+        <script defer src="./Monitor_ProbeViewBase.js" type="text/javascript"></script>
+        <!-- 具体クラス系 -->
         <script defer src="./Monitor_Engine.js" type="text/javascript"></script>
+        <script defer src="./Monitor_ProbeDealerModel.js" type="text/javascript"></script>
+        <script defer src="./Monitor_ProbeDealerView.js" type="text/javascript"></script>
+        <script defer src="./Monitor_ProbeDeviceManager.js" type="text/javascript"></script>
+        <script defer src="./Monitor_ProbeDeviceUnit.js" type="text/javascript"></script>
+        <script defer src="./Monitor_ProbeManager.js" type="text/javascript"></script>
+        <script defer src="./Monitor_ProbePlayerModel.js" type="text/javascript"></script>
+        <script defer src="./Monitor_ProbePlayerView.js" type="text/javascript"></script>
+        <script defer src="./Monitor_ViewManager.js" type="text/javascript"></script>
         <script defer src="./Monitor.js" type="text/javascript"></script>
         <title>Poker Table Monitor Browser</title>
     </head>
     <body>
         <p>
             <div class="poker_browser">
+                <div id="CONTAINER_PROBEDEALER_PANEL"></div>
+                <div id="CONTAINER_PROBEPLAYER_PANEL"></div>
             </div>
         </p>
         <p>
@@ -24,6 +40,70 @@
                 <button id="COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_DUMP_STATUS">DeviceManager: DumpStatus</button>
                 <button id="COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_TEST_SCAN_ON">DeviceManager: ScanOn</button>
                 <button id="COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_TEST_SCAN_OFF">DeviceManager: ScanOff</button>
+            </div>
+        </p>
+        <p>
+            <div class="templates">
+                <p>
+                    <div class="TEMPLATE_PROBEPLAYER_PANEL">
+                        <div class="TEMPLATE_PROBEPLAYER_PANEL_NAME">
+                            <div class="TEMPLATE_PROBEPLAYER_PANEL_NAME_LABEL">name:</div>
+                            <div class="TEMPLATE_PROBEPLAYER_PANEL_NAME_VALUE">value</div>
+                        </div>
+                        <div class="TEMPLATE_PROBEPLAYER_PANEL_NICK">
+                            <div class="TEMPLATE_PROBEPLAYER_PANEL_NICK_LABEL">name:</div>
+                            <input class="TEMPLATE_PROBEPLAYER_PANEL_NICK_INPUT">
+                        </div>
+                        <div class="TEMPLATE_PROBEPLAYER_PANEL_STATUS">
+                            <div class="TEMPLATE_PROBEPLAYER_PANEL_STATUS_LABEL">status:</div>
+                            <div class="TEMPLATE_PROBEPLAYER_PANEL_STATUS_VALUE">value</div>
+                        </div>
+                        <div class="TEMPLATE_PROBEPLAYER_PANEL_BATTERY">
+                            <div class="TEMPLATE_PROBEPLAYER_PANEL_BATTERY_LABEL">🔋</div>
+                            <div class="TEMPLATE_PROBEPLAYER_PANEL_BATTERY_VALUE">value</div>
+                        </div>
+                        <div class="TEMPLATE_PROBEPLAYER_PANEL_HOLECARD">
+                            <div class="TEMPLATE_PROBEPLAYER_PANEL_HOLECARD_VALUE">
+                                <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                                <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                            </div>
+                        </div>
+                    </div>
+                </p>
+                <p>
+                    <div class="TEMPLATE_PROBEDEALER_PANEL">
+                        <div class="TEMPLATE_PROBEDEALER_PANEL_HANDCOUNT">
+                            <div class="TEMPLATE_PROBEDEALER_PANEL_HANDCOUNT_LABEL">status:</div>
+                            <div class="TEMPLATE_PROBEDEALER_PANEL_HANDCOUNT_VALUE">value</div>
+                        </div>
+                        <div class="TEMPLATE_PROBEDEALER_PANEL_STATUS">
+                            <div class="TEMPLATE_PROBEDEALER_PANEL_STATUS_LABEL">status:</div>
+                            <div class="TEMPLATE_PROBEDEALER_PANEL_STATUS_VALUE">value</div>
+                        </div>
+                        <div class="TEMPLATE_PROBEDEALER_PANEL_BATTERY">
+                            <div class="TEMPLATE_PROBEDEALER_PANEL_BATTERY_LABEL">🔋</div>
+                            <div class="TEMPLATE_PROBEDEALER_PANEL_BATTERY_VALUE">value</div>
+                        </div>
+                        <div class="TEMPLATE_PROBEDEALER_PANEL_BOARD">
+                            <div class="TEMPLATE_PROBEDEALER_PANEL_FLOP_VALUE">
+                                <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                                <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                                <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                            </div>
+                            <div class="TEMPLATE_PROBEDEALER_PANEL_TURN_VALUE">
+                                <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                            </div>
+                            <div class="TEMPLATE_PROBEDEALER_PANEL_RIVER_VALUE">
+                                <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                            </div>
+                        </div>
+                        <div class="TEMPLATE_PROBEDEALER_PANEL_BLIND">
+                            <input class="TEMPLATE_PROBEDEALER_PANEL_BLIND_SB_INPUT"> / <input class="TEMPLATE_PROBEDEALER_PANEL_BLIND_BB_INPUT">
+                        </div>
+                    </div>
+                </p>
+                <p></p>
+                <p></p>
             </div>
         </p>
     </body>

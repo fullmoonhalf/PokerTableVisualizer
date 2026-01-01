@@ -1,0 +1,116 @@
+.TEMPLATE_PROBEDEALER_PANEL
+{
+    position: relative;   /* 基準にする */
+    background: #cff;
+    width: 300px;
+    height: 40px;
+    margin: 2px;
+    font-size: 8px;
+    border-width: 2px;
+    border-radius: 6px;
+    border-style: solid;
+    border-color: #cff;
+}
+
+.TEMPLATE_PROBEDEALER_PANEL_STATUS
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    top: 0px;
+    left: 70px;
+}
+
+.TEMPLATE_PROBEDEALER_PANEL_STATUS_LABEL
+{
+}
+
+.TEMPLATE_PROBEDEALER_PANEL_STATUS_VALUE
+{
+}
+
+.TEMPLATE_PROBEDEALER_PANEL_BATTERY
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    top: 0px;
+    left: 130px;
+}
+
+.TEMPLATE_PROBEDEALER_PANEL_BATTERY_LABEL
+{
+}
+
+.TEMPLATE_PROBEDEALER_PANEL_BATTERY_VALUE
+{
+}
+
+.TEMPLATE_PROBEDEALER_PANEL_BOARD
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    top: 0px;
+    left: 173px;
+}
+
+
+.TEMPLATE_PROBEDEALER_PANEL_FLOP_VALUE
+{
+    margin-right: 10px;
+}
+
+
+.TEMPLATE_PROBEDEALER_PANEL_TURN_VALUE
+{
+    margin-right: 10px;
+}
+
+
+.TEMPLATE_PROBEDEALER_PANEL_RIVER_VALUE
+{
+}
+
+
+.TEMPLATE_PROBEDEALER_PANEL_BLIND
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    top: 20px;
+    left: 10px;
+}
+
+
+.TEMPLATE_PROBEDEALER_PANEL_BLIND_SB_INPUT
+{
+    width: 35px;
+    font-size: 8px;
+    margin: 0px 2px;
+}
+
+
+.TEMPLATE_PROBEDEALER_PANEL_BLIND_BB_INPUT
+{
+    width: 35px;
+    font-size: 8px;
+    margin: 0px 2px;
+}
+
+
+.TEMPLATE_PROBEDEALER_PANEL_HANDCOUNT
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    left: 10px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+
+.TEMPLATE_PROBEDEALER_PANEL_HANDCOUNT_LABEL
+{
+}
+
+
+.TEMPLATE_PROBEDEALER_PANEL_HANDCOUNT_VALUE
+{
+}
+

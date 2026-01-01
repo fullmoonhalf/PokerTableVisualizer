@@ -1,0 +1,93 @@
+.TEMPLATE_PROBEPLAYER_PANEL
+{
+    position: relative;   /* 基準にする */
+    background: #cff;
+    width: 300px;
+    height: 40px;
+    margin: 2px;
+    font-size: 8px;
+    border-width: 2px;
+    border-radius: 6px;
+    border-style: solid;
+    border-color: #cff;
+}
+
+.TEMPLATE_PROBEPLAYER_PANEL_NAME
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    top: 0px;
+    left: 10px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.TEMPLATE_PROBEPLAYER_PANEL_NAME_LABEL
+{
+}
+
+.TEMPLATE_PROBEPLAYER_PANEL_NAME_VALUE
+{
+}
+
+.TEMPLATE_PROBEPLAYER_PANEL_NICK
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    top: 20px;
+    left: 10px;
+}
+
+.TEMPLATE_PROBEPLAYER_PANEL_NICK_LABEL
+{
+}
+
+.TEMPLATE_PROBEPLAYER_PANEL_NICK_INPUT
+{
+    font-size: 8px;
+    width: 80px;
+}
+
+.TEMPLATE_PROBEPLAYER_PANEL_STATUS
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    top: 0px;
+    left: 70px;
+}
+
+.TEMPLATE_PROBEPLAYER_PANEL_STATUS_LABEL
+{
+}
+
+.TEMPLATE_PROBEPLAYER_PANEL_STATUS_VALUE
+{
+}
+
+.TEMPLATE_PROBEPLAYER_PANEL_BATTERY
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    top: 0px;
+    left: 130px;
+}
+
+.TEMPLATE_PROBEPLAYER_PANEL_BATTERY_LABEL
+{
+}
+
+.TEMPLATE_PROBEPLAYER_PANEL_BATTERY_VALUE
+{
+}
+
+.TEMPLATE_PROBEPLAYER_PANEL_HOLECARD
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    top: 0px;
+    left: 250px;
+}
+
+.TEMPLATE_PROBEPLAYER_PANEL_HOLECARD_VALUE
+{
+}
