@@ -60,13 +60,18 @@ void CardScanner::start()
         AppSetting::getInstance().get(SETTING_KEY_PROBE_NAME, _buffer);
         _LabelSeat = SysSpriteManager::getInstance().createSprite(64, 8);
         _LabelSeat->drawText(0, 0, _buffer);
+
+        _LabelVersion = SysSpriteManager::getInstance().createSprite(128, 8);
+        sprintf(_buffer, "ver 00.03.01");
+        _LabelVersion->drawText(0, 0, _buffer);
     }
 }
 
 
 /// @brief モード終了時処理
 void CardScanner::end()
-{
+{    
+    SysSpriteManager::getInstance().destroySprite(_LabelVersion);
     SysSpriteManager::getInstance().destroySprite(_LabelSeat);
     delete _BatteryGauge;
     SysSpriteManager::getInstance().destroyDrawable(_ButtonDeckcheck);
@@ -94,6 +99,7 @@ void CardScanner::draw()
     _ButtonDeckcheck->draw(BUTTON_ANCHOR_X, BUTTON_ANCHOR_Y+BUTTON_HEIGHT+BUTTON_MARGIN);
     _ButtonDevelop->draw(BUTTON_ANCHOR_X+BUTTON_WIDTH+BUTTON_MARGIN, BUTTON_ANCHOR_Y+BUTTON_HEIGHT+BUTTON_MARGIN);
     _LabelSeat->draw(8, 8);
+    _LabelVersion->draw(8, SysDisplay::getInstance().getHeight()-16);
     _BatteryGauge->draw(_GaugeBatteryPosX, _GaugeBatteryPosY);
 }
 

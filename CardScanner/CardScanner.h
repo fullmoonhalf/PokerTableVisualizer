@@ -25,6 +25,7 @@ private:
     SysGuiButton *_ButtonDevelop;
     SysGuiButton *_ButtonDeckcheck;
     SysSprite *_LabelSeat;
+    SysSprite *_LabelVersion;
     int _FrameCount = 0;
     int _GaugeBatteryPosX;
     int _GaugeBatteryPosY;
