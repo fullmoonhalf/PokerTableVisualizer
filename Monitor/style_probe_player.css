@@ -4,7 +4,7 @@
     background: #cff;
     width: 400px;
     height: 40px;
-    margin: 2px;
+    margin: 1px;
     font-size: 8px;
     border-width: 2px;
     border-radius: 6px;
@@ -116,8 +116,8 @@
 {
     position: absolute;   /* 親を基準に */
     display: flex;     /* 横並び */
-    top: 0px;
-    left: 320px;
+    top: 10px;
+    left: 70px;
     font-size: 8px;
 }
 
