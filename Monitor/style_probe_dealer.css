@@ -2,8 +2,8 @@
 {
     position: relative;   /* 基準にする */
     background: #cff;
-    width: 300px;
-    height: 40px;
+    width: 400px;
+    height: 80px;
     margin: 2px;
     font-size: 8px;
     border-width: 2px;
@@ -25,7 +25,7 @@
     position: absolute;   /* 親を基準に */
     display: flex;     /* 横並び */
     top: 0px;
-    left: 130px;
+    left: 100px;
 }
 
 .TEMPLATE_PROBEDEALER_PANEL_BOARD
@@ -33,7 +33,7 @@
     position: absolute;   /* 親を基準に */
     display: flex;     /* 横並び */
     top: 0px;
-    left: 173px;
+    left: 130px;
 }
 
 
@@ -91,25 +91,43 @@
     position: absolute;   /* 親を基準に */
     display: flex;     /* 横並び */
     left: 10px;
-    font-size: 12px;
-    font-weight: bold;
 }
 
 
 .TEMPLATE_PROBEDEALER_PANEL_HANDCOUNT_LABEL
 {
+    font-size: 6px;
 }
 
 
-.TEMPLATE_PROBEDEALER_PANEL_HANDCOUNT_VALUE
+.TEMPLATE_PROBEDEALER_PANEL_HANDCOUNT_INPUT
 {
+    font-size: 10px;
+    font-weight: bold;
+    width: 35px;
 }
 
 .TEMPLATE_PROBEDEALER_PANEL_LASTUPDATE
 {
     position: absolute;   /* 親を基準に */
     display: flex;     /* 横並び */
-    top: -5px;
+    top: 0px;
+    left: 320px;
+    font-size: 8px;
+}
+
+.TEMPLATE_PROBEDEALER_PANEL_BETTINGROUND
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    top: 40px;
     left: 10px;
-    font-size: 6px;
+}
+
+.TEMPLATE_PROBEDEALER_PANEL_CONTROL
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    top: 60px;
+    left: 10px;
 }

@@ -5,19 +5,6 @@
 		return;
 	}
 
-    const PLAYER_PROBE_LIST = [
-        "Player01",
-        "Player02",
-        "Player03",
-        "Player04",
-        "Player05",
-        "Player06",
-        "Player07",
-        "Player08",
-        "Player09",
-    ];
-    const DEALER_PROBE_PREFIX = "Dealer";
-
     /// <summary>
     /// コンストラクタ
     /// </summary>
@@ -32,10 +19,13 @@
     /// </summary>
     cProbeManager.prototype.init = function()
     {
+        this.Carddeck = new ns.cCarddeck();
+
         // プレイヤー
-        for(const player_probe_name of PLAYER_PROBE_LIST)
+        for(const player_probe_name of ns.Defines.PLAYER_PROBE_LIST)
         {
-            const model = new ns.cProbePlayerModel(player_probe_name);
+            const cardslot = new ns.cCardslot(this.Carddeck, 2);
+            const model = new ns.cProbePlayerModel(player_probe_name, cardslot);
             const view = ns.Engine.ViewManager.createProbePlayerView();
             view.bindModel(model);
             model.bindView(view);
@@ -45,11 +35,52 @@
 
         // ディーラー
         {
+            const cardslot_flop = new ns.cCardslot(this.Carddeck, 3);
+            const cardslot_turn = new ns.cCardslot(this.Carddeck, 1);
+            const cardslot_river = new ns.cCardslot(this.Carddeck, 1);
             const view = ns.Engine.ViewManager.createProbeDealerView();
-            this.DealerProbe = new ns.cProbeDealerModel();
+            this.DealerProbe = new ns.cProbeDealerModel(cardslot_flop, cardslot_turn, cardslot_river);
             view.bindModel(this.DealerProbe)
             this.DealerProbe.bindView(view);
             this.DealerProbe.showView();
+            this.DealerProbe.setBettingRound(PokerConst.BettingRound.DealHand);
+        }
+    }
+
+    /// <summary>
+    /// </summary>
+    cProbeManager.prototype.onChangeBettingRound = function(argBettingRound)
+    {
+        switch(argBettingRound)
+        {
+            case PokerConst.BettingRound.DealHand:
+                this.Carddeck.reset();
+                Object.values(this.PlayerProbeCollection).forEach(probe => probe.onStartDeal());
+                this.DealerProbe.onStartDeal();
+                ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.PLAYER_PROBE_PREFIX);
+                break;
+            case PokerConst.BettingRound.Preflop:
+                break;
+            case PokerConst.BettingRound.Flop:
+                ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
+                ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
+                this.DealerProbe.onStartFlop();
+                break;
+            case PokerConst.BettingRound.Turn:
+                ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
+                this.DealerProbe.onStartTurn();
+                break;
+            case PokerConst.BettingRound.River:
+                ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
+                this.DealerProbe.onStartRiver();
+                break;
+            case PokerConst.BettingRound.EndHand:
+                ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
+                ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.DEALER_PROBE_PREFIX);
+                this.DealerProbe.onStartEnd();
+                break;
+            default:
+                break;
         }
     }
 

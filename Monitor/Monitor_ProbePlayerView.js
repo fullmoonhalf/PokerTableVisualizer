@@ -17,21 +17,42 @@
         this.NameValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_NAME_VALUE);
         this.NickLabel = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_NICK_LABEL, "");
         this.NickInput = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_NICK_INPUT);
+        this.HolecardValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_HOLECARD_VALUE, "" );
+
+        this.ActoinFoldButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_ACTION_FOLD ); 
+        this.ActoinCheckButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_ACTION_CHECK );
+        this.ActoinBetButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_ACTION_BET );
+        this.ActoinCallButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_ACTION_CALL );
+        this.ActoinRaiseButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_ACTION_RAISE );
+        this.ActoinAllinButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_ACTION_ALLIN );
+        this.ActionButtonList = [
+            this.ActoinFoldButton,
+            this.ActoinCheckButton,
+            this.ActoinBetButton,
+            this.ActoinCallButton,
+            this.ActoinRaiseButton,
+            this.ActoinAllinButton
+        ];
+        this.ControlAliveButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_ALIVE );
 
         ns.cProbeViewBase.call(this, this.HtmlRoot);
 
+        HtmlUtil.addEventListenerToElement(this.ActoinFoldButton, "click", this._onPlayerActionFold.bind(this));
+        HtmlUtil.addEventListenerToElement(this.ActoinCheckButton, "click", this._onPlayerActionCheck.bind(this));
+        HtmlUtil.addEventListenerToElement(this.ActoinBetButton, "click", this._onPlayerActionBet.bind(this));
+        HtmlUtil.addEventListenerToElement(this.ActoinCallButton, "click", this._onPlayerActionCall.bind(this));
+        HtmlUtil.addEventListenerToElement(this.ActoinRaiseButton, "click", this._onPlayerActionRaise.bind(this));
+        HtmlUtil.addEventListenerToElement(this.ActoinAllinButton, "click", this._onPlayerActionAllin.bind(this));
+        HtmlUtil.addEventListenerToElement(this.ControlAliveButton, "click", this._onControlAlive.bind(this));
         HtmlUtil.addEventListenerToElement(this.NickInput, "change", this.onInputNick.bind(this));
+
+        this.setActiveButton(this.ControlAliveButton);
+        this.setInactiveButton(this.ControlRescanButton);
+        this._disableAllPlayerAction();
+        this.toDead();
     }
     cProbePlayerView.prototype = Object.create(ns.cProbeViewBase.prototype);
     cProbePlayerView.prototype.constructor = cProbePlayerView;
-
-    /// <summary>
-    /// モデルとの紐付け
-    /// </summary>
-    cProbePlayerView.prototype.bindModel = function(argModel)
-    {
-        this.Model = argModel;
-    }
 
     /// <summary>
     /// ニックネーム入力時のイベントハンドラ
@@ -47,6 +68,138 @@
     cProbePlayerView.prototype.showName = function(argName)
     {
         this.NameValue.innerHTML = argName;
+    }
+
+    /// <summary>
+    /// カードの表示
+    /// </summary>
+    cProbePlayerView.prototype.showCard = function(argCard)
+    {
+        this.HolecardValue.innerHTML = this.createHoleCardsHTML(argCard, ns.Defines.TEMPLATE_GLOBAL_CARD_SMALL, 2);
+    }
+
+    /// <summary>
+    /// プレイヤーアクションの表示
+    /// </summary>
+    cProbePlayerView.prototype.showPlayerAction = function(argPlayerAction)
+    {
+        switch (argPlayerAction) {
+            case PokerConst.PlayerAction.None:
+                // まだ何もしていない
+                this._enableAllPlayerAction();
+                break;
+            case PokerConst.PlayerAction.Check:
+                // チェック
+                this._selectPlayerAction(this.ActoinCheckButton);
+                break;
+            case PokerConst.PlayerAction.Bet:
+                // ベット
+                this._selectPlayerAction(this.ActoinBetButton);
+                break;
+            case PokerConst.PlayerAction.Call:
+                // コール
+                this._selectPlayerAction(this.ActoinCallButton);
+                break;
+            case PokerConst.PlayerAction.Raise:
+                // レイズ
+                this._selectPlayerAction(this.ActoinRaiseButton);
+                break;
+            case PokerConst.PlayerAction.Fold:
+                // フォールド
+                this._selectPlayerAction(this.ActoinFoldButton);
+                break;
+            case PokerConst.PlayerAction.AllIn:
+                // オールイン
+                this._selectPlayerAction(this.ActoinAllinButton);
+                break;
+            default:
+                console.warn("[cProbePlayerView] Unknown PlayerAction:", argPlayerAction);
+                break;
+        }
+    }
+
+
+    /// <summary>
+    /// </summary>
+    cProbePlayerView.prototype.toAlive = function()
+    {
+        this.HtmlRoot.classList.toggle("status_dead", false);
+    }
+
+    /// <summary>
+    /// </summary>
+    cProbePlayerView.prototype.toDead = function()
+    {
+        this.HtmlRoot.classList.toggle("status_dead", true);
+    }
+
+    /// <summary>
+    /// </summary>
+    cProbePlayerView.prototype._onPlayerActionFold = function(argEvent)
+    {
+        this.Model.setPlayerAction(PokerConst.PlayerAction.Fold);
+    }
+
+    /// <summary>
+    /// </summary>
+    cProbePlayerView.prototype._onPlayerActionCheck = function(argEvent)
+    {
+        this.Model.setPlayerAction(PokerConst.PlayerAction.Check);
+    }
+
+    /// <summary>
+    /// </summary>
+    cProbePlayerView.prototype._onPlayerActionBet = function(argEvent)
+    {
+        this.Model.setPlayerAction(PokerConst.PlayerAction.Bet);
+    }
+
+    /// <summary>
+    /// </summary>
+    cProbePlayerView.prototype._onPlayerActionCall = function(argEvent)
+    {
+        this.Model.setPlayerAction(PokerConst.PlayerAction.Call);
+    }
+
+    /// <summary>
+    /// </summary>
+    cProbePlayerView.prototype._onPlayerActionRaise = function(argEvent)
+    {
+        this.Model.setPlayerAction(PokerConst.PlayerAction.Raise);
+    }
+
+    /// <summary>
+    /// </summary>
+    cProbePlayerView.prototype._onPlayerActionAllin = function(argEvent)
+    {
+        this.Model.setPlayerAction(PokerConst.PlayerAction.AllIn);
+    }
+
+    /// <summary>
+    /// </summary>
+    cProbePlayerView.prototype._onControlAlive = function(argEvent)
+    {
+        this.Model.toggleAlive();
+    }
+
+    /// <summary>
+    /// プレイヤーアクションボタンの全てを無効表示にする
+    /// </summary>
+    cProbePlayerView.prototype._disableAllPlayerAction = function()
+    {
+        for(const button of this.ActionButtonList)
+        {
+            this.setInactiveButton(button);
+        }
+    }
+
+    /// <summary>
+    /// プレイヤーアクションボタンの指定されたものを有効表示にする
+    /// </summary>
+    cProbePlayerView.prototype._selectPlayerAction = function(argButton)
+    {
+        this._disableAllPlayerAction();
+        this.setActiveButton(argButton);
     }
 
     ns.cProbePlayerView = cProbePlayerView;

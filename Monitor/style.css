@@ -36,3 +36,72 @@ div#CONTAINER_PROBEPLAYER_PANEL
     margin-top: 2px;
     margin-left: 2px;
 }
+
+
+/* 入力系 */
+/* Chrome, Safari, Edge (WebKit系) */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* ボタン系 */
+.TEMPLATE_STANDARD_BUTTON_STYLE
+{
+    height: 16px;
+    font-size: 10px;
+}
+.TEMPLATE_STANDARD_BUTTON_STYLE.active
+{
+    outline: none;
+    background-color: #fdd;
+    border: none;
+    box-shadow: none;
+    border-width: 1px;
+    border-radius: 2px;
+    border-style: solid;
+    border-color: #faa;
+    margin: 0px 1px;
+}
+.TEMPLATE_STANDARD_BUTTON_STYLE.active:hover
+{
+    outline: #000;
+    background-color: #faa;
+    box-shadow: none;
+}
+.TEMPLATE_STANDARD_BUTTON_STYLE.active:active
+{
+    outline: none;
+    background-color: #f88;
+    box-shadow: 0 0 0 1px #fdd;
+}
+.TEMPLATE_STANDARD_BUTTON_STYLE.inactive
+{
+    outline: none;
+    background-color: #999;
+    border-width: 1px;
+    border-width: 1px;
+    border-radius: 2px;
+    border-style: solid;
+    border-color: #666;
+    box-shadow: none;
+    margin: 0px 1px;
+}
+.TEMPLATE_STANDARD_BUTTON_STYLE.inactive:hover
+{
+    outline: #000;
+    background-color: #777;
+    box-shadow: none;
+}
+.TEMPLATE_STANDARD_BUTTON_STYLE.inactive:active
+{
+    outline: none;
+    background-color: #444;
+    box-shadow: 0 0 0 1px #333;
+}

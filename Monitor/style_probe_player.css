@@ -2,7 +2,7 @@
 {
     position: relative;   /* 基準にする */
     background: #cff;
-    width: 300px;
+    width: 400px;
     height: 40px;
     margin: 2px;
     font-size: 8px;
@@ -11,6 +11,42 @@
     border-style: solid;
     border-color: #cff;
 }
+.TEMPLATE_PROBEPLAYER_PANEL.position_button
+{
+    background: #8ff;
+    border-color: #8ff;
+}
+.TEMPLATE_PROBEPLAYER_PANEL.position_utg
+{
+    background: #8f8;
+    border-color: #8f8;
+}
+.TEMPLATE_PROBEPLAYER_PANEL.action_allin
+{
+    background: #faa;
+    border-color: #f22;
+}
+.TEMPLATE_PROBEPLAYER_PANEL.action_fold
+{
+    background: #999;
+    border-color: #999;
+}
+.TEMPLATE_PROBEPLAYER_PANEL.status_acting
+{
+    background: #ff8;
+    border-style: solid;
+    border-color: #fa0;
+}
+.TEMPLATE_PROBEPLAYER_PANEL.status_dead
+{
+    color: #aaa;
+    background: #444;
+    border-color: #444;
+}
+
+
+
+
 
 .TEMPLATE_PROBEPLAYER_PANEL_NAME
 {
@@ -61,7 +97,7 @@
     position: absolute;   /* 親を基準に */
     display: flex;     /* 横並び */
     top: 0px;
-    left: 130px;
+    left: 100px;
 }
 
 .TEMPLATE_PROBEPLAYER_PANEL_HOLECARD
@@ -69,7 +105,7 @@
     position: absolute;   /* 親を基準に */
     display: flex;     /* 横並び */
     top: 0px;
-    left: 250px;
+    left: 130px;
 }
 
 .TEMPLATE_PROBEPLAYER_PANEL_HOLECARD_VALUE
@@ -80,7 +116,23 @@
 {
     position: absolute;   /* 親を基準に */
     display: flex;     /* 横並び */
-    top: -5px;
-    left: 10px;
-    font-size: 6px;
+    top: 0px;
+    left: 320px;
+    font-size: 8px;
+}
+
+.TEMPLATE_PROBEPLAYER_PANEL_CONTROL
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    top: 0px;
+    left: 180px;
+}
+
+.TEMPLATE_PROBEPLAYER_PANEL_ACTION
+{
+    position: absolute;   /* 親を基準に */
+    display: flex;     /* 横並び */
+    top: 20px;
+    left: 180px;
 }

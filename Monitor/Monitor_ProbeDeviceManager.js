@@ -31,17 +31,44 @@
         ns.Engine.ProbeManager.notifiedFromProbe(target, argValue);
     }
 
-    cProbeDeviceManager.prototype.write = function()
+    /// <summary>
+    /// ブラウザ → 指定デバイスへの通知
+    /// </summary>
+    cProbeDeviceManager.prototype.writeByProbeName = function(argTarget, argValue)
     {
+        const devices = this.Devices.filter(x => x.ProbeName.startsWith(argTarget));
+        for(const device of devices)
+        {
+            device.write(argValue);
+        }
     }
 
-    cProbeDeviceManager.prototype.writeAll = function()
+    /// <summary>
+    /// ブラウザ → 全デバイスへの通知
+    /// </summary>
+    cProbeDeviceManager.prototype.writeAll = function(argValue)
     {
+        for(const device of this.Devices)
+        {
+            device.write(argValue);
+        }
     }
 
+    /// <summary>
+    /// ブラウザ → 指定デバイスへの通知: スキャン開始
+    /// </summary>
+    cProbeDeviceManager.prototype.writeStartScan = function(argTarget)
+    {
+        this.writeByProbeName(argTarget, "mode=scan\nscan=1\ntimeout=200\nidol=5000\n");
+    }
 
-
-
+    /// <summary>
+    /// ブラウザ → 指定デバイスへの通知: スキャン停止
+    /// </summary>
+    cProbeDeviceManager.prototype.writeStopScan = function(argTarget)
+    {
+        this.writeByProbeName(argTarget, "mode=scan\nscan=0\ntimeout=200\nidol=5000\n");
+    }
 
     /// <summary>
     /// デバイスをスキャンする。
@@ -114,21 +141,13 @@
     cProbeDeviceManager.prototype.testScanOn = function()
     {
         console.log("[cProbeDeviceManager] testScanOn - Start");
-        for(const device of this.Devices)
-        {
-            console.log(device.Name);
-            device.write("mode=test\nscan=1\ntimeout=200\nidol=500000\n");
-        }
+        this.writeAll("mode=test\nscan=1\ntimeout=200\nidol=500000\n");
         console.log("[cProbeDeviceManager] testScanOn - End");
     }
     cProbeDeviceManager.prototype.testScanOff = function()
     {
         console.log("[cProbeDeviceManager] testScanOff - Start");
-        for(const device of this.Devices)
-        {
-            console.log(device.Name);
-            device.write("mode=test\nscan=0\ntimeout=200\nidol=500000\n");
-        }
+        this.writeAll("mode=test\nscan=0\ntimeout=200\nidol=500000\n");
         console.log("[cProbeDeviceManager] testScanOff - End");
     }
 

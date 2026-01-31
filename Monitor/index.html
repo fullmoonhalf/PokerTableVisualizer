@@ -11,10 +11,13 @@
         <!-- 他ライブラリ -->
         <script defer src="./HtmlUtil.js" type="text/javascript"></script>
         <script defer src="./winrate.js" type="text/javascript"></script>
+        <script defer src="./PokerModel.js" type="text/javascript"></script>
         <!-- 基底系 -->
         <script defer src="./Monitor_ProbeModelBase.js" type="text/javascript"></script>
         <script defer src="./Monitor_ProbeViewBase.js" type="text/javascript"></script>
         <!-- 具体クラス系 -->
+        <script defer src="./Monitor_Carddeck.js" type="text/javascript"></script>
+        <script defer src="./Monitor_Cardslot.js" type="text/javascript"></script>
         <script defer src="./Monitor_Engine.js" type="text/javascript"></script>
         <script defer src="./Monitor_ProbeDealerModel.js" type="text/javascript"></script>
         <script defer src="./Monitor_ProbeDealerView.js" type="text/javascript"></script>
@@ -52,7 +55,7 @@
                         </div>
                         <div class="TEMPLATE_PROBEPLAYER_PANEL_NICK">
                             <div class="TEMPLATE_PROBEPLAYER_PANEL_NICK_LABEL">name:</div>
-                            <input class="TEMPLATE_PROBEPLAYER_PANEL_NICK_INPUT">
+                            <input class="TEMPLATE_PROBEPLAYER_PANEL_NICK_INPUT" placeholder="nickname">
                         </div>
                         <div class="TEMPLATE_PROBEPLAYER_PANEL_STATUS">
                             <div class="TEMPLATE_PROBE_PANEL_STATUS_LABEL">status:</div>
@@ -72,13 +75,36 @@
                             <div class="TEMPLATE_PROBE_PANEL_LASTUPDATE_LABEL">status:</div>
                             <div class="TEMPLATE_PROBE_PANEL_LASTUPDATE_VALUE">value</div>
                         </div>
+                        <div class="TEMPLATE_PROBEPLAYER_PANEL_CONTROL">
+                            <button class="TEMPLATE_PROBEPLAYER_PANEL_CONTROL_ALIVE TEMPLATE_STANDARD_BUTTON_STYLE">Alive</button>
+                            <button class="TEMPLATE_PROBE_PANEL_CONTROL_RESCAN TEMPLATE_STANDARD_BUTTON_STYLE">Rescan</button>
+                        </div>
+                        <div class="TEMPLATE_PROBEPLAYER_PANEL_ACTION">
+                            <button class="TEMPLATE_PROBEPLAYER_PANEL_ACTION_FOLD TEMPLATE_STANDARD_BUTTON_STYLE">Fold</button>
+                            <button class="TEMPLATE_PROBEPLAYER_PANEL_ACTION_CHECK TEMPLATE_STANDARD_BUTTON_STYLE">Check</button>
+                            <button class="TEMPLATE_PROBEPLAYER_PANEL_ACTION_BET TEMPLATE_STANDARD_BUTTON_STYLE">Bet</button>
+                            <button class="TEMPLATE_PROBEPLAYER_PANEL_ACTION_CALL TEMPLATE_STANDARD_BUTTON_STYLE">Call</button>
+                            <button class="TEMPLATE_PROBEPLAYER_PANEL_ACTION_RAISE TEMPLATE_STANDARD_BUTTON_STYLE">Raise</button>
+                            <button class="TEMPLATE_PROBEPLAYER_PANEL_ACTION_ALLIN TEMPLATE_STANDARD_BUTTON_STYLE">All</button>
+                        </div>
                     </div>
                 </p>
                 <p>
                     <div class="TEMPLATE_PROBEDEALER_PANEL">
                         <div class="TEMPLATE_PROBEDEALER_PANEL_HANDCOUNT">
-                            <div class="TEMPLATE_PROBEDEALER_PANEL_HANDCOUNT_LABEL">status:</div>
-                            <div class="TEMPLATE_PROBEDEALER_PANEL_HANDCOUNT_VALUE">value</div>
+                            <div class="TEMPLATE_PROBEDEALER_PANEL_HANDCOUNT_LABEL">Hand:</div>
+                            <input class="TEMPLATE_PROBEDEALER_PANEL_HANDCOUNT_INPUT" placeholder="hand">
+                        </div>
+                        <div class="TEMPLATE_PROBEDEALER_PANEL_BETTINGROUND">
+                            <button class="TEMPLATE_PROBEDEALER_PANEL_BETTINGROUND_DEAL TEMPLATE_STANDARD_BUTTON_STYLE">Deal</button>
+                            <button class="TEMPLATE_PROBEDEALER_PANEL_BETTINGROUND_PREFLOP TEMPLATE_STANDARD_BUTTON_STYLE">Preflop</button>
+                            <button class="TEMPLATE_PROBEDEALER_PANEL_BETTINGROUND_FLOP TEMPLATE_STANDARD_BUTTON_STYLE">Flop</button>
+                            <button class="TEMPLATE_PROBEDEALER_PANEL_BETTINGROUND_TURN TEMPLATE_STANDARD_BUTTON_STYLE">Turn</button>
+                            <button class="TEMPLATE_PROBEDEALER_PANEL_BETTINGROUND_RIVER TEMPLATE_STANDARD_BUTTON_STYLE">River</button>
+                            <button class="TEMPLATE_PROBEDEALER_PANEL_BETTINGROUND_END TEMPLATE_STANDARD_BUTTON_STYLE">End</button>
+                        </div>
+                        <div class="TEMPLATE_PROBEDEALER_PANEL_CONTROL">
+                            <button class="TEMPLATE_PROBE_PANEL_CONTROL_RESCAN TEMPLATE_STANDARD_BUTTON_STYLE">Rescan</button>
                         </div>
                         <div class="TEMPLATE_PROBEDEALER_PANEL_STATUS">
                             <div class="TEMPLATE_PROBE_PANEL_STATUS_LABEL">status:</div>
@@ -102,7 +128,9 @@
                             </div>
                         </div>
                         <div class="TEMPLATE_PROBEDEALER_PANEL_BLIND">
-                            <input class="TEMPLATE_PROBEDEALER_PANEL_BLIND_SB_INPUT"> / <input class="TEMPLATE_PROBEDEALER_PANEL_BLIND_BB_INPUT">
+                            <input class="TEMPLATE_PROBEDEALER_PANEL_BLIND_SB_INPUT" placeholder="SB">
+                            / 
+                            <input class="TEMPLATE_PROBEDEALER_PANEL_BLIND_BB_INPUT" placeholder="BB">
                         </div>
                         <div class="TEMPLATE_PROBEDEALER_PANEL_LASTUPDATE">
                             <div class="TEMPLATE_PROBE_PANEL_LASTUPDATE_LABEL">status:</div>
