@@ -59,7 +59,7 @@
     /// </summary>
     cProbeDeviceManager.prototype.writeStartScan = function(argTarget)
     {
-        this.writeByProbeName(argTarget, "mode=scan\nscan=1\ntimeout=200\nidol=5000\n");
+        this.writeByProbeName(argTarget, "mode=scan\nscan=1\ntimeout=200\nidol=5000\nheartbeat=10000\n");
     }
 
     /// <summary>
@@ -67,7 +67,7 @@
     /// </summary>
     cProbeDeviceManager.prototype.writeStopScan = function(argTarget)
     {
-        this.writeByProbeName(argTarget, "mode=scan\nscan=0\ntimeout=200\nidol=5000\n");
+        this.writeByProbeName(argTarget, "mode=scan\nscan=0\ntimeout=200\nidol=5000\nheartbeat=10000\n");
     }
 
     /// <summary>
@@ -141,13 +141,13 @@
     cProbeDeviceManager.prototype.testScanOn = function()
     {
         console.log("[cProbeDeviceManager] testScanOn - Start");
-        this.writeAll("mode=test\nscan=1\ntimeout=200\nidol=500000\n");
+        this.writeAll("mode=test\nscan=1\ntimeout=200\nidol=5000\nheartbeat=10000\n");
         console.log("[cProbeDeviceManager] testScanOn - End");
     }
     cProbeDeviceManager.prototype.testScanOff = function()
     {
         console.log("[cProbeDeviceManager] testScanOff - Start");
-        this.writeAll("mode=test\nscan=0\ntimeout=200\nidol=500000\n");
+        this.writeAll("mode=test\nscan=0\ntimeout=200\nidol=5000\nheartbeat=10000\n");
         console.log("[cProbeDeviceManager] testScanOff - End");
     }
 

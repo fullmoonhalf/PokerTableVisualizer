@@ -15,6 +15,7 @@ public:
     int getHeight();
     void clear();
     void setBrightness(int brightness);
+    void setEnable(bool enable);
     
     SysSprite *createSprite(int width, int height);
     void destroySprite(SysSprite *sprite);
@@ -26,6 +27,7 @@ private:
     int _Width;
     int _Height;
     int _Brightness;
+    bool _Enable;
 };
 
 

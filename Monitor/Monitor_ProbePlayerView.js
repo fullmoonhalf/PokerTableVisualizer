@@ -34,6 +34,7 @@
             this.ActoinAllinButton
         ];
         this.ControlAliveButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_ALIVE );
+        this.ControlPositionButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_POSITION );
 
         ns.cProbeViewBase.call(this, this.HtmlRoot);
 
@@ -48,6 +49,7 @@
 
         this.setActiveButton(this.ControlAliveButton);
         this.setInactiveButton(this.ControlRescanButton);
+        this.setInactiveButton(this.ControlPositionButton);
         this._disableAllPlayerAction();
         this.toDead();
     }

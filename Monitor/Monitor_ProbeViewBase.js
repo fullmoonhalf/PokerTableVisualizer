@@ -60,7 +60,7 @@
         const hh   = String(d.getHours()).padStart(2, "0");
         const mi   = String(d.getMinutes()).padStart(2, "0");
         const ss   = String(d.getSeconds()).padStart(2, "0");
-        const formatted = `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+        const formatted = `${hh}:${mi}:${ss}`;
         this.LastupdateValue.innerHTML = formatted;
     }
 

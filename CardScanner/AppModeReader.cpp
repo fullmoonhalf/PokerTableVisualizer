@@ -35,6 +35,7 @@ void AppModeReader::start()
     _HeartbeatCounter = 0;
     _Timeout = 500;
     _Idoltime = 5000;
+    _HeartbartInterval = 5000;
 
     // カードリーダー初期化
     {
@@ -136,7 +137,9 @@ void AppModeReader::update()
     {
         _ScreenSaveCounter = 0;
     }
-    SysDisplay::getInstance().setBrightness( _ScreenSaveCounter > _Idoltime ? 30 : 255);
+
+    bool display_enable = _ScreenSaveCounter < _Idoltime;
+    SysDisplay::getInstance().setEnable(display_enable);
 
     // スキャン処理
     bool NeedToWait = true;
@@ -148,7 +151,7 @@ void AppModeReader::update()
         }
         NeedToWait = false;
     }
-    if(_HeartbeatCounter > 5000)
+    if(_HeartbeatCounter > _HeartbartInterval)
     {
         send(false);
     }
@@ -156,7 +159,9 @@ void AppModeReader::update()
     // 待ち処理
     if(NeedToWait)
     {
-        wait(500);
+        int wait_candidate = (_HeartbartInterval - _HeartbeatCounter)/2;
+        int wait_time = wait_candidate > 500 ? wait_candidate : 500;
+        wait(wait_time);
     }
 
     // インジケーターの更新
@@ -254,5 +259,6 @@ void AppModeReader::onBLEWrite(const char *buffer, int size)
         _Scannable = setting.getAsInt("scan") != 0 ? true : false; 
         _Timeout = setting.getAsInt("timeout");
         _Idoltime = setting.getAsInt("idol");
+        _HeartbartInterval = setting.getAsInt("heartbeat");
     }
 }

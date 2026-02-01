@@ -101,7 +101,7 @@
     /// </summary>
     cProbeManager.prototype.notifiedFromProbe = function(argTarget, argValue)
     {
-        console.log(argValue);
+        console.log(new Date(), argValue);
         const model = this._findModel(argTarget);
         if(model)
         {

@@ -6,6 +6,7 @@ SysDisplay::SysDisplay()
     : _Width(-1)
     , _Height(-1)
     , _Brightness(-1)
+    , _Enable(true)
 {
 }
 
@@ -75,5 +76,26 @@ void SysDisplay::setBrightness(int brightness)
     {
         M5.Lcd.setBrightness(brightness);
         _Brightness = brightness;
+    }
+}
+
+
+void SysDisplay::setEnable(bool enable)
+{
+    // 状態がかわらないときには何もしない
+    if(_Enable == enable)
+    {
+        return;
+    }
+
+    // 切り替え
+    _Enable = enable;
+    if(_Enable)
+    {
+        M5.Lcd.wakeup(); // ON
+    }
+    else
+    {
+        M5.Lcd.sleep();   // 画面OFF
     }
 }
