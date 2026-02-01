@@ -56,13 +56,13 @@ void CardScanner::start()
         _GaugeBatteryPosY = 8;
     }
     {
-        char _buffer[32];
+        char _buffer[128];
         AppSetting::getInstance().get(SETTING_KEY_PROBE_NAME, _buffer);
         _LabelSeat = SysSpriteManager::getInstance().createSprite(64, 8);
         _LabelSeat->drawText(0, 0, _buffer);
 
         _LabelVersion = SysSpriteManager::getInstance().createSprite(128, 8);
-        sprintf(_buffer, "ver 00.03.01");
+        sprintf(_buffer, "ver %s %s", __DATE__, __TIME__);
         _LabelVersion->drawText(0, 0, _buffer);
     }
 }
