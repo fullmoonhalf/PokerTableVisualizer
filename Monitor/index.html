@@ -32,17 +32,22 @@
     </head>
     <body>
         <p>
-            <div class="poker_browser">
-                <div id="CONTAINER_PROBEDEALER_PANEL"></div>
-                <div id="CONTAINER_PROBEPLAYER_PANEL"></div>
-            </div>
-        </p>
-        <p>
-            <div class="develop">
-                <button id="COMMAND_PROVE_DEVICE_MANAGER_SCAN">DeviceManager: Scan</button>
-                <button id="COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_DUMP_STATUS">DeviceManager: DumpStatus</button>
-                <button id="COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_TEST_SCAN_ON">DeviceManager: ScanOn</button>
-                <button id="COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_TEST_SCAN_OFF">DeviceManager: ScanOff</button>
+            <div class="monitor_root">
+                <div class="monitor_mamage">
+                    <div class="poker_browser">
+                        <div id="CONTAINER_PROBEDEALER_PANEL"></div>
+                        <div id="CONTAINER_PROBEPLAYER_PANEL"></div>
+                    </div>
+                    <div class="develop">
+                        <button id="COMMAND_PROVE_DEVICE_MANAGER_SCAN">DeviceManager: Scan</button>
+                        <button id="COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_DUMP_STATUS">DeviceManager: DumpStatus</button>
+                        <button id="COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_TEST_SCAN_ON">DeviceManager: ScanOn</button>
+                        <button id="COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_TEST_SCAN_OFF">DeviceManager: ScanOff</button>
+                    </div>
+                </div>
+                <div class="monitor_screen">
+                    monitor
+                </div>
             </div>
         </p>
         <p>
@@ -141,7 +146,19 @@
                         </div>
                     </div>
                 </p>
-                <p></p>
+                <p>
+                    <div class="TEMPLATE_MONITORPLAYER_PANEL">
+                        <div class="TEMPLATE_MONITORPLAYER_PANEL_NAME">Name</div>
+                        <div class="TEMPLATE_MONITORPLAYER_PANEL_WINRATE">100%</div>
+                        <div class="TEMPLATE_MONITORPLAYER_PANEL_ACTION">Bet</div>
+                        <div class="TEMPLATE_MONITORPLAYER_PANEL_HOLECARD">
+                            <div class="TEMPLATE_MONITORPLAYER_PANEL_HOLECARD_VALUE">
+                                <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                                <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                            </div>
+                        </div>
+                    </div>
+                </p>
                 <p></p>
             </div>
         </p>

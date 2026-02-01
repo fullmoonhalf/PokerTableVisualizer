@@ -4,11 +4,38 @@
 }
 
 /* 全体構成 */
+
+
+
+
 .poker_browser
 {
-/*    display: flex; */
     border: 1px solid gray;
 }
+
+.monitor_root
+{
+    display: flex;     /* 横並び */
+}
+
+.monitor_mamage
+{
+    width: 500px;
+}
+
+.monitor_screen
+{
+    border: 1px solid gray;
+    flex: 1;
+    background-color: #0f0;
+}
+
+.develop
+{
+}
+
+
+
 
 /* レイアウト */
 div#CONTAINER_PROBEDEALER_PANEL
