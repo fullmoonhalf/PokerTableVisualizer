@@ -133,6 +133,7 @@
     cProbePlayerView.prototype.toDead = function()
     {
         this.HtmlRoot.classList.toggle("status_dead", true);
+        this._disableAllPlayerAction();
     }
 
     /// <summary>

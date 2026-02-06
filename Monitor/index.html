@@ -6,6 +6,7 @@
         <link type="text/css" rel="stylesheet" href="./style_probe_player.css">
         <link type="text/css" rel="stylesheet" href="./style_probe_dealer.css">
         <link type="text/css" rel="stylesheet" href="./style_monitor_player.css">
+        <link type="text/css" rel="stylesheet" href="./style_monitor_dealer.css">
         <!-- 絶対的に優先的に読みたい -->
         <script defer src="./Monitor_Bootstrap.js" type="text/javascript"></script>
         <script defer src="./Monitor_Defines.js" type="text/javascript"></script>
@@ -23,6 +24,7 @@
         <script defer src="./Monitor_Engine.js" type="text/javascript"></script>
         <script defer src="./Monitor_MonitorManager.js" type="text/javascript"></script>
         <script defer src="./Monitor_ProbeDealerModel.js" type="text/javascript"></script>
+        <script defer src="./Monitor_ProbeDealerMonitor.js" type="text/javascript"></script>
         <script defer src="./Monitor_ProbeDealerView.js" type="text/javascript"></script>
         <script defer src="./Monitor_ProbeDeviceManager.js" type="text/javascript"></script>
         <script defer src="./Monitor_ProbeDeviceUnit.js" type="text/javascript"></script>
@@ -51,6 +53,7 @@
                 </div>
                 <div class="monitor_screen">
                     <div id="CONTAINER_MONITORPLAYER_PANEL"></div>
+                    <div id="CONTAINER_MONITORDEALER_PANEL"></div>
                 </div>
             </div>
         </p>
@@ -117,6 +120,7 @@
                         </div>
                         <div class="TEMPLATE_PROBEDEALER_PANEL_CONTROL">
                             <button class="TEMPLATE_PROBE_PANEL_CONTROL_RESCAN TEMPLATE_STANDARD_BUTTON_STYLE">Rescan</button>
+                            <button class="TEMPLATE_PROBEDEALER_PANEL_CONTROL_NEXT_HAND TEMPLATE_STANDARD_BUTTON_STYLE">Next Hand</button>
                         </div>
                         <div class="TEMPLATE_PROBEDEALER_PANEL_STATUS">
                             <div class="TEMPLATE_PROBE_PANEL_STATUS_LABEL">status:</div>
@@ -161,6 +165,29 @@
                                 <div class="TEMPLATE_MONITORPLAYER_PANEL_HOLECARD">
                                     <div class="TEMPLATE_MONITORPLAYER_PANEL_HOLECARD_VALUE">
                                         <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                                        <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </p>
+                <p>
+                    <div class="TEMPLATE_MONITORDEALER_PANEL">
+                        <div class="TEMPLATE_MONITORDEALER_PANEL_DRAGABLE_ROOT">
+                            <div class="TEMPLATE_MONITORDEALER_PANEL_LAYOUT_ROOT">
+                                <div class="TEMPLATE_MONITORDEALER_PANEL_HANDCOUNT">Hand:</div>
+                                <div class="TEMPLATE_MONITORDEALER_PANEL_BLIND">SB/BB</div>
+                                <div class="TEMPLATE_MONITORDEALER_PANEL_BOARD">
+                                    <div class="TEMPLATE_PROBEDEALER_PANEL_FLOP_VALUE">
+                                        <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                                        <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                                        <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                                    </div>
+                                    <div class="TEMPLATE_PROBEDEALER_PANEL_TURN_VALUE">
+                                        <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                                    </div>
+                                    <div class="TEMPLATE_PROBEDEALER_PANEL_RIVER_VALUE">
                                         <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
                                     </div>
                                 </div>

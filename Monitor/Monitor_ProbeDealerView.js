@@ -36,6 +36,7 @@
             this.BettingroundRiverButton,
             this.BettingroundEndButton
         ];
+        this.ControlNexthandButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEDEALER_PANEL_CONTROL_NEXT_HAND);
 
         ns.cProbeViewBase.call(this, this.HtmlRoot);
 
@@ -45,6 +46,7 @@
         HtmlUtil.addEventListenerToElement(this.BettingroundTurnButton, "click", this._onBettingroundTurn.bind(this));
         HtmlUtil.addEventListenerToElement(this.BettingroundRiverButton, "click", this._onBettingroundRiver.bind(this));
         HtmlUtil.addEventListenerToElement(this.BettingroundEndButton, "click", this._onBettingroundEnd.bind(this));
+        HtmlUtil.addEventListenerToElement(this.ControlNexthandButton, "click", this._ControlNexthandButton.bind(this));
 
         this._disableAllBettingRound();
     }
@@ -83,6 +85,7 @@
     }
 
     /// <summary>
+    /// flow の表示
     /// </summary>
     cProbeDealerView.prototype.showFlopCard = function(argCard)
     {
@@ -90,6 +93,7 @@
     }
 
     /// <summary>
+    /// turn の表示
     /// </summary>
     cProbeDealerView.prototype.showTurnCard = function(argCard)
     {
@@ -97,6 +101,7 @@
     }
 
     /// <summary>
+    /// river の表示
     /// </summary>
     cProbeDealerView.prototype.showRiverCard = function(argCard)
     {
@@ -152,6 +157,24 @@
     }
 
     /// <summary>
+    /// Next ボタン押下
+    /// </summary>
+    cProbeDealerView.prototype._ControlNexthandButton = function(argEvent)
+    {
+        const value = this.HandcountValue.value.trim();
+        if(value !== "")
+        {
+            const handconut = Number(value);
+            if(!Number.isNaN(handconut))
+            {
+                this.HandcountValue.value = handconut + 1;
+            }
+        }
+
+        this.Model.setBettingRound(PokerConst.BettingRound.DealHand);
+    }
+    
+    /// <summary>
     /// ベッティングラウンドボタンの全てを無効表示にする
     /// </summary>
     cProbeDealerView.prototype._disableAllBettingRound = function()
@@ -170,10 +193,6 @@
         this._disableAllBettingRound();
         this.setActiveButton(argButton);
     }
-
-
-
-
 
     ns.cProbeDealerView = cProbeDealerView;
 })(Monitor = Monitor || {});

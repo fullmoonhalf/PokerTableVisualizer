@@ -32,6 +32,7 @@ var HtmlUtil = HtmlUtil || (function(){
             }
             else
             {
+                console.log(`HtmlUtil.searchNodeByClassName(${html_node}, ${classname}, ${default_contents}) element not found.`);
                 return null;
             }
         },

@@ -59,6 +59,7 @@
     /// </summary>
     cProbeDeviceManager.prototype.writeStartScan = function(argTarget)
     {
+		console.log(`[cProbeDeviceManager] writeStartScan(${argTarget})`);
         this.writeByProbeName(argTarget, "mode=scan\nscan=1\ntimeout=200\nidol=5000\nheartbeat=10000\n");
     }
 
@@ -67,6 +68,7 @@
     /// </summary>
     cProbeDeviceManager.prototype.writeStopScan = function(argTarget)
     {
+		console.log(`[cProbeDeviceManager] writeStopScan(${argTarget})`);
         this.writeByProbeName(argTarget, "mode=scan\nscan=0\ntimeout=200\nidol=5000\nheartbeat=10000\n");
     }
 

@@ -18,9 +18,19 @@
         this.BoardRiverSlot = argBoardRiverSlot;
         this.BoardCurrentSlot = null;
         this.BoardCurrentView = null;
+        this.BoardCurrentMonitor = null;
     }
     cProbeDealerModel.prototype = Object.create(ns.cProbeModelBase.prototype);
     cProbeDealerModel.prototype.constructor = cProbeDealerModel;
+
+
+    /// <summary>
+    /// モニターとの紐付け
+    /// </summary>
+    cProbeDealerModel.prototype.bindMonitor = function(argMonitor)
+    {
+        this.Monitor = argMonitor;
+    }
 
     /// <summary>
     /// ベッティングラウンドの設定
@@ -42,6 +52,7 @@
         this.BoardRiverSlot.reset();
         this.BoardCurrentSlot = null;
         this.BoardCurrentView = null;
+        this.BoardCurrentMonitor = null;
     }
 
     /// <summary>
@@ -50,6 +61,7 @@
     {
         this.BoardCurrentSlot = this.BoardFlopSlot;
         this.BoardCurrentView = this.View.showFlopCard.bind(this.View);
+        this.BoardCurrentMonitor = this.Monitor.showFlopCard.bind(this.Monitor);
     }
 
     /// <summary>
@@ -59,6 +71,7 @@
         this.BoardFlopSlot.fix();
         this.BoardCurrentSlot = this.BoardTurnSlot;
         this.BoardCurrentView = this.View.showTurnCard.bind(this.View);
+        this.BoardCurrentMonitor = this.Monitor.showTurnCard.bind(this.Monitor);
     }
 
     /// <summary>
@@ -68,6 +81,7 @@
         this.BoardTurnSlot.fix();
         this.BoardCurrentSlot = this.BoardRiverSlot;
         this.BoardCurrentView = this.View.showRiverCard.bind(this.View);
+        this.BoardCurrentMonitor = this.Monitor.showRiverCard.bind(this.Monitor);
     }
 
     /// <summary>
@@ -76,6 +90,7 @@
     {
         this.BoardCurrentSlot = null;
         this.BoardCurrentView = null;
+        this.BoardCurrentMonitor = null;
     }
 
     /// <summary>
@@ -91,7 +106,14 @@
                 {
                     const well_read = this.BoardCurrentSlot.scan(argValue)
                     const cards = this.BoardCurrentSlot.estimate();
-                    this.BoardCurrentView(cards);
+                    if(this.BoardCurrentView != null)
+                    {
+                        this.BoardCurrentView(cards);
+                    }
+                    if(this.BoardCurrentMonitor != null)
+                    {
+                        this.BoardCurrentMonitor(cards);
+                    }
                     if(well_read)
                     {
                         ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.DEALER_PROBE_PREFIX);

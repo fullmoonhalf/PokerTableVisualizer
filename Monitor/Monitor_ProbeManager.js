@@ -41,11 +41,12 @@
             const cardslot_turn = new ns.cCardslot(this.Carddeck, 1);
             const cardslot_river = new ns.cCardslot(this.Carddeck, 1);
             const view = ns.Engine.ViewManager.createProbeDealerView();
+            const monitor = ns.Engine.MonitorManager.createMonitorDealer();
             this.DealerProbe = new ns.cProbeDealerModel(cardslot_flop, cardslot_turn, cardslot_river);
             view.bindModel(this.DealerProbe)
             this.DealerProbe.bindView(view);
+            this.DealerProbe.bindMonitor(monitor);
             this.DealerProbe.showView();
-            this.DealerProbe.setBettingRound(PokerConst.BettingRound.DealHand);
         }
     }
 
@@ -62,6 +63,7 @@
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 break;
             case PokerConst.BettingRound.Preflop:
+                ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 break;
             case PokerConst.BettingRound.Flop:
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
