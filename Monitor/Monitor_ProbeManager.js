@@ -68,14 +68,17 @@
             case PokerConst.BettingRound.Flop:
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
+                Object.values(this.PlayerProbeCollection).forEach(probe => probe.onStartNextBettingRound());
                 this.DealerProbe.onStartFlop();
                 break;
             case PokerConst.BettingRound.Turn:
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
+                Object.values(this.PlayerProbeCollection).forEach(probe => probe.onStartNextBettingRound());
                 this.DealerProbe.onStartTurn();
                 break;
             case PokerConst.BettingRound.River:
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
+                Object.values(this.PlayerProbeCollection).forEach(probe => probe.onStartNextBettingRound());
                 this.DealerProbe.onStartRiver();
                 break;
             case PokerConst.BettingRound.EndHand:

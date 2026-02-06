@@ -47,6 +47,25 @@
         this.Cardslot.reset();
         this.View.showCard(null);
         this.Monitor.showCard(null);
+        this.setPlayerAction(PokerConst.PlayerAction.None);
+    }
+
+    cProbePlayerModel.prototype.onStartNextBettingRound = function()
+    {
+        switch (this.LastAction) {
+            case PokerConst.PlayerAction.Check:
+            case PokerConst.PlayerAction.Bet:
+            case PokerConst.PlayerAction.Call:
+            case PokerConst.PlayerAction.Raise:
+                this.setPlayerAction(PokerConst.PlayerAction.None);
+                break;
+
+            case PokerConst.PlayerAction.None:
+            case PokerConst.PlayerAction.Fold:
+            case PokerConst.PlayerAction.AllIn:
+            default:
+                break;
+        }
     }
 
     /// <summary>
@@ -56,6 +75,7 @@
     {
         this.LastAction = argPlayerAction;
         this.View.showPlayerAction(this.LastAction);
+        this.Monitor.showPlayerAction(this.LastAction);
     }
 
     /// <summary>

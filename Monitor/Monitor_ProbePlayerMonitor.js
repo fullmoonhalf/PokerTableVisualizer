@@ -12,6 +12,7 @@
         this.DragableRoot = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_DRAGABLE_ROOT);
         this.DragableObject = new HtmlUtil.cDragableElement(this.DragableRoot);
 
+        this.LayoutRoot = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_LAYOUT_ROOT);
         this.NameValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_NAME_VALUE, "");
         this.WinrateValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_WINRATE_VALUE, "");
         this.ActionValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_ACTION_VALUE, "");
@@ -20,6 +21,59 @@
     }
     cProbePlayerMonitor.prototype = Object.create(ns.cHtmlBase.prototype);
     cProbePlayerMonitor.prototype.constructor = cProbePlayerMonitor;
+
+    /// <summary>
+    /// プレイヤーアクションの表示
+    /// </summary>
+    cProbePlayerMonitor.prototype.showPlayerAction = function(argPlayerAction)
+    {
+        switch (argPlayerAction) {
+            case PokerConst.PlayerAction.None:
+        		this.LayoutRoot.classList.toggle("fold", false);
+        		this.LayoutRoot.classList.toggle("allin", false);
+        		this.LayoutRoot.classList.toggle("aggressive", false);
+                this.ActionValue.innerHTML = "";
+                break;
+            case PokerConst.PlayerAction.Check:
+        		this.LayoutRoot.classList.toggle("fold", false);
+        		this.LayoutRoot.classList.toggle("allin", false);
+        		this.LayoutRoot.classList.toggle("aggressive", false);
+                this.ActionValue.innerHTML = "Check";
+                break;
+            case PokerConst.PlayerAction.Bet:
+        		this.LayoutRoot.classList.toggle("fold", false);
+        		this.LayoutRoot.classList.toggle("allin", false);
+        		this.LayoutRoot.classList.toggle("aggressive", true);
+                this.ActionValue.innerHTML = "Bet";
+                break;
+            case PokerConst.PlayerAction.Call:
+        		this.LayoutRoot.classList.toggle("fold", false);
+        		this.LayoutRoot.classList.toggle("allin", false);
+        		this.LayoutRoot.classList.toggle("aggressive", false);
+                this.ActionValue.innerHTML = "Call";
+                break;
+            case PokerConst.PlayerAction.Raise:
+        		this.LayoutRoot.classList.toggle("fold", false);
+        		this.LayoutRoot.classList.toggle("allin", false);
+        		this.LayoutRoot.classList.toggle("aggressive", true);
+                this.ActionValue.innerHTML = "Raise";
+                break;
+            case PokerConst.PlayerAction.Fold:
+        		this.LayoutRoot.classList.toggle("fold", true);
+        		this.LayoutRoot.classList.toggle("allin", false);
+        		this.LayoutRoot.classList.toggle("aggressive", false);
+                this.ActionValue.innerHTML = "Fold";
+                break;
+            case PokerConst.PlayerAction.AllIn:
+        		this.LayoutRoot.classList.toggle("fold", false);
+        		this.LayoutRoot.classList.toggle("allin", true);
+        		this.LayoutRoot.classList.toggle("aggressive", false);
+                this.ActionValue.innerHTML = "All-In";
+                break;
+            default:
+                break;
+        }
+    }
 
     /// <summary>
     /// 名前設定

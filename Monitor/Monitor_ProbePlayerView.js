@@ -88,31 +88,52 @@
         switch (argPlayerAction) {
             case PokerConst.PlayerAction.None:
                 // まだ何もしていない
-                this._enableAllPlayerAction();
+                this._disableAllPlayerAction();
+                this.HtmlRoot.classList.toggle("action_allin", false);
+                this.HtmlRoot.classList.toggle("action_fold", false);
+                this.HtmlRoot.classList.toggle("status_acting", false);
                 break;
             case PokerConst.PlayerAction.Check:
                 // チェック
                 this._selectPlayerAction(this.ActoinCheckButton);
+                this.HtmlRoot.classList.toggle("action_allin", false);
+                this.HtmlRoot.classList.toggle("action_fold", false);
+                this.HtmlRoot.classList.toggle("status_acting", false);
                 break;
             case PokerConst.PlayerAction.Bet:
                 // ベット
                 this._selectPlayerAction(this.ActoinBetButton);
+                this.HtmlRoot.classList.toggle("action_allin", false);
+                this.HtmlRoot.classList.toggle("action_fold", false);
+                this.HtmlRoot.classList.toggle("status_acting", false);
                 break;
             case PokerConst.PlayerAction.Call:
                 // コール
                 this._selectPlayerAction(this.ActoinCallButton);
+                this.HtmlRoot.classList.toggle("action_allin", false);
+                this.HtmlRoot.classList.toggle("action_fold", false);
+                this.HtmlRoot.classList.toggle("status_acting", false);
                 break;
             case PokerConst.PlayerAction.Raise:
                 // レイズ
                 this._selectPlayerAction(this.ActoinRaiseButton);
+                this.HtmlRoot.classList.toggle("action_allin", false);
+                this.HtmlRoot.classList.toggle("action_fold", false);
+                this.HtmlRoot.classList.toggle("status_acting", false);
                 break;
             case PokerConst.PlayerAction.Fold:
                 // フォールド
                 this._selectPlayerAction(this.ActoinFoldButton);
+                this.HtmlRoot.classList.toggle("action_allin", false);
+                this.HtmlRoot.classList.toggle("action_fold", true);
+                this.HtmlRoot.classList.toggle("status_acting", false);
                 break;
             case PokerConst.PlayerAction.AllIn:
                 // オールイン
                 this._selectPlayerAction(this.ActoinAllinButton);
+                this.HtmlRoot.classList.toggle("action_allin", true);
+                this.HtmlRoot.classList.toggle("action_fold", false);
+                this.HtmlRoot.classList.toggle("status_acting", false);
                 break;
             default:
                 console.warn("[cProbePlayerView] Unknown PlayerAction:", argPlayerAction);

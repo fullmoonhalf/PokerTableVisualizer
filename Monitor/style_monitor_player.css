@@ -25,6 +25,22 @@
     border-style: solid;
     border-color: #88f;
 }
+.TEMPLATE_MONITORPLAYER_PANEL_LAYOUT_ROOT.fold
+{
+    background: #444;
+    border-color: #222;
+}
+.TEMPLATE_MONITORPLAYER_PANEL_LAYOUT_ROOT.aggressive
+{
+    background: #ffc;
+    border-color: #ff4;
+}
+.TEMPLATE_MONITORPLAYER_PANEL_LAYOUT_ROOT.allin
+{
+    background: #fcc;
+    border-color: #f00;
+}
+
 
 .TEMPLATE_MONITORPLAYER_PANEL_NAME_VALUE
 {
