@@ -1,0 +1,52 @@
+.TEMPLATE_MONITORPLAYER_PANEL
+{
+    position: relative;   /* 基準にする */
+    background: #cff;
+    width: 80px;
+    height: 60px;
+    margin: 1px;
+    font-size: 8px;
+    border-width: 2px;
+    border-radius: 6px;
+    border-style: solid;
+    border-color: #cff;
+}
+
+.TEMPLATE_MONITORPLAYER_PANEL_NAME
+{
+    position: absolute;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+    top: 40px;
+}
+
+.TEMPLATE_MONITORPLAYER_PANEL_WINRATE
+{
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    font-size: 10px;
+}
+
+.TEMPLATE_MONITORPLAYER_PANEL_ACTION
+{
+    position: absolute;
+    top: 20px;
+}
+
+.TEMPLATE_MONITORPLAYER_PANEL_HOLECARD
+{
+    position: absolute;
+    left: 20px;
+    top: 10px;
+}
+
+.TEMPLATE_MONITORPLAYER_PANEL_HOLECARD_VALUE
+{
+}
+
+.TEMPLATE_MONITORPLAYER_PANEL_POSITION
+{    
+}
