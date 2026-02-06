@@ -46,7 +46,22 @@ var HtmlUtil = HtmlUtil || (function(){
             } else {
                 return null;
             }
-        }
+        },
+
+		// input 要素から数値を取得する
+		tryGetInputNumber : function(element)
+		{
+			const value = element.value.trim();
+			if(value !== "")
+			{
+				const number = Number(value);
+				if(!Number.isNaN(number))
+				{
+					return number;
+				}
+			}
+			return undefined;
+		}
     };
 
     _object.TextDecoder = new TextDecoder('utf-8');

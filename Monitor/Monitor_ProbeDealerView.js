@@ -47,6 +47,9 @@
         HtmlUtil.addEventListenerToElement(this.BettingroundRiverButton, "click", this._onBettingroundRiver.bind(this));
         HtmlUtil.addEventListenerToElement(this.BettingroundEndButton, "click", this._onBettingroundEnd.bind(this));
         HtmlUtil.addEventListenerToElement(this.ControlNexthandButton, "click", this._ControlNexthandButton.bind(this));
+        HtmlUtil.addEventListenerToElement(this.HandcountValue, "change", this._onHandcountValueChange.bind(this));
+        HtmlUtil.addEventListenerToElement(this.BlindSBInput, "change", this._onBlindValueChange.bind(this));
+        HtmlUtil.addEventListenerToElement(this.BlindBBInput, "change", this._onBlindValueChange.bind(this));
 
         this._disableAllBettingRound();
     }
@@ -161,19 +164,51 @@
     /// </summary>
     cProbeDealerView.prototype._ControlNexthandButton = function(argEvent)
     {
-        const value = this.HandcountValue.value.trim();
-        if(value !== "")
-        {
-            const handconut = Number(value);
-            if(!Number.isNaN(handconut))
-            {
-                this.HandcountValue.value = handconut + 1;
-            }
-        }
-
+        this._updateHandCount(1);
         this.Model.setBettingRound(PokerConst.BettingRound.DealHand);
     }
     
+    /// <summary>
+    /// ハンドカウント
+    /// </summary>
+    cProbeDealerView.prototype._onHandcountValueChange = function(argEvent)
+    {
+        this._updateHandCount(0);
+    }
+
+    /// <summary>
+    /// ハンドカウントの更新処理
+    /// </summary>
+    cProbeDealerView.prototype._updateHandCount = function(argIncrimentValue)
+    {
+        const value = HtmlUtil.tryGetInputNumber(this.HandcountValue);
+        if(value != undefined)
+        {
+            const next_hand_conut = value + argIncrimentValue;
+            this.HandcountValue.value = next_hand_conut;
+            this.Model.setHandCount(next_hand_conut);
+        }
+    }
+
+    /// <summary>
+    /// ブラインド
+    /// </summary>
+    cProbeDealerView.prototype._onBlindValueChange = function(argEvent)
+    {
+        const sb = HtmlUtil.tryGetInputNumber(this.BlindSBInput);
+        if(sb == undefined)
+        {
+            return;
+        }
+        const bb = HtmlUtil.tryGetInputNumber(this.BlindBBInput);
+        if(bb == undefined)
+        {
+            return;
+        }
+        this.Model.setBlind(sb, bb);
+    }
+    
+
     /// <summary>
     /// ベッティングラウンドボタンの全てを無効表示にする
     /// </summary>

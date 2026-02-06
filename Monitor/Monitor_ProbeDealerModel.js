@@ -19,6 +19,9 @@
         this.BoardCurrentSlot = null;
         this.BoardCurrentView = null;
         this.BoardCurrentMonitor = null;
+        this.HandCount = 0;
+        this.SB = 0;
+        this.BB = 0;
     }
     cProbeDealerModel.prototype = Object.create(ns.cProbeModelBase.prototype);
     cProbeDealerModel.prototype.constructor = cProbeDealerModel;
@@ -136,9 +139,29 @@
         if(this.BoardCurrentSlot)
         {
             this.BoardCurrentSlot.reset();
-            this.BoardCurrentView(null);
+            if(this.BoardCurrentView != null)
+            {
+                this.BoardCurrentView(null);
+            }
+            if(this.BoardCurrentMonitor != null)
+            {
+                this.BoardCurrentMonitor(null);
+            }
             ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
         }
+    }
+
+    cProbeDealerModel.prototype.setHandCount = function(argCount)
+    {
+        this.HandCount = argCount;
+        this.Monitor.showHandCount(this.HandCount);
+    }
+
+    cProbeDealerModel.prototype.setBlind = function(argSB, argBB)
+    {
+        this.SB = argSB;
+        this.BB = argBB;
+        this.Monitor.showBlind(this.SB, this.BB);
     }
 
     /// <summary>

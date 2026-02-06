@@ -50,6 +50,22 @@
         this.BoardRiverValue.innerHTML = this.createHoleCardsHTML(argCard, ns.Defines.TEMPLATE_GLOBAL_CARD_SMALL, 1);
     }
 
+    /// <summary>
+    /// ハンドカウントの表示
+    /// </summary>
+    cProbeDealerMonitor.prototype.showHandCount = function(argHandCount)
+    {
+        this.HandcountValue.innerHTML = `Hand: ${argHandCount}`;
+    }
+
+    /// <summary>
+    /// ブラインドの表示
+    /// </summary>
+    cProbeDealerMonitor.prototype.showBlind = function(argSB, argBB)
+    {
+        this.BlindValue.innerHTML = `Blind: ${argSB}/${argBB}`;
+    }
+
 
     ns.cProbeDealerMonitor = cProbeDealerMonitor;
 })(Monitor = Monitor || {});
