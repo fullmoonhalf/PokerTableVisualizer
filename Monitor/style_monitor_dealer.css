@@ -15,7 +15,7 @@
 .TEMPLATE_MONITORDEALER_PANEL_LAYOUT_ROOT
 {
     position: relative;   /* 基準にする */
-    background: #cff;
+    background: #efd;
     width: 160px;
     height: 60px;
     margin: 1px;
@@ -23,7 +23,7 @@
     border-width: 2px;
     border-radius: 6px;
     border-style: solid;
-    border-color: #fcf;
+    border-color: #080;
 }
 
 
