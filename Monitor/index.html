@@ -14,18 +14,21 @@
         <script defer src="./winrate.js" type="text/javascript"></script>
         <script defer src="./PokerModel.js" type="text/javascript"></script>
         <!-- 基底系 -->
+        <script defer src="./Monitor_HtmlBase.js" type="text/javascript"></script>
         <script defer src="./Monitor_ProbeModelBase.js" type="text/javascript"></script>
         <script defer src="./Monitor_ProbeViewBase.js" type="text/javascript"></script>
         <!-- 具体クラス系 -->
         <script defer src="./Monitor_Carddeck.js" type="text/javascript"></script>
         <script defer src="./Monitor_Cardslot.js" type="text/javascript"></script>
         <script defer src="./Monitor_Engine.js" type="text/javascript"></script>
+        <script defer src="./Monitor_MonitorManager.js" type="text/javascript"></script>
         <script defer src="./Monitor_ProbeDealerModel.js" type="text/javascript"></script>
         <script defer src="./Monitor_ProbeDealerView.js" type="text/javascript"></script>
         <script defer src="./Monitor_ProbeDeviceManager.js" type="text/javascript"></script>
         <script defer src="./Monitor_ProbeDeviceUnit.js" type="text/javascript"></script>
         <script defer src="./Monitor_ProbeManager.js" type="text/javascript"></script>
         <script defer src="./Monitor_ProbePlayerModel.js" type="text/javascript"></script>
+        <script defer src="./Monitor_ProbePlayerMonitor.js" type="text/javascript"></script>
         <script defer src="./Monitor_ProbePlayerView.js" type="text/javascript"></script>
         <script defer src="./Monitor_ViewManager.js" type="text/javascript"></script>
         <script defer src="./Monitor.js" type="text/javascript"></script>
@@ -47,7 +50,7 @@
                     </div>
                 </div>
                 <div class="monitor_screen">
-                    monitor
+                    <div id="CONTAINER_MONITORPLAYER_PANEL"></div>
                 </div>
             </div>
         </p>
@@ -149,14 +152,18 @@
                 </p>
                 <p>
                     <div class="TEMPLATE_MONITORPLAYER_PANEL">
-                        <div class="TEMPLATE_MONITORPLAYER_PANEL_NAME">Name</div>
-                        <div class="TEMPLATE_MONITORPLAYER_PANEL_WINRATE">100%</div>
-                        <div class="TEMPLATE_MONITORPLAYER_PANEL_ACTION">Bet</div>
-                        <div class="TEMPLATE_MONITORPLAYER_PANEL_POSITION">D</div>
-                        <div class="TEMPLATE_MONITORPLAYER_PANEL_HOLECARD">
-                            <div class="TEMPLATE_MONITORPLAYER_PANEL_HOLECARD_VALUE">
-                                <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
-                                <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                        <div class="TEMPLATE_MONITORPLAYER_PANEL_DRAGABLE_ROOT">
+                            <div class="TEMPLATE_MONITORPLAYER_PANEL_LAYOUT_ROOT">
+                                <div class="TEMPLATE_MONITORPLAYER_PANEL_NAME_VALUE">Name</div>
+                                <div class="TEMPLATE_MONITORPLAYER_PANEL_WINRATE_VALUE">100%</div>
+                                <div class="TEMPLATE_MONITORPLAYER_PANEL_ACTION_VALUE">Bet</div>
+                                <div class="TEMPLATE_MONITORPLAYER_PANEL_POSITION_VALUE">D</div>
+                                <div class="TEMPLATE_MONITORPLAYER_PANEL_HOLECARD">
+                                    <div class="TEMPLATE_MONITORPLAYER_PANEL_HOLECARD_VALUE">
+                                        <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                                        <img class="TEMPLATE_GLOBAL_CARD_SMALL" src="../Assets/UI/cards_pc-0.png">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

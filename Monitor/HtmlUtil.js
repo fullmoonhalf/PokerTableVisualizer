@@ -51,5 +51,59 @@ var HtmlUtil = HtmlUtil || (function(){
     _object.TextDecoder = new TextDecoder('utf-8');
     _object.TextEncoder = new TextEncoder('utf-8');
 
-	return _object;
+	// =====================================================================
+	// DnDまわり
+	// =====================================================================
+	function cDragableElement(argElement)
+	{
+		this.TargetElement = argElement;
+		HtmlUtil.addEventListenerToElement(argElement, "pointerdown", this.onDragStart.bind(this));
+		HtmlUtil.addEventListenerToElement(argElement, "pointermove", this.onDragMove.bind(this));
+		HtmlUtil.addEventListenerToElement(argElement, "pointerup", this.onDragEnd.bind(this));
+		HtmlUtil.addEventListenerToElement(argElement, "pointercancel", this.onDragEnd.bind(this));
+
+		this.Draggning = false;
+		this.DragPrevX = 0;
+		this.DragPrevY = 0;
+		this.TransX = 0;
+		this.TransY = 0;
+	}
+	cDragableElement.prototype.onDragStart = function(event)
+	{
+		event.preventDefault();
+		this.Draggning = true;
+		this.DragPrevX = event.clientX;
+		this.DragPrevY = event.clientY;
+	}
+	cDragableElement.prototype.onDragMove = function(event)
+	{
+		if(this.Draggning)
+		{
+			let dx = event.clientX - this.DragPrevX;
+			let dy = event.clientY - this.DragPrevY;
+			this.setPosition(this.TransX + dx, this.TransY + dy);
+			this.DragPrevX = event.clientX;
+			this.DragPrevY = event.clientY;
+			this.apply();
+		}
+	}
+	cDragableElement.prototype.onDragEnd = function(event)
+	{
+		this.Draggning = false;
+	}
+	cDragableElement.prototype.setPosition = function(x, y)
+	{
+		this.TransX = x;
+		this.TransY = y;
+	}
+	cDragableElement.prototype.apply = function()
+	{
+		const grid_size = 16;
+		const nx = Math.round(this.TransX/grid_size)*grid_size;
+		const ny = Math.round(this.TransY/grid_size)*grid_size;
+		this.TargetElement.style.transform = `translate(${nx}px, ${ny}px)`;
+	}
+    _object.cDragableElement = cDragableElement;
+
+    return _object;
 })();

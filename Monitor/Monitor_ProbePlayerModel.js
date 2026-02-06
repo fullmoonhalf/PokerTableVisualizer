@@ -20,12 +20,23 @@
     cProbePlayerModel.prototype = Object.create(ns.cProbeModelBase.prototype);
     cProbePlayerModel.prototype.constructor = cProbePlayerModel;
 
+
+    /// <summary>
+    /// モニターとのひもづけ
+    /// </summary>
+    cProbePlayerModel.prototype.bindMonitor = function(argMonitor)
+    {
+        this.Monitor = argMonitor;
+    }
+
+
     /// <summary>
     /// ニックネームの設定
     /// </summary>
     cProbePlayerModel.prototype.setNick = function(argNick)
     {
         this.Nick = argNick;
+        this.Monitor.setName(argNick);
     }
 
     /// <summary>
@@ -35,6 +46,7 @@
     {
         this.Cardslot.reset();
         this.View.showCard(null);
+        this.Monitor.showCard(null);
     }
 
     /// <summary>
@@ -53,13 +65,30 @@
     {
         if(this.Alive)
         {
-            this.Alive = false;
-            this.View.toDead();
+            this.setAlive(false);
         }
         else
         {
-            this.Alive = true;
+            this.setAlive(true);
+        }
+    }
+
+    /// <summary>
+    /// Alive 属性の設定
+    /// </summary>
+    cProbePlayerModel.prototype.setAlive = function(argAlive)
+    {
+        if(argAlive)
+        {
+            this.Alive = argAlive;
             this.View.toAlive();
+            this.Monitor.toAlive();
+        }
+        else
+        {
+            this.Alive = argAlive;
+            this.View.toDead();
+            this.Monitor.toDead();
         }
     }
 
@@ -81,6 +110,7 @@
                     const well_read = this.Cardslot.scan(argValue);
                     const cards = this.Cardslot.estimate();
                     this.View.showCard(cards);
+                    this.Monitor.showCard(cards);
                     if(well_read)
                     {
                         ns.Engine.ProbeDeviceManager.writeStopScan(this.Name);
@@ -97,6 +127,7 @@
     {
         this.Cardslot.reset();
         this.View.showCard(null);
+        this.Monitor.showCard(null);
         ns.Engine.ProbeDeviceManager.writeStartScan(this.Name);
     }
 
@@ -105,6 +136,7 @@
     /// </summary>
     cProbePlayerModel.prototype.showView = function()
     {
+        this.setAlive(this.Alive);
         this.View.showName(this.Name);
     }
 

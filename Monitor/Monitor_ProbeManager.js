@@ -27,8 +27,10 @@
             const cardslot = new ns.cCardslot(this.Carddeck, 2);
             const model = new ns.cProbePlayerModel(player_probe_name, cardslot);
             const view = ns.Engine.ViewManager.createProbePlayerView();
+            const monitor = ns.Engine.MonitorManager.createMonitorPlayer();
             view.bindModel(model);
             model.bindView(view);
+            model.bindMonitor(monitor);
             model.showView();
             this.PlayerProbeCollection[player_probe_name] = model;
         }

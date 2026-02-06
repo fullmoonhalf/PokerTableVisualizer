@@ -22,6 +22,8 @@
 
         this.setActiveButton(this.ControlRescanButton);
     }
+    cProbeViewBase.prototype = Object.create(ns.cHtmlBase.prototype);
+    cProbeViewBase.prototype.constructor = cProbeViewBase;
 
     /// <summary>
     /// モデルとの紐付け
@@ -62,47 +64,6 @@
         const ss   = String(d.getSeconds()).padStart(2, "0");
         const formatted = `${hh}:${mi}:${ss}`;
         this.LastupdateValue.innerHTML = formatted;
-    }
-
-    /// <summary>
-    /// 更新時刻の更新
-    /// </summary>
-    cProbeViewBase.prototype.createHoleCardsHTML = function (argHoleCards, argClassName, argCapacity)
-	{
-		let html = "";
-		let index = 0;
-        if(argHoleCards)
-        {
-            for(const card of argHoleCards)
-            {
-                html += `<img class="${argClassName}" src="../Assets/UI/cards_pc-${card}.png">`;
-                index++;
-            }
-        }
-		while(index < argCapacity)
-		{
-			html += `<img class="${argClassName}" src="../Assets/UI/cards_pc-0.png">`;
-			index++;
-		}
-		return html;
-	}
-
-    /// <summary>
-    /// ボタンを active 状態にする
-    /// </summary>
-    cProbeViewBase.prototype.setActiveButton = function(argButton)
-    {
-        argButton.classList.toggle("active", true);
-        argButton.classList.toggle("inactive", false);
-    }
-
-    /// <summary>
-    /// ボタンを inactive 状態にする
-    /// </summary>
-    cProbeViewBase.prototype.setInactiveButton = function(argButton)
-    {
-        argButton.classList.toggle("active", false);
-        argButton.classList.toggle("inactive", true);
     }
 
     /// <summary>

@@ -1,5 +1,19 @@
 .TEMPLATE_MONITORPLAYER_PANEL
 {
+    position: relative;
+}
+.TEMPLATE_MONITORPLAYER_PANEL.seatopen
+{
+    display: none;
+}
+.TEMPLATE_MONITORPLAYER_PANEL_DRAGABLE_ROOT
+{
+    position: absolute;
+    touch-action: none;                /* スクロールよりドラッグを優先 */
+    transform: translate(0,0);         /* 以後は translate で動かす */
+}
+.TEMPLATE_MONITORPLAYER_PANEL_LAYOUT_ROOT
+{
     position: relative;   /* 基準にする */
     background: #cff;
     width: 80px;
@@ -12,7 +26,7 @@
     border-color: #cff;
 }
 
-.TEMPLATE_MONITORPLAYER_PANEL_NAME
+.TEMPLATE_MONITORPLAYER_PANEL_NAME_VALUE
 {
     position: absolute;
     font-size: 14px;
@@ -22,7 +36,7 @@
     top: 40px;
 }
 
-.TEMPLATE_MONITORPLAYER_PANEL_WINRATE
+.TEMPLATE_MONITORPLAYER_PANEL_WINRATE_VALUE
 {
     position: absolute;
     text-align: center;
@@ -30,7 +44,7 @@
     font-size: 10px;
 }
 
-.TEMPLATE_MONITORPLAYER_PANEL_ACTION
+.TEMPLATE_MONITORPLAYER_PANEL_ACTION_VALUE
 {
     position: absolute;
     top: 20px;
@@ -47,6 +61,6 @@
 {
 }
 
-.TEMPLATE_MONITORPLAYER_PANEL_POSITION
+.TEMPLATE_MONITORPLAYER_PANEL_POSITION_VALUE
 {    
 }
