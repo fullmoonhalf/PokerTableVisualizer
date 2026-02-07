@@ -119,5 +119,51 @@
 	ns.Defines.TEMPLATE_MONITORDEALER_PANEL_HANDCOUNT = "TEMPLATE_MONITORDEALER_PANEL_HANDCOUNT";
 	ns.Defines.TEMPLATE_MONITORDEALER_PANEL_BLIND = "TEMPLATE_MONITORDEALER_PANEL_BLIND";
 
+	// =====================================================================
+	// ポジション関連
+	// =====================================================================
+	// ポジション名
+	ns.Defines.POKER_POSITION_DEALER = "D";
+	ns.Defines.POKER_POSITION_CUTOFF = "CO";
+	ns.Defines.POKER_POSITION_HIJACK = "HJ";
+	ns.Defines.POKER_POSITION_MIDDLEp1 = "MP+1";
+	ns.Defines.POKER_POSITION_MIDDLE = "MP";
+	ns.Defines.POKER_POSITION_UTGp2 = "UTG+2";
+	ns.Defines.POKER_POSITION_UTGp1 = "UTG+1";
+	ns.Defines.POKER_POSITION_UTG = "UTG";
+	ns.Defines.POKER_POSITION_BB = "BB";
+	ns.Defines.POKER_POSITION_SB = "SB";
+	ns.Defines.POKER_POSITION_OPENSEAT = "-";
 
+	// ポジションリスト。ポジションの悪い方から
+	const POKER_POSITION_TABLE = [
+		// あると便利なので定義してるだけ
+		[ns.Defines.POKER_POSITION_OPENSEAT],
+		[ns.Defines.POKER_POSITION_DEALER],
+		// ヘッズアップ
+		[ns.Defines.POKER_POSITION_DEALER, ns.Defines.POKER_POSITION_BB],
+		// 3 名
+		[ns.Defines.POKER_POSITION_DEALER, ns.Defines.POKER_POSITION_BB, ns.Defines.POKER_POSITION_SB],
+		// 4 名
+		[ns.Defines.POKER_POSITION_DEALER, ns.Defines.POKER_POSITION_UTG, ns.Defines.POKER_POSITION_BB, ns.Defines.POKER_POSITION_SB],
+		// 5 名
+		[ns.Defines.POKER_POSITION_DEALER, ns.Defines.POKER_POSITION_MIDDLE, ns.Defines.POKER_POSITION_UTG, ns.Defines.POKER_POSITION_BB, ns.Defines.POKER_POSITION_SB],
+		// 6 名
+		[ns.Defines.POKER_POSITION_DEALER, ns.Defines.POKER_POSITION_CUTOFF, ns.Defines.POKER_POSITION_HIJACK, ns.Defines.POKER_POSITION_UTG, ns.Defines.POKER_POSITION_BB, ns.Defines.POKER_POSITION_SB],
+		// 7 名
+		[ns.Defines.POKER_POSITION_DEALER, ns.Defines.POKER_POSITION_CUTOFF, ns.Defines.POKER_POSITION_HIJACK, ns.Defines.POKER_POSITION_MIDDLE, ns.Defines.POKER_POSITION_UTG, ns.Defines.POKER_POSITION_BB, ns.Defines.POKER_POSITION_SB],
+		// 8 名
+		[ns.Defines.POKER_POSITION_DEALER, ns.Defines.POKER_POSITION_CUTOFF, ns.Defines.POKER_POSITION_HIJACK, ns.Defines.POKER_POSITION_MIDDLE, ns.Defines.POKER_POSITION_UTGp1, ns.Defines.POKER_POSITION_UTG, ns.Defines.POKER_POSITION_BB, ns.Defines.POKER_POSITION_SB],
+		// 9 名
+		[ns.Defines.POKER_POSITION_DEALER, ns.Defines.POKER_POSITION_CUTOFF, ns.Defines.POKER_POSITION_HIJACK, ns.Defines.POKER_POSITION_MIDDLEp1, ns.Defines.POKER_POSITION_MIDDLE, ns.Defines.POKER_POSITION_UTGp1, ns.Defines.POKER_POSITION_UTG, ns.Defines.POKER_POSITION_BB, ns.Defines.POKER_POSITION_SB],
+		// 10 名
+		[ns.Defines.POKER_POSITION_DEALER, ns.Defines.POKER_POSITION_CUTOFF, ns.Defines.POKER_POSITION_HIJACK, ns.Defines.POKER_POSITION_MIDDLEp1, ns.Defines.POKER_POSITION_MIDDLE, ns.Defines.POKER_POSITION_UTGp2, ns.Defines.POKER_POSITION_UTGp1, ns.Defines.POKER_POSITION_UTG, ns.Defines.POKER_POSITION_BB, ns.Defines.POKER_POSITION_SB],
+	];
+
+	// 人数とディーラーに対しての残り人数からポジションを求める。
+	ns.Defines.convertPositionName = function(argPlayerCount, argPositionIndex)
+	{
+		return POKER_POSITION_TABLE[argPlayerCount][argPositionIndex];
+	}
+	
 })(Monitor = Monitor || {});

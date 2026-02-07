@@ -73,10 +73,18 @@
     top: 10px;
 }
 
+.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_POSITION
+{
+    position: absolute;
+    width: 55px;
+}
+
 .TEMPLATE_MONITORPLAYER_PANEL_HOLECARD_VALUE
 {
 }
 
 .TEMPLATE_MONITORPLAYER_PANEL_POSITION_VALUE
 {    
+    font-weight: bold;
+    font-size: 10px;
 }

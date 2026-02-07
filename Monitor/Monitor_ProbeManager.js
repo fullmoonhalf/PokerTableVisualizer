@@ -10,7 +10,7 @@
     /// </summary>
     function cProbeManager()
     {
-        this.PlayerProbeCollection = {};
+        this.PlayerProbeCollection = [];
         this.DealerProbe = null;
     }
 
@@ -32,7 +32,7 @@
             model.bindView(view);
             model.bindMonitor(monitor);
             model.showView();
-            this.PlayerProbeCollection[player_probe_name] = model;
+            this.PlayerProbeCollection.push(model);
         }
 
         // ディーラー
@@ -51,6 +51,7 @@
     }
 
     /// <summary>
+    /// ベッティングラウンドが進んだときの処理
     /// </summary>
     cProbeManager.prototype.onChangeBettingRound = function(argBettingRound)
     {
@@ -58,7 +59,10 @@
         {
             case PokerConst.BettingRound.DealHand:
                 this.Carddeck.reset();
-                Object.values(this.PlayerProbeCollection).forEach(probe => probe.onStartDeal());
+                for(const probe of this.PlayerProbeCollection)
+                {
+                    probe.onStartDeal();
+                }
                 this.DealerProbe.onStartDeal();
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 break;
@@ -68,17 +72,26 @@
             case PokerConst.BettingRound.Flop:
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
-                Object.values(this.PlayerProbeCollection).forEach(probe => probe.onStartNextBettingRound());
+                for(const probe of this.PlayerProbeCollection)
+                {
+                    probe.onStartNextBettingRound();
+                }
                 this.DealerProbe.onStartFlop();
                 break;
             case PokerConst.BettingRound.Turn:
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
-                Object.values(this.PlayerProbeCollection).forEach(probe => probe.onStartNextBettingRound());
+                for(const probe of this.PlayerProbeCollection)
+                {
+                    probe.onStartNextBettingRound();
+                }
                 this.DealerProbe.onStartTurn();
                 break;
             case PokerConst.BettingRound.River:
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
-                Object.values(this.PlayerProbeCollection).forEach(probe => probe.onStartNextBettingRound());
+                for(const probe of this.PlayerProbeCollection)
+                {
+                    probe.onStartNextBettingRound();
+                }
                 this.DealerProbe.onStartRiver();
                 break;
             case PokerConst.BettingRound.EndHand:
@@ -90,6 +103,52 @@
                 break;
         }
     }
+
+    /// <summary>
+    /// 生きているシートカウント
+    /// </summary>
+    cProbeManager.prototype.getAliveSeatCount = function()
+    {
+        let count = 0;
+        for(const probe of this.PlayerProbeCollection)
+        {
+            if(probe.Alive)
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
+
+    cProbeManager.prototype.changeButton = function(argPlayerModel)
+    {
+        for(const probe of this.PlayerProbeCollection)
+        {
+            console.log(probe);
+        }
+
+		// ポジションの計算(ディーラーに対する残り人数)
+		const alive_player_num = this.getAliveSeatCount();
+		const button_index = this.PlayerProbeCollection.findIndex(x => x == argPlayerModel)
+		let position_index = alive_player_num - 1;
+		for(let count=0; count<this.PlayerProbeCollection.length; ++count)
+		{
+			let index = (button_index + count + 1) % this.PlayerProbeCollection.length;
+			const seat = this.PlayerProbeCollection[index];
+			if(seat.Alive)
+			{
+                const position = ns.Defines.convertPositionName(alive_player_num, position_index);
+                seat.setPosition(position);
+				position_index--;
+			}
+            else
+            {
+                seat.setPosition(ns.Defines.POKER_POSITION_OPENSEAT);
+            }
+		}
+    }
+
 
     /// <summary>
     /// プローブの離断通知
@@ -121,10 +180,12 @@
     /// </summary>
     cProbeManager.prototype._findModel = function(argTarget)
     {
-        if(argTarget in this.PlayerProbeCollection)
+        for(const probe of this.PlayerProbeCollection)
         {
-            const model = this.PlayerProbeCollection[argTarget];
-            return model;
+            if(probe.Name == argTarget)
+            {
+                return probe;
+            }
         }
 
         return this.DealerProbe;

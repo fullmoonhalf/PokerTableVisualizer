@@ -84,6 +84,14 @@
     }
 
     /// <summary>
+    /// ポジション設定
+    /// </summary>
+    cProbePlayerMonitor.prototype.setPosition = function(argPosition)
+    {
+        this.PositionValue.innerHTML = argPosition;
+    }
+
+    /// <summary>
     /// カードの表示
     /// </summary>
     cProbePlayerMonitor.prototype.showCard = function(argCard)

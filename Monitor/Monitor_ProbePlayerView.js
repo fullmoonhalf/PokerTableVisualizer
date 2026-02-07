@@ -45,6 +45,7 @@
         HtmlUtil.addEventListenerToElement(this.ActoinRaiseButton, "click", this._onPlayerActionRaise.bind(this));
         HtmlUtil.addEventListenerToElement(this.ActoinAllinButton, "click", this._onPlayerActionAllin.bind(this));
         HtmlUtil.addEventListenerToElement(this.ControlAliveButton, "click", this._onControlAlive.bind(this));
+        HtmlUtil.addEventListenerToElement(this.ControlPositionButton, "click", this._onControlPositionButton.bind(this));
         HtmlUtil.addEventListenerToElement(this.NickInput, "change", this.onInputNick.bind(this));
 
         this.setActiveButton(this.ControlAliveButton);
@@ -70,6 +71,14 @@
     cProbePlayerView.prototype.showName = function(argName)
     {
         this.NameValue.innerHTML = argName;
+    }
+
+    /// <summary>
+    /// ポジションの表示
+    /// </summary>
+    cProbePlayerView.prototype.showPosition = function(argPosition)
+    {
+        this.ControlPositionButton.innerHTML = argPosition;
     }
 
     /// <summary>
@@ -158,6 +167,7 @@
     }
 
     /// <summary>
+    /// プレイヤーのアクション状態設定(fold)
     /// </summary>
     cProbePlayerView.prototype._onPlayerActionFold = function(argEvent)
     {
@@ -165,6 +175,7 @@
     }
 
     /// <summary>
+    /// プレイヤーのアクション状態設定(check)
     /// </summary>
     cProbePlayerView.prototype._onPlayerActionCheck = function(argEvent)
     {
@@ -172,6 +183,7 @@
     }
 
     /// <summary>
+    /// プレイヤーのアクション状態設定(bet)
     /// </summary>
     cProbePlayerView.prototype._onPlayerActionBet = function(argEvent)
     {
@@ -179,6 +191,7 @@
     }
 
     /// <summary>
+    /// プレイヤーのアクション状態設定(call)
     /// </summary>
     cProbePlayerView.prototype._onPlayerActionCall = function(argEvent)
     {
@@ -186,6 +199,7 @@
     }
 
     /// <summary>
+    /// プレイヤーのアクション状態設定(raise)
     /// </summary>
     cProbePlayerView.prototype._onPlayerActionRaise = function(argEvent)
     {
@@ -193,6 +207,7 @@
     }
 
     /// <summary>
+    /// プレイヤーのアクション状態設定(all-in)
     /// </summary>
     cProbePlayerView.prototype._onPlayerActionAllin = function(argEvent)
     {
@@ -200,10 +215,19 @@
     }
 
     /// <summary>
+    /// プレイヤーの生存設定
     /// </summary>
     cProbePlayerView.prototype._onControlAlive = function(argEvent)
     {
         this.Model.toggleAlive();
+    }
+
+    /// <summary>
+    /// プレイヤーのボタン設定
+    /// </summary>
+    cProbePlayerView.prototype._onControlPositionButton = function(argEvent)
+    {
+        ns.Engine.ProbeManager.changeButton(this.Model);
     }
 
     /// <summary>

@@ -16,6 +16,7 @@
         this.Alive = false;
         this.LastAction = PokerConst.PlayerAction.None;
         this.Cardslot = argCardslot;
+        this.Position = ns.Defines.POKER_POSITION_OPENSEAT;
     }
     cProbePlayerModel.prototype = Object.create(ns.cProbeModelBase.prototype);
     cProbePlayerModel.prototype.constructor = cProbePlayerModel;
@@ -110,6 +111,16 @@
             this.View.toDead();
             this.Monitor.toDead();
         }
+    }
+
+    /// <summary>
+    /// ポジションの設定
+    /// </summary>
+    cProbePlayerModel.prototype.setPosition = function(argPositionName)
+    {
+        this.Position = argPositionName;
+        this.View.showPosition(argPositionName);
+        this.Monitor.setPosition(argPositionName);
     }
 
     /// <summary>
