@@ -26,6 +26,17 @@
     cProbeDealerMonitor.prototype = Object.create(ns.cHtmlBase.prototype);
     cProbeDealerMonitor.prototype.constructor = cProbeDealerMonitor;
 
+
+    /// <summary>
+    /// コミュニティカードのリセット
+    /// </summary>
+    cProbeDealerMonitor.prototype.resetCommunityCard = function()
+    {
+        this.showFlopCard(null);
+        this.showTurnCard(null);
+        this.showRiverCard(null);
+    }
+
     /// <summary>
     /// flow の表示
     /// </summary>

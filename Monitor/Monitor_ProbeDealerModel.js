@@ -28,6 +28,18 @@
 
 
     /// <summary>
+    /// コミュニティカードの取得
+    /// </summary>
+    cProbeDealerModel.prototype.getCurrentCommunityCards = function()
+    {
+        return []
+        .concat(this.BoardFlopSlot.Cards ?? [])
+        .concat(this.BoardTurnSlot.Cards ?? [])
+        .concat(this.BoardRiverSlot.Cards ?? []);
+    }
+
+
+    /// <summary>
     /// モニターとの紐付け
     /// </summary>
     cProbeDealerModel.prototype.bindMonitor = function(argMonitor)
@@ -53,6 +65,7 @@
         this.BoardFlopSlot.reset();
         this.BoardTurnSlot.reset();
         this.BoardRiverSlot.reset();
+        this.Monitor.resetCommunityCard();
         this.BoardCurrentSlot = null;
         this.BoardCurrentView = null;
         this.BoardCurrentMonitor = null;
@@ -119,7 +132,9 @@
                     }
                     if(well_read)
                     {
+                        this.BoardCurrentSlot.fix();
                         ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.DEALER_PROBE_PREFIX);
+                        ns.Engine.ProbeManager.updateWinRate();
                     }
                 }
                 break;

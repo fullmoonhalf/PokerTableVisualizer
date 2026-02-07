@@ -127,11 +127,6 @@
     /// </summary>
     cProbeManager.prototype.changeButton = function(argPlayerModel)
     {
-        for(const probe of this.PlayerProbeCollection)
-        {
-            console.log(probe);
-        }
-
 		// ポジションの計算(ディーラーに対する残り人数)
         this.ButtonPlayer = null;
 		const alive_player_num = this.getAliveSeatCount();
@@ -179,6 +174,54 @@
                 return;
             }
         }
+    }
+
+    /// <summary>
+    /// 勝率計算
+    /// </summary>
+    cProbeManager.prototype.updateWinRate = function()
+    {
+		// 現在の制約上、フロップが開くまでは確率表示できない。
+		const community_cards = this.DealerProbe.getCurrentCommunityCards();
+		if(community_cards.length < 3)
+		{
+			return;
+		}
+
+		// 勝率計算処理に食わせられるようにする
+		let index_table = [];
+		let hand_info = [];
+		for(let index=0; index<this.PlayerProbeCollection.length; ++index)
+		{
+			const seat = this.PlayerProbeCollection[index];
+			seat.setWinRate(null);
+			if(!seat.isActive())
+			{
+				continue;
+			}
+            if(seat.Cardslot.Cards == null)
+            {
+                continue;
+            }
+			if(seat.Cardslot.Cards.length < 2)
+			{
+				continue;
+			}
+			index_table.push(index);
+			hand_info.push(seat.Cardslot.Cards);
+		}
+
+		// 勝率計算
+		const result = WinRate.calc(hand_info, community_cards, [])
+		for(let result_index=0; result_index<result.infos.length; ++result_index)
+		{
+			const access_index = index_table[result_index];
+			const seat = this.PlayerProbeCollection[access_index];
+			const result_unit = result.infos[result_index];
+			const rate = Math.round((result_unit.win * 100 / result_unit.comb));
+			seat.setWinRate(rate);
+		}
+
     }
 
     /// <summary>

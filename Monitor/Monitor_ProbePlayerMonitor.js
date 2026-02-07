@@ -92,6 +92,22 @@
     }
 
     /// <summary>
+    /// 勝率の表示
+    /// </summary>
+    cProbePlayerMonitor.prototype.showWinRate = function(argWinRate)
+    {
+        if(argWinRate != null)
+        {
+            this.WinrateValue.innerHTML = `${argWinRate}%`;
+        }
+        else
+        {
+            this.WinrateValue.innerHTML = "xx%";
+        }
+    }
+
+
+    /// <summary>
     /// カードの表示
     /// </summary>
     cProbePlayerMonitor.prototype.showCard = function(argCard)

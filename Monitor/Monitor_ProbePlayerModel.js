@@ -48,6 +48,7 @@
         this.Cardslot.reset();
         this.View.showCard(null);
         this.Monitor.showCard(null);
+        this.setWinRate(null);
         this.setPlayerAction(PokerConst.PlayerAction.None);
     }
 
@@ -77,6 +78,15 @@
         this.LastAction = argPlayerAction;
         this.View.showPlayerAction(this.LastAction);
         this.Monitor.showPlayerAction(this.LastAction);
+        ns.Engine.ProbeManager.updateWinRate();
+    }
+
+    /// <summary>
+    /// 勝率の設定
+    /// </summary>
+    cProbePlayerModel.prototype.setWinRate = function(argWinRate)
+    {
+        this.Monitor.showWinRate(argWinRate);
     }
 
     /// <summary>
@@ -114,6 +124,30 @@
     }
 
     /// <summary>
+    /// アクティブなプレイヤーかどうか
+    /// </summary>
+    cProbePlayerModel.prototype.isActive = function()
+    {
+        if(this.Alive == false)
+        {
+            return false;
+        }
+        switch (this.LastAction) {
+            case PokerConst.PlayerAction.Check:
+            case PokerConst.PlayerAction.Bet:
+            case PokerConst.PlayerAction.Call:
+            case PokerConst.PlayerAction.Raise:
+            case PokerConst.PlayerAction.None:
+            case PokerConst.PlayerAction.AllIn:
+                return true;
+            case PokerConst.PlayerAction.Fold:
+            default:
+                return false;
+        }
+    }
+    
+
+    /// <summary>
     /// ポジションの設定
     /// </summary>
     cProbePlayerModel.prototype.setPosition = function(argPositionName)
@@ -144,6 +178,8 @@
                     this.Monitor.showCard(cards);
                     if(well_read)
                     {
+                        this.Cardslot.fix();
+                        ns.Engine.ProbeManager.updateWinRate();
                         ns.Engine.ProbeDeviceManager.writeStopScan(this.Name);
                     }
                 }
