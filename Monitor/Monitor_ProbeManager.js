@@ -11,6 +11,7 @@
     function cProbeManager()
     {
         this.PlayerProbeCollection = [];
+        this.ButtonPlayer = null;
         this.DealerProbe = null;
     }
 
@@ -121,6 +122,9 @@
     }
 
 
+    /// <summary>
+    /// ボタンの変更(直接指定)
+    /// </summary>
     cProbeManager.prototype.changeButton = function(argPlayerModel)
     {
         for(const probe of this.PlayerProbeCollection)
@@ -129,17 +133,22 @@
         }
 
 		// ポジションの計算(ディーラーに対する残り人数)
+        this.ButtonPlayer = null;
 		const alive_player_num = this.getAliveSeatCount();
 		const button_index = this.PlayerProbeCollection.findIndex(x => x == argPlayerModel)
 		let position_index = alive_player_num - 1;
 		for(let count=0; count<this.PlayerProbeCollection.length; ++count)
 		{
-			let index = (button_index + count + 1) % this.PlayerProbeCollection.length;
+			const index = (button_index + count + 1) % this.PlayerProbeCollection.length;
 			const seat = this.PlayerProbeCollection[index];
 			if(seat.Alive)
 			{
                 const position = ns.Defines.convertPositionName(alive_player_num, position_index);
                 seat.setPosition(position);
+                if(position == ns.Defines.POKER_POSITION_DEALER)
+                {
+                    this.ButtonPlayer = seat;
+                }
 				position_index--;
 			}
             else
@@ -149,6 +158,28 @@
 		}
     }
 
+    /// <summary>
+    /// ボタンの変更(今の次にしたい)
+    /// </summary>
+    cProbeManager.prototype.changeButtonNext = function()
+    {
+        if(this.ButtonPlayer == null)
+        {
+            return;
+        }
+
+		const button_index = this.PlayerProbeCollection.findIndex(x => x == this.ButtonPlayer)
+		for(let count=0; count<this.PlayerProbeCollection.length-1; ++count)
+        {
+			const index = (button_index + count + 1) % this.PlayerProbeCollection.length;
+			const seat = this.PlayerProbeCollection[index];
+			if(seat.Alive)
+            {
+                this.changeButton(seat);
+                return;
+            }
+        }
+    }
 
     /// <summary>
     /// プローブの離断通知

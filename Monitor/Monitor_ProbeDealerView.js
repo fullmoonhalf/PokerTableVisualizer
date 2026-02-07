@@ -165,6 +165,7 @@
     cProbeDealerView.prototype._ControlNexthandButton = function(argEvent)
     {
         this._updateHandCount(1);
+        ns.Engine.ProbeManager.changeButtonNext();
         this.Model.setBettingRound(PokerConst.BettingRound.DealHand);
     }
     
