@@ -77,6 +77,5 @@
         this.BlindValue.innerHTML = `Blind: ${argSB}/${argBB}`;
     }
 
-
     ns.cProbeDealerMonitor = cProbeDealerMonitor;
 })(Monitor = Monitor || {});

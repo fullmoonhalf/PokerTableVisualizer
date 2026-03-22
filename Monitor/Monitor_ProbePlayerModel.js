@@ -19,6 +19,9 @@
         this.Reactionable = false;
         this.Cardslot = argCardslot;
         this.Position = ns.Defines.POKER_POSITION_OPENSEAT;
+        this.HandCount = 0;
+        this.VpipCount = 0;
+        this.VpipCountedInHand = false;
     }
     cProbePlayerModel.prototype = Object.create(ns.cProbeModelBase.prototype);
     cProbePlayerModel.prototype.constructor = cProbePlayerModel;
@@ -266,6 +269,36 @@
     {
         this.setAlive(this.Alive);
         this.View.showName(this.Name);
+    }
+
+    /// <summary>
+    /// プリフロップ開始時の処理（ハンド数のカウントアップ）
+    /// </summary>
+    cProbePlayerModel.prototype.onPreflopStart = function()
+    {
+        this.HandCount++;
+        this.VpipCountedInHand = false;
+    }
+
+    /// <summary>
+    /// VPIP カウントの加算（同一ハンド内での重複加算を防ぐ）
+    /// </summary>
+    cProbePlayerModel.prototype.incrementVpipCount = function()
+    {
+        if (!this.VpipCountedInHand)
+        {
+            this.VpipCountedInHand = true;
+            this.VpipCount++;
+        }
+    }
+
+    /// <summary>
+    /// VPIP 値の取得（整数 % で四捨五入、ハンド数 0 の場合は 0）
+    /// </summary>
+    cProbePlayerModel.prototype.getVpip = function()
+    {
+        if (this.HandCount === 0) return 0;
+        return Math.round(this.VpipCount * 100 / this.HandCount);
     }
 
     ns.cProbePlayerModel = cProbePlayerModel;
