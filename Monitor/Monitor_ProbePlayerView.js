@@ -152,6 +152,14 @@
 
 
     /// <summary>
+    /// アクション中かどうかの表示
+    /// </summary>
+    cProbePlayerView.prototype.setActing = function(argActing)
+    {
+        this.HtmlRoot.classList.toggle("status_acting", argActing);
+    }
+
+    /// <summary>
     /// </summary>
     cProbePlayerView.prototype.toAlive = function()
     {
@@ -172,6 +180,7 @@
     cProbePlayerView.prototype._onPlayerActionFold = function(argEvent)
     {
         this.Model.setPlayerAction(PokerConst.PlayerAction.Fold);
+        ns.Engine.ProbeManager.onPlayerActed(this.Model, PokerConst.PlayerAction.Fold);
     }
 
     /// <summary>
@@ -180,6 +189,7 @@
     cProbePlayerView.prototype._onPlayerActionCheck = function(argEvent)
     {
         this.Model.setPlayerAction(PokerConst.PlayerAction.Check);
+        ns.Engine.ProbeManager.onPlayerActed(this.Model, PokerConst.PlayerAction.Check);
     }
 
     /// <summary>
@@ -188,6 +198,7 @@
     cProbePlayerView.prototype._onPlayerActionBet = function(argEvent)
     {
         this.Model.setPlayerAction(PokerConst.PlayerAction.Bet);
+        ns.Engine.ProbeManager.onPlayerActed(this.Model, PokerConst.PlayerAction.Bet);
     }
 
     /// <summary>
@@ -196,6 +207,7 @@
     cProbePlayerView.prototype._onPlayerActionCall = function(argEvent)
     {
         this.Model.setPlayerAction(PokerConst.PlayerAction.Call);
+        ns.Engine.ProbeManager.onPlayerActed(this.Model, PokerConst.PlayerAction.Call);
     }
 
     /// <summary>
@@ -204,6 +216,7 @@
     cProbePlayerView.prototype._onPlayerActionRaise = function(argEvent)
     {
         this.Model.setPlayerAction(PokerConst.PlayerAction.Raise);
+        ns.Engine.ProbeManager.onPlayerActed(this.Model, PokerConst.PlayerAction.Raise);
     }
 
     /// <summary>
@@ -212,6 +225,7 @@
     cProbePlayerView.prototype._onPlayerActionAllin = function(argEvent)
     {
         this.Model.setPlayerAction(PokerConst.PlayerAction.AllIn);
+        ns.Engine.ProbeManager.onPlayerActed(this.Model, PokerConst.PlayerAction.AllIn);
     }
 
     /// <summary>

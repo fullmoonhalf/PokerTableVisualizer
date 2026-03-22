@@ -12,6 +12,7 @@
     {
         this.PlayerProbeCollection = [];
         this.ButtonPlayer = null;
+        this.ActionPlayer = null;
         this.DealerProbe = null;
     }
 
@@ -59,6 +60,7 @@
         switch(argBettingRound)
         {
             case PokerConst.BettingRound.DealHand:
+                this.resetActionPlayer();
                 this.Carddeck.reset();
                 for(const probe of this.PlayerProbeCollection)
                 {
@@ -68,9 +70,16 @@
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 break;
             case PokerConst.BettingRound.Preflop:
+                this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
+                for(const probe of this.PlayerProbeCollection)
+                {
+                    probe.onStartBettingRound();
+                }
+                this.setActionPlayer(this.getFirstActionPlayer(PokerConst.BettingRound.Preflop));
                 break;
             case PokerConst.BettingRound.Flop:
+                this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
                 for(const probe of this.PlayerProbeCollection)
@@ -78,24 +87,30 @@
                     probe.onStartNextBettingRound();
                 }
                 this.DealerProbe.onStartFlop();
+                this.setActionPlayer(this.getFirstActionPlayer(PokerConst.BettingRound.Flop));
                 break;
             case PokerConst.BettingRound.Turn:
+                this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
                 for(const probe of this.PlayerProbeCollection)
                 {
                     probe.onStartNextBettingRound();
                 }
                 this.DealerProbe.onStartTurn();
+                this.setActionPlayer(this.getFirstActionPlayer(PokerConst.BettingRound.Turn));
                 break;
             case PokerConst.BettingRound.River:
+                this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
                 for(const probe of this.PlayerProbeCollection)
                 {
                     probe.onStartNextBettingRound();
                 }
                 this.DealerProbe.onStartRiver();
+                this.setActionPlayer(this.getFirstActionPlayer(PokerConst.BettingRound.River));
                 break;
             case PokerConst.BettingRound.EndHand:
+                this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.DEALER_PROBE_PREFIX);
                 this.DealerProbe.onStartEnd();
@@ -121,6 +136,179 @@
         return count;
     }
 
+
+    /// <summary>
+    /// アクション中プレイヤーの設定
+    /// </summary>
+    cProbeManager.prototype.setActionPlayer = function(argPlayerModel)
+    {
+        if (this.ActionPlayer != null) {
+            this.ActionPlayer.setActing(false);
+        }
+        this.ActionPlayer = argPlayerModel;
+        if (this.ActionPlayer != null) {
+            this.ActionPlayer.setActing(true);
+        }
+    }
+
+    /// <summary>
+    /// アクション中プレイヤーのリセット
+    /// </summary>
+    cProbeManager.prototype.resetActionPlayer = function()
+    {
+        this.setActionPlayer(null);
+    }
+
+    /// <summary>
+    /// プレイヤーがアクションを実行したときの処理
+    /// </summary>
+    cProbeManager.prototype.onPlayerActed = function(argModel, argAction)
+    {
+        argModel.ActedInRound = true;
+        argModel.Reactionable = false;
+
+        if (argAction == PokerConst.PlayerAction.Raise)
+        {
+            for (const probe of this.PlayerProbeCollection)
+            {
+                if (probe == argModel) continue;
+                if (!probe.Alive) continue;
+                if (probe.LastAction == PokerConst.PlayerAction.Fold) continue;
+                if (probe.LastAction == PokerConst.PlayerAction.AllIn) continue;
+                if (probe.ActedInRound &&
+                    (probe.LastAction == PokerConst.PlayerAction.Check ||
+                     probe.LastAction == PokerConst.PlayerAction.Call  ||
+                     probe.LastAction == PokerConst.PlayerAction.Raise))
+                {
+                    probe.Reactionable = true;
+                }
+            }
+        }
+
+        const nextPlayer = this.getNextActionPlayer(argModel);
+        this.setActionPlayer(nextPlayer);
+    }
+
+    /// <summary>
+    /// アクション可能かどうかの判定
+    /// </summary>
+    cProbeManager.prototype._isActionable = function(argPlayer)
+    {
+        if (!argPlayer.Alive) return false;
+        if (argPlayer.LastAction == PokerConst.PlayerAction.Fold) return false;
+        if (argPlayer.LastAction == PokerConst.PlayerAction.AllIn) return false;
+        if (argPlayer.ActedInRound && !argPlayer.Reactionable) return false;
+        return true;
+    }
+
+    /// <summary>
+    /// ベッティングラウンド開始時の最初のアクションプレイヤーを取得
+    /// </summary>
+    cProbeManager.prototype.getFirstActionPlayer = function(argBettingRound)
+    {
+        const aliveCount = this.getAliveSeatCount();
+        if (aliveCount < 2) return null;
+
+        if (argBettingRound == PokerConst.BettingRound.Preflop)
+        {
+            const startPositionName = ns.Defines.getPreflopStartPositionName(aliveCount);
+            if (startPositionName == null) return null;
+
+            // 指定されたポジションのプレイヤーを探す
+            const startPlayer = this.PlayerProbeCollection.find(
+                p => p.Alive && p.Position == startPositionName && this._isActionable(p)
+            );
+            if (startPlayer) return startPlayer;
+
+            // 見つからない場合は、そのポジションのランクから次のアクション可能プレイヤーを探す
+            const startRank = ns.Defines.getPositionRank(startPositionName);
+            return this._findNextActionableFromRank(startRank);
+        }
+        else
+        {
+            // フロップ/ターン/リバー: 最も不利（ランクが最大）なアクション可能プレイヤー
+            let bestPlayer = null;
+            let bestRank = -1;
+            for (const probe of this.PlayerProbeCollection)
+            {
+                if (!this._isActionable(probe)) continue;
+                const rank = ns.Defines.getPositionRank(probe.Position);
+                if (rank > bestRank)
+                {
+                    bestRank = rank;
+                    bestPlayer = probe;
+                }
+            }
+            return bestPlayer;
+        }
+    }
+
+    /// <summary>
+    /// 現在のプレイヤーの次のアクションプレイヤーを取得
+    /// </summary>
+    cProbeManager.prototype.getNextActionPlayer = function(argCurrentPlayer)
+    {
+        const currentRank = ns.Defines.getPositionRank(argCurrentPlayer.Position);
+
+        // 現在より有利（ランクが低い）なアクション可能プレイヤーを探す
+        let nextPlayer = null;
+        let nextRank = -1;
+        for (const probe of this.PlayerProbeCollection)
+        {
+            if (!this._isActionable(probe)) continue;
+            const rank = ns.Defines.getPositionRank(probe.Position);
+            if (rank < currentRank && rank > nextRank)
+            {
+                nextRank = rank;
+                nextPlayer = probe;
+            }
+        }
+        if (nextPlayer) return nextPlayer;
+
+        // 有利側に見つからない場合は最も不利なアクション可能プレイヤーに戻る（ラップアラウンド）
+        // 全プレイヤーを対象に最も不利（ランク最大）なアクション可能プレイヤーを返す
+        return this._findMostDisadvantagedActionable();
+    }
+
+    /// <summary>
+    /// 指定ランク以下で最もランクが高い（不利な）アクション可能プレイヤーを取得
+    /// </summary>
+    cProbeManager.prototype._findNextActionableFromRank = function(argMaxRank)
+    {
+        let bestPlayer = null;
+        let bestRank = -1;
+        for (const probe of this.PlayerProbeCollection)
+        {
+            if (!this._isActionable(probe)) continue;
+            const rank = ns.Defines.getPositionRank(probe.Position);
+            if (rank <= argMaxRank && rank > bestRank)
+            {
+                bestRank = rank;
+                bestPlayer = probe;
+            }
+        }
+        return bestPlayer;
+    }
+
+    /// <summary>
+    /// 全アクション可能プレイヤーの中で最も不利（ランク最大）なプレイヤーを取得
+    /// </summary>
+    cProbeManager.prototype._findMostDisadvantagedActionable = function()
+    {
+        let bestPlayer = null;
+        let bestRank = -1;
+        for (const probe of this.PlayerProbeCollection)
+        {
+            if (!this._isActionable(probe)) continue;
+            const rank = ns.Defines.getPositionRank(probe.Position);
+            if (rank > bestRank)
+            {
+                bestRank = rank;
+                bestPlayer = probe;
+            }
+        }
+        return bestPlayer;
+    }
 
     /// <summary>
     /// ボタンの変更(直接指定)

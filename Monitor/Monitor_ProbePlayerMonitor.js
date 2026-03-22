@@ -116,6 +116,14 @@
     }
 
     /// <summary>
+    /// アクション中かどうかの表示
+    /// </summary>
+    cProbePlayerMonitor.prototype.setActing = function(argActing)
+    {
+        this.LayoutRoot.classList.toggle("active-player", argActing);
+    }
+
+    /// <summary>
     /// シートオープン状態にする
     /// </summary>
 	cProbePlayerMonitor.prototype.toDead = function()
