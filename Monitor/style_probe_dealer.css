@@ -3,7 +3,7 @@
     position: relative;   /* 基準にする */
     background: #cff;
     width: 400px;
-    height: 150px;
+    height: 80px;
     margin: 2px;
     font-size: 8px;
     border-width: 2px;
@@ -135,19 +135,19 @@
 .TEMPLATE_PROBEDEALER_PANEL_DECKLIST
 {
     position: absolute;   /* 親を基準に */
-    top: 82px;
+    top: 0px;
     right: 4px;
 }
 
 .CARD_LIST_GRID
 {
     display: grid;
-    grid-template-columns: repeat(13, 8px);
+    grid-template-columns: repeat(13, 10px);
     gap: 0;
 }
 
 .CARD_LIST_ITEM
 {
-    width: 8px;
-    height: 16px;
+    width: 10px;
+    height: 20px;
 }
