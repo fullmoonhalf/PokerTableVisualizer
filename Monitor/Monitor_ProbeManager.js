@@ -522,7 +522,7 @@
         const label = this.getBetStageLabel();
         for (const probe of this.PlayerProbeCollection)
         {
-            if (probe.isActionable())
+            if (probe.isActionable() && !probe.hasSelectedAggressiveAction())
             {
                 probe.View.updateAggressiveButtonLabel(label);
             }

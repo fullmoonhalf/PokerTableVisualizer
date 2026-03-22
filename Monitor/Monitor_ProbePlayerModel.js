@@ -187,6 +187,15 @@
         return true;
     }
 
+    /// <summary>
+    /// アグレッシブアクションを選択済みかどうかの判定
+    /// </summary>
+    cProbePlayerModel.prototype.hasSelectedAggressiveAction = function()
+    {
+        return this.LastAction == PokerConst.PlayerAction.Bet ||
+               this.LastAction == PokerConst.PlayerAction.Raise;
+    }
+
 
     /// <summary>
     /// アクション中かどうかの設定
