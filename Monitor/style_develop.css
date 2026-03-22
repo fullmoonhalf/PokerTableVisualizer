@@ -4,3 +4,8 @@
     display: flex;
     border: 1px solid red;
 }
+
+.DEVELOP_COMMAND_BUTTON
+{
+    width: 60px;
+}

@@ -176,6 +176,7 @@
                     const cards = this.Cardslot.estimate();
                     this.View.showCard(cards);
                     this.Monitor.showCard(cards);
+                    ns.Engine.ProbeManager.updateWinRate();
                     if(well_read)
                     {
                         this.Cardslot.fix();

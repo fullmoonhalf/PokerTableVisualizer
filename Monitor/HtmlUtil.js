@@ -6,6 +6,7 @@ var HtmlUtil = HtmlUtil || (function(){
         {
             const element = document.getElementById(id);
             HtmlUtil.addEventListenerToElement(element, 'click', event);
+			console.log(`HtmlUtil.addButtonEventListenerByID(${id}, ${event}) - ${element ? "success" : "failed"}`);
             return element;
         },
 
@@ -16,6 +17,10 @@ var HtmlUtil = HtmlUtil || (function(){
             {
                 element.addEventListener(name, event);
             }
+			else
+			{
+				console.log(`HtmlUtil.addEventListenerToElement(${element}, ${name}, ${event}) - failed`);
+			}
         },
 
     	// 子ノードから所定のクラスを持つノードを取得する

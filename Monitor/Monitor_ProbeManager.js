@@ -199,16 +199,17 @@
 			{
 				continue;
 			}
-            if(seat.Cardslot.Cards == null)
+            const cards = seat.Cardslot.Cards ?? seat.Cardslot.estimate();
+            if(cards == null)
             {
                 continue;
             }
-			if(seat.Cardslot.Cards.length < 2)
+            if(cards.length < 2)
 			{
 				continue;
 			}
 			index_table.push(index);
-			hand_info.push(seat.Cardslot.Cards);
+            hand_info.push(cards);
 		}
 
 		// 勝率計算

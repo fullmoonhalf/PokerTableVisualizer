@@ -20,6 +20,10 @@
 		HtmlUtil.addButtonEventListenerByID(ns.Defines.COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_TEST_SCAN_ON, this.testScanOn.bind(this));
 		HtmlUtil.addButtonEventListenerByID(ns.Defines.COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_TEST_SCAN_OFF, this.testScanOff.bind(this));
         HtmlUtil.addButtonEventListenerByID(ns.Defines.COMMAND_PROVE_DEVICE_MANAGER_SCAN, this.scan.bind(this));
+        HtmlUtil.addButtonEventListenerByID(ns.Defines.COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_DEBUG_DEAL_CARD, this.debugDealCard.bind(this));
+        HtmlUtil.addButtonEventListenerByID(ns.Defines.COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_DEBUG_FLOP, this.debugFlop.bind(this));
+        HtmlUtil.addButtonEventListenerByID(ns.Defines.COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_DEBUG_TURN, this.debugTurn.bind(this));
+        HtmlUtil.addButtonEventListenerByID(ns.Defines.COMMAND_DEVELOP_PROVE_DEVICE_MANAGER_DEBUG_RIVER, this.debugRiver.bind(this));
     }
 
     /// <summary>
@@ -152,6 +156,141 @@
         this.writeAll("mode=test\nscan=0\ntimeout=200\nidol=5000\nheartbeat=10000\n");
         console.log("[cProbeDeviceManager] testScanOff - End");
     }
+
+    /// <summary>
+    /// デバッグ用途でシートにカードを配布する。
+    /// Alive かつカードが配布されていないシートに対して、Deck から ランダムにカードを配布する。
+    /// デバッグ用なので、配布されたカードはスキャンで読み取られたものとして扱う。
+    /// </summary>
+    cProbeDeviceManager.prototype.debugDealCard = function()
+    {
+        console.log("[cProbeDeviceManager] debugDealCard - Start");
+        
+        // Alive かつカードが配布されていないシートに対して処理
+        for(const probe of ns.Engine.ProbeManager.PlayerProbeCollection)
+        {
+            if(probe.Alive && probe.Cardslot.Cards == null)
+            {
+                // Deck からランダムにカードを配布（Capacity分）
+                for(let i = 0; i < probe.Cardslot.Capacity; i++)
+                {
+                    const card = ns.Engine.ProbeManager.Carddeck.Deck.drawCard();
+                    // スキャンで読み取られたものとして ReceiveHistory に追加
+                    probe.Cardslot.ReceiveHistory.push(card);
+                }
+                
+                // 推定カードを算出して表示
+                const estimatedCards = probe.Cardslot.estimate();
+                if(probe.View)
+                {
+                    probe.View.showCard(estimatedCards);
+                }
+                if(probe.Monitor)
+                {
+                    probe.Monitor.showCard(estimatedCards);
+                }
+
+                ns.Engine.ProbeManager.updateWinRate();
+                probe.Cardslot.fix();
+            }
+        }
+        
+        console.log("[cProbeDeviceManager] debugDealCard - End");
+    }
+
+    /// <summary>
+    /// デバッグ用途でフロップを配布する。
+    /// ボードにフロップを Deck からランダムに配布する。
+    /// デバッグ用なので、配布されたカードはスキャンで読み取られたものとして扱う。
+    /// 勝率計算も更新する
+    /// </summary>
+    cProbeDeviceManager.prototype.debugFlop = function()
+    {
+        console.log("[cProbeDeviceManager] debugFlop - Start");
+
+        const dealerProbe = ns.Engine.ProbeManager.DealerProbe;
+        const cardslot = dealerProbe.BoardFlopSlot;
+        if(cardslot.Cards == null)
+        {
+            cardslot.ReceiveHistory = [];
+            for(let i = 0; i < cardslot.Capacity; i++)
+            {
+                const card = ns.Engine.ProbeManager.Carddeck.Deck.drawCard();
+                cardslot.ReceiveHistory.push(card);
+            }
+
+            cardslot.fix();
+            const flopCards = cardslot.Cards;
+            dealerProbe.View.showFlopCard(flopCards);
+            dealerProbe.Monitor.showFlopCard(flopCards);
+            ns.Engine.ProbeManager.updateWinRate();
+        }
+
+        console.log("[cProbeDeviceManager] debugFlop - End");
+    }
+
+    /// <summary>
+    /// デバッグ用途でターンを配布する。
+    /// ボードにターンを Deck からランダムに配布する。
+    /// デバッグ用なので、配布されたカードはスキャンで読み取られたものとして扱う。
+    /// 勝率計算も更新する
+    /// </summary>
+    cProbeDeviceManager.prototype.debugTurn = function()
+    {
+        console.log("[cProbeDeviceManager] debugTurn - Start");
+
+        const dealerProbe = ns.Engine.ProbeManager.DealerProbe;
+        const cardslot = dealerProbe.BoardTurnSlot;
+        if(cardslot.Cards == null)
+        {
+            cardslot.ReceiveHistory = [];
+            for(let i = 0; i < cardslot.Capacity; i++)
+            {
+                const card = ns.Engine.ProbeManager.Carddeck.Deck.drawCard();
+                cardslot.ReceiveHistory.push(card);
+            }
+
+            cardslot.fix();
+            const turnCards = cardslot.Cards;
+            dealerProbe.View.showTurnCard(turnCards);
+            dealerProbe.Monitor.showTurnCard(turnCards);
+            ns.Engine.ProbeManager.updateWinRate();
+        }
+
+        console.log("[cProbeDeviceManager] debugTurn - End");
+    }
+
+    /// <summary>
+    /// デバッグ用途でリバーを配布する。
+    /// ボードにリバーを Deck からランダムに配布する。
+    /// デバッグ用なので、配布されたカードはスキャンで読み取られたものとして扱う。
+    /// 勝率計算も更新する
+    /// </summary>
+    cProbeDeviceManager.prototype.debugRiver = function()
+    {
+        console.log("[cProbeDeviceManager] debugRiver - Start");
+
+        const dealerProbe = ns.Engine.ProbeManager.DealerProbe;
+        const cardslot = dealerProbe.BoardRiverSlot;
+        if(cardslot.Cards == null)
+        {
+            cardslot.ReceiveHistory = [];
+            for(let i = 0; i < cardslot.Capacity; i++)
+            {
+                const card = ns.Engine.ProbeManager.Carddeck.Deck.drawCard();
+                cardslot.ReceiveHistory.push(card);
+            }
+
+            cardslot.fix();
+            const riverCards = cardslot.Cards;
+            dealerProbe.View.showRiverCard(riverCards);
+            dealerProbe.Monitor.showRiverCard(riverCards);
+            ns.Engine.ProbeManager.updateWinRate();
+        }
+
+        console.log("[cProbeDeviceManager] debugRiver - End");
+    }
+
 
     ns.cProbeDeviceManager = cProbeDeviceManager;
 })(Monitor = Monitor || {});

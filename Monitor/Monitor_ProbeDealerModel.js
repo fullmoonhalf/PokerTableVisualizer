@@ -33,9 +33,9 @@
     cProbeDealerModel.prototype.getCurrentCommunityCards = function()
     {
         return []
-        .concat(this.BoardFlopSlot.Cards ?? [])
-        .concat(this.BoardTurnSlot.Cards ?? [])
-        .concat(this.BoardRiverSlot.Cards ?? []);
+        .concat(this.BoardFlopSlot.Cards ?? this.BoardFlopSlot.estimate())
+        .concat(this.BoardTurnSlot.Cards ?? this.BoardTurnSlot.estimate())
+        .concat(this.BoardRiverSlot.Cards ?? this.BoardRiverSlot.estimate());
     }
 
 
@@ -130,6 +130,7 @@
                     {
                         this.BoardCurrentMonitor(cards);
                     }
+                    ns.Engine.ProbeManager.updateWinRate();
                     if(well_read)
                     {
                         this.BoardCurrentSlot.fix();
