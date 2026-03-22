@@ -125,12 +125,11 @@
 	// =====================================================================
 	// ポジション関連
 	// =====================================================================
-	// ポジション名
+	// ポジション名。ポジションが有利な順に並んでいる。
 	ns.Defines.POKER_POSITION_DEALER = "D";
 	ns.Defines.POKER_POSITION_CUTOFF = "CO";
 	ns.Defines.POKER_POSITION_LOJACK = "LJ";
 	ns.Defines.POKER_POSITION_HIJACK = "HJ";
-	ns.Defines.POKER_POSITION_MIDDLEp1 = "MP1";
 	ns.Defines.POKER_POSITION_MIDDLE = "MP";
 	ns.Defines.POKER_POSITION_UTGp2 = "UTG2";
 	ns.Defines.POKER_POSITION_UTGp1 = "UTG1";
@@ -176,7 +175,6 @@
 		ns.Defines.POKER_POSITION_CUTOFF,
 		ns.Defines.POKER_POSITION_HIJACK,
 		ns.Defines.POKER_POSITION_LOJACK,
-		ns.Defines.POKER_POSITION_MIDDLEp1,
 		ns.Defines.POKER_POSITION_MIDDLE,
 		ns.Defines.POKER_POSITION_UTGp2,
 		ns.Defines.POKER_POSITION_UTGp1,

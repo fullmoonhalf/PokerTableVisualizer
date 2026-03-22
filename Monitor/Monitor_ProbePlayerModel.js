@@ -102,6 +102,7 @@
         {
             this.Monitor.showPlayerAction(this.LastAction);
         }
+
         ns.Engine.ProbeManager.updateWinRate();
     }
 

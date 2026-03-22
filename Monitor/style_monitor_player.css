@@ -50,11 +50,11 @@
 .TEMPLATE_MONITORPLAYER_PANEL_NAME_VALUE
 {
     position: absolute;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: bold;
     text-align: center;
     width: 100%;
-    top: 40px;
+    top: 44px;
 }
 
 .TEMPLATE_MONITORPLAYER_PANEL_WINRATE_VALUE
@@ -63,6 +63,7 @@
     text-align: center;
     width: 100%;
     font-size: 10px;
+    font-weight: bold;
 }
 
 .TEMPLATE_MONITORPLAYER_PANEL_ACTION_VALUE
@@ -75,7 +76,7 @@
 {
     position: absolute;
     left: 20px;
-    top: 10px;
+    top: 13px;
 }
 
 .TEMPLATE_PROBEPLAYER_PANEL_CONTROL_POSITION

@@ -102,10 +102,9 @@
         }
         else
         {
-            this.WinrateValue.innerHTML = "xx%";
+            this.WinrateValue.innerHTML = "";
         }
     }
-
 
     /// <summary>
     /// カードの表示
