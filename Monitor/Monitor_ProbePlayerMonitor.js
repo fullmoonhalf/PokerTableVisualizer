@@ -21,6 +21,7 @@
         this.NormalGroup = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_GROUP_NORMAL);
         this.StatsGroup = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_GROUP_STATS);
         this.VpipValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_STATS_VPIP_VALUE, "");
+        this.HandRangeCanvas = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_STATS_HANDRANGE_CANVAS);
     }
     cProbePlayerMonitor.prototype = Object.create(ns.cHtmlBase.prototype);
     cProbePlayerMonitor.prototype.constructor = cProbePlayerMonitor;
@@ -144,11 +145,15 @@
     /// <summary>
     /// 統計表示モード ON（通常グループを隠し、統計グループを表示）
     /// </summary>
-    cProbePlayerMonitor.prototype.showStatsMode = function(argVpip)
+    cProbePlayerMonitor.prototype.showStatsMode = function(argVpip, argHandRangeStats)
     {
         this.NormalGroup.style.display = "none";
         this.StatsGroup.style.display = "";
         this.VpipValue.innerHTML = `VPIP: ${argVpip}%`;
+        if (this.HandRangeCanvas && argHandRangeStats)
+        {
+            ns.HandRange.drawMatrix(this.HandRangeCanvas, argHandRangeStats);
+        }
     }
 
     /// <summary>
