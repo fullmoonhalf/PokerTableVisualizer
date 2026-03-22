@@ -159,6 +159,9 @@
         this.ActionPlayer = argPlayerModel;
         if (this.ActionPlayer != null) {
             this.ActionPlayer.setActing(true);
+            if (this.ActionPlayer.isActionable()) {
+                this.ActionPlayer.View.updateAggressiveButtonLabel(this.getBetStageLabel());
+            }
         }
     }
 
