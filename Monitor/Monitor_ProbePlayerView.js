@@ -21,16 +21,14 @@
 
         this.ActoinFoldButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_ACTION_FOLD ); 
         this.ActoinCheckButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_ACTION_CHECK );
-        this.ActoinBetButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_ACTION_BET );
+        this.ActoinAggressiveButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_ACTION_AGGRESSIVE );
         this.ActoinCallButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_ACTION_CALL );
-        this.ActoinRaiseButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_ACTION_RAISE );
         this.ActoinAllinButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_ACTION_ALLIN );
         this.ActionButtonList = [
             this.ActoinFoldButton,
             this.ActoinCheckButton,
-            this.ActoinBetButton,
+            this.ActoinAggressiveButton,
             this.ActoinCallButton,
-            this.ActoinRaiseButton,
             this.ActoinAllinButton
         ];
         this.ControlAliveButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_ALIVE );
@@ -40,9 +38,8 @@
 
         HtmlUtil.addEventListenerToElement(this.ActoinFoldButton, "click", this._onPlayerActionFold.bind(this));
         HtmlUtil.addEventListenerToElement(this.ActoinCheckButton, "click", this._onPlayerActionCheck.bind(this));
-        HtmlUtil.addEventListenerToElement(this.ActoinBetButton, "click", this._onPlayerActionBet.bind(this));
+        HtmlUtil.addEventListenerToElement(this.ActoinAggressiveButton, "click", this._onPlayerActionAggressive.bind(this));
         HtmlUtil.addEventListenerToElement(this.ActoinCallButton, "click", this._onPlayerActionCall.bind(this));
-        HtmlUtil.addEventListenerToElement(this.ActoinRaiseButton, "click", this._onPlayerActionRaise.bind(this));
         HtmlUtil.addEventListenerToElement(this.ActoinAllinButton, "click", this._onPlayerActionAllin.bind(this));
         HtmlUtil.addEventListenerToElement(this.ControlAliveButton, "click", this._onControlAlive.bind(this));
         HtmlUtil.addEventListenerToElement(this.ControlPositionButton, "click", this._onControlPositionButton.bind(this));
@@ -111,7 +108,7 @@
                 break;
             case PokerConst.PlayerAction.Bet:
                 // ベット
-                this._selectPlayerAction(this.ActoinBetButton);
+                this._selectPlayerAction(this.ActoinAggressiveButton);
                 this.HtmlRoot.classList.toggle("action_allin", false);
                 this.HtmlRoot.classList.toggle("action_fold", false);
                 this.HtmlRoot.classList.toggle("status_acting", false);
@@ -125,7 +122,7 @@
                 break;
             case PokerConst.PlayerAction.Raise:
                 // レイズ
-                this._selectPlayerAction(this.ActoinRaiseButton);
+                this._selectPlayerAction(this.ActoinAggressiveButton);
                 this.HtmlRoot.classList.toggle("action_allin", false);
                 this.HtmlRoot.classList.toggle("action_fold", false);
                 this.HtmlRoot.classList.toggle("status_acting", false);
@@ -193,12 +190,21 @@
     }
 
     /// <summary>
-    /// プレイヤーのアクション状態設定(bet)
+    /// プレイヤーのアクション状態設定(aggressive: bet/raise/3-bet/...)
     /// </summary>
-    cProbePlayerView.prototype._onPlayerActionBet = function(argEvent)
+    cProbePlayerView.prototype._onPlayerActionAggressive = function(argEvent)
     {
-        this.Model.setPlayerAction(PokerConst.PlayerAction.Bet);
-        ns.Engine.ProbeManager.onPlayerActed(this.Model, PokerConst.PlayerAction.Bet);
+        const aggressiveAction = ns.Engine.ProbeManager.getAggressivePlayerAction();
+        this.Model.setPlayerAction(aggressiveAction);
+        ns.Engine.ProbeManager.onPlayerActed(this.Model, aggressiveAction);
+    }
+
+    /// <summary>
+    /// アグレッシブボタンのラベルを更新する
+    /// </summary>
+    cProbePlayerView.prototype.updateAggressiveButtonLabel = function(argLabel)
+    {
+        this.ActoinAggressiveButton.innerHTML = argLabel;
     }
 
     /// <summary>
@@ -208,15 +214,6 @@
     {
         this.Model.setPlayerAction(PokerConst.PlayerAction.Call);
         ns.Engine.ProbeManager.onPlayerActed(this.Model, PokerConst.PlayerAction.Call);
-    }
-
-    /// <summary>
-    /// プレイヤーのアクション状態設定(raise)
-    /// </summary>
-    cProbePlayerView.prototype._onPlayerActionRaise = function(argEvent)
-    {
-        this.Model.setPlayerAction(PokerConst.PlayerAction.Raise);
-        ns.Engine.ProbeManager.onPlayerActed(this.Model, PokerConst.PlayerAction.Raise);
     }
 
     /// <summary>

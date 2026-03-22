@@ -92,7 +92,16 @@
     {
         this.LastAction = argPlayerAction;
         this.View.showPlayerAction(this.LastAction);
-        this.Monitor.showPlayerAction(this.LastAction);
+        if (argPlayerAction == PokerConst.PlayerAction.Bet ||
+            argPlayerAction == PokerConst.PlayerAction.Raise)
+        {
+            const label = ns.Engine.ProbeManager.getBetStageLabel();
+            this.Monitor.showPlayerAction(this.LastAction, label);
+        }
+        else
+        {
+            this.Monitor.showPlayerAction(this.LastAction);
+        }
         ns.Engine.ProbeManager.updateWinRate();
     }
 
