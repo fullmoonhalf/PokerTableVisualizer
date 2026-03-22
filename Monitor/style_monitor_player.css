@@ -93,3 +93,27 @@
     font-weight: bold;
     font-size: 10px;
 }
+
+.TEMPLATE_MONITORPLAYER_PANEL_GROUP_NORMAL
+{
+}
+
+.TEMPLATE_MONITORPLAYER_PANEL_GROUP_STATS
+{
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.TEMPLATE_MONITORPLAYER_PANEL_STATS_VPIP_VALUE
+{
+    position: absolute;
+    top: 20px;
+    font-size: 10px;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+}

@@ -15,6 +15,7 @@
         this.ActionPlayer = null;
         this.DealerProbe = null;
         this.BetStage = 1;
+        this.CurrentBettingRound = PokerConst.BettingRound.Invalid;
     }
 
     /// <summary>
@@ -58,6 +59,7 @@
     /// </summary>
     cProbeManager.prototype.onChangeBettingRound = function(argBettingRound)
     {
+        this.CurrentBettingRound = argBettingRound;
         switch(argBettingRound)
         {
             case PokerConst.BettingRound.DealHand:
@@ -78,6 +80,10 @@
                 for(const probe of this.PlayerProbeCollection)
                 {
                     probe.onStartBettingRound();
+                    if (probe.Alive)
+                    {
+                        probe.onPreflopStart();
+                    }
                 }
                 this._updateAggressiveButtonLabels();
                 this.setActionPlayer(this.getFirstActionPlayer(PokerConst.BettingRound.Preflop));
@@ -225,6 +231,17 @@
         {
             this.BetStage++;
             this._updateAggressiveButtonLabels();
+        }
+
+        if (this.CurrentBettingRound === PokerConst.BettingRound.Preflop)
+        {
+            if (argAction === PokerConst.PlayerAction.Call  ||
+                argAction === PokerConst.PlayerAction.Bet   ||
+                argAction === PokerConst.PlayerAction.Raise ||
+                argAction === PokerConst.PlayerAction.AllIn)
+            {
+                argModel.incrementVpipCount();
+            }
         }
 
         const nextPlayer = this.getNextActionPlayer(argModel);
@@ -571,6 +588,24 @@
         }
 
         return this.DealerProbe;
+    }
+
+    /// <summary>
+    /// 統計表示モードの切替（押している間だけ ON）
+    /// </summary>
+    cProbeManager.prototype.setStatsMode = function(argEnabled)
+    {
+        for (const probe of this.PlayerProbeCollection)
+        {
+            if (argEnabled)
+            {
+                probe.Monitor.showStatsMode(probe.getVpip());
+            }
+            else
+            {
+                probe.Monitor.hideStatsMode();
+            }
+        }
     }
 
     ns.cProbeManager = cProbeManager;
