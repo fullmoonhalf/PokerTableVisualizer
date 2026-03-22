@@ -3,7 +3,7 @@
     position: relative;   /* 基準にする */
     background: #cff;
     width: 400px;
-    height: 215px;
+    height: 150px;
     margin: 2px;
     font-size: 8px;
     border-width: 2px;
@@ -136,18 +136,18 @@
 {
     position: absolute;   /* 親を基準に */
     top: 82px;
-    left: 10px;
+    right: 4px;
 }
 
 .CARD_LIST_GRID
 {
     display: grid;
-    grid-template-columns: repeat(13, 16px);
+    grid-template-columns: repeat(13, 8px);
     gap: 0;
 }
 
 .CARD_LIST_ITEM
 {
-    width: 16px;
-    height: 32px;
+    width: 8px;
+    height: 16px;
 }
