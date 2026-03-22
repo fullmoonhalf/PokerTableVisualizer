@@ -51,6 +51,12 @@
         HtmlUtil.addEventListenerToElement(this.BlindSBInput, "change", this._onBlindValueChange.bind(this));
         HtmlUtil.addEventListenerToElement(this.BlindBBInput, "change", this._onBlindValueChange.bind(this));
 
+        this.StatsButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORDEALER_PANEL_STATS_BUTTON);
+        HtmlUtil.addEventListenerToElement(this.StatsButton, "pointerdown", this._onStatsButtonDown.bind(this));
+        HtmlUtil.addEventListenerToElement(this.StatsButton, "pointerup", this._onStatsButtonUp.bind(this));
+        HtmlUtil.addEventListenerToElement(this.StatsButton, "pointercancel", this._onStatsButtonUp.bind(this));
+        HtmlUtil.addEventListenerToElement(this.StatsButton, "pointerleave", this._onStatsButtonUp.bind(this));
+
         this._disableAllBettingRound();
     }
     cProbeDealerView.prototype = Object.create(ns.cProbeViewBase.prototype);
@@ -228,6 +234,22 @@
     {
         this._disableAllBettingRound();
         this.setActiveButton(argButton);
+    }
+
+    /// <summary>
+    /// 統計ボタン押下（統計表示モード ON）
+    /// </summary>
+    cProbeDealerView.prototype._onStatsButtonDown = function(argEvent)
+    {
+        ns.Engine.ProbeManager.setStatsMode(true);
+    }
+
+    /// <summary>
+    /// 統計ボタン解放（統計表示モード OFF）
+    /// </summary>
+    cProbeDealerView.prototype._onStatsButtonUp = function(argEvent)
+    {
+        ns.Engine.ProbeManager.setStatsMode(false);
     }
 
     ns.cProbeDealerView = cProbeDealerView;

@@ -22,12 +22,6 @@
         this.BoardFlopValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEDEALER_PANEL_FLOP_VALUE);
         this.BoardTurnValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEDEALER_PANEL_TURN_VALUE);
         this.BoardRiverValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEDEALER_PANEL_RIVER_VALUE);
-
-        this.StatsButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORDEALER_PANEL_STATS_BUTTON);
-        HtmlUtil.addEventListenerToElement(this.StatsButton, "pointerdown", this._onStatsButtonDown.bind(this));
-        HtmlUtil.addEventListenerToElement(this.StatsButton, "pointerup", this._onStatsButtonUp.bind(this));
-        HtmlUtil.addEventListenerToElement(this.StatsButton, "pointercancel", this._onStatsButtonUp.bind(this));
-        HtmlUtil.addEventListenerToElement(this.StatsButton, "pointerleave", this._onStatsButtonUp.bind(this));
     }
     cProbeDealerMonitor.prototype = Object.create(ns.cHtmlBase.prototype);
     cProbeDealerMonitor.prototype.constructor = cProbeDealerMonitor;
@@ -81,22 +75,6 @@
     cProbeDealerMonitor.prototype.showBlind = function(argSB, argBB)
     {
         this.BlindValue.innerHTML = `Blind: ${argSB}/${argBB}`;
-    }
-
-    /// <summary>
-    /// 統計ボタン押下（統計表示モード ON）
-    /// </summary>
-    cProbeDealerMonitor.prototype._onStatsButtonDown = function(argEvent)
-    {
-        ns.Engine.ProbeManager.setStatsMode(true);
-    }
-
-    /// <summary>
-    /// 統計ボタン解放（統計表示モード OFF）
-    /// </summary>
-    cProbeDealerMonitor.prototype._onStatsButtonUp = function(argEvent)
-    {
-        ns.Engine.ProbeManager.setStatsMode(false);
     }
 
     ns.cProbeDealerMonitor = cProbeDealerMonitor;
