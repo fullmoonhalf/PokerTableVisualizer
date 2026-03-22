@@ -112,18 +112,19 @@
 {
     position: absolute;
     top: 2px;
-    left: 2px;
+    left: 0;
+    width: 100%;
+    text-align: center;
     font-size: 7px;
     font-weight: bold;
-    z-index: 1;
 }
 
 .TEMPLATE_MONITORPLAYER_PANEL_STATS_HANDRANGE_CANVAS
 {
     position: absolute;
-    top: 0;
-    left: 10px;
-    width: 60px;
-    height: 60px;
+    top: 13px;
+    left: 17px;
+    width: 45px;
+    height: 45px;
     display: block;
 }
