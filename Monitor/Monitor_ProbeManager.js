@@ -167,7 +167,10 @@
         argModel.ActedInRound = true;
         argModel.Reactionable = false;
 
-        if (argAction == PokerConst.PlayerAction.Raise)
+        if (argAction == PokerConst.PlayerAction.Bet   ||
+            argAction == PokerConst.PlayerAction.Call  ||
+            argAction == PokerConst.PlayerAction.Raise ||
+            argAction == PokerConst.PlayerAction.AllIn)
         {
             for (const probe of this.PlayerProbeCollection)
             {
