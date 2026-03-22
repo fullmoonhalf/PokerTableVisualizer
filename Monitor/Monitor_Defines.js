@@ -76,7 +76,6 @@
 	ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_ACTION_ALLIN = "TEMPLATE_PROBEPLAYER_PANEL_ACTION_ALLIN";
 	ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL = "TEMPLATE_PROBEPLAYER_PANEL_CONTROL";
 	ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_ALIVE = "TEMPLATE_PROBEPLAYER_PANEL_CONTROL_ALIVE";
-	ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_ACT = "TEMPLATE_PROBEPLAYER_PANEL_CONTROL_ACT";
 	ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_HOLECARD = "TEMPLATE_PROBEPLAYER_PANEL_HOLECARD";
 	ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_HOLECARD_VALUE = "TEMPLATE_PROBEPLAYER_PANEL_HOLECARD_VALUE";
 	ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_POSITION = "TEMPLATE_PROBEPLAYER_PANEL_CONTROL_POSITION";
@@ -170,6 +169,34 @@
 	ns.Defines.convertPositionName = function(argPlayerCount, argPositionIndex)
 	{
 		return POKER_POSITION_TABLE[argPlayerCount][argPositionIndex];
+	}
+
+	// ポジションのランクを取得する（0=最も有利、OPENSEAT等の未割り当ての場合は-1を返す）
+	const POKER_POSITION_RANK_TABLE = [
+		ns.Defines.POKER_POSITION_DEALER,
+		ns.Defines.POKER_POSITION_CUTOFF,
+		ns.Defines.POKER_POSITION_HIJACK,
+		ns.Defines.POKER_POSITION_LOJACK,
+		ns.Defines.POKER_POSITION_MIDDLEp1,
+		ns.Defines.POKER_POSITION_MIDDLE,
+		ns.Defines.POKER_POSITION_UTGp2,
+		ns.Defines.POKER_POSITION_UTGp1,
+		ns.Defines.POKER_POSITION_UTG,
+		ns.Defines.POKER_POSITION_BB,
+		ns.Defines.POKER_POSITION_SB,
+	];
+	ns.Defines.getPositionRank = function(positionName)
+	{
+		return POKER_POSITION_RANK_TABLE.indexOf(positionName);
+	}
+
+	// プリフロップ開始時の最初のアクションポジション名を取得する
+	ns.Defines.getPreflopStartPositionName = function(aliveCount)
+	{
+		if (aliveCount < 2) return null;
+		if (aliveCount == 2) return ns.Defines.POKER_POSITION_DEALER;
+		if (aliveCount > 10) return null;
+		return POKER_POSITION_TABLE[aliveCount][aliveCount - 3];
 	}
 	
 })(Monitor = Monitor || {});

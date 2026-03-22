@@ -15,6 +15,8 @@
         this.Nick = argName;
         this.Alive = false;
         this.LastAction = PokerConst.PlayerAction.None;
+        this.ActedInRound = false;
+        this.Reactionable = false;
         this.Cardslot = argCardslot;
         this.Position = ns.Defines.POKER_POSITION_OPENSEAT;
     }
@@ -49,11 +51,15 @@
         this.View.showCard(null);
         this.Monitor.showCard(null);
         this.setWinRate(null);
+        this.ActedInRound = false;
+        this.Reactionable = false;
         this.setPlayerAction(PokerConst.PlayerAction.None);
     }
 
     cProbePlayerModel.prototype.onStartNextBettingRound = function()
     {
+        this.ActedInRound = false;
+        this.Reactionable = false;
         switch (this.LastAction) {
             case PokerConst.PlayerAction.Check:
             case PokerConst.PlayerAction.Bet:
@@ -68,6 +74,15 @@
             default:
                 break;
         }
+    }
+
+    /// <summary>
+    /// ベッティングラウンド開始時のフラグリセット（アクション表示は変更しない）
+    /// </summary>
+    cProbePlayerModel.prototype.onStartBettingRound = function()
+    {
+        this.ActedInRound = false;
+        this.Reactionable = false;
     }
 
     /// <summary>
@@ -120,6 +135,10 @@
             this.Alive = argAlive;
             this.View.toDead();
             this.Monitor.toDead();
+            if (ns.Engine.ProbeManager.ActionPlayer === this)
+            {
+                ns.Engine.ProbeManager.resetActionPlayer();
+            }
         }
     }
 
