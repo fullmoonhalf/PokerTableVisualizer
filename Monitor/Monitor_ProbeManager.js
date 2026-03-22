@@ -52,6 +52,8 @@
             this.DealerProbe.bindMonitor(monitor);
             this.DealerProbe.showView();
         }
+
+        this.updateDeckList();
     }
 
     /// <summary>
@@ -72,6 +74,7 @@
                 }
                 this.DealerProbe.onStartDeal();
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.PLAYER_PROBE_PREFIX);
+                this.updateDeckList();
                 break;
             case PokerConst.BettingRound.Preflop:
                 this.BetStage = 2;
@@ -444,6 +447,7 @@
 
         if(hand_info.length < 2)
         {
+            this.updateDeckList();
             return;
         }
 
@@ -459,6 +463,8 @@
 			const rate = Math.round((result_unit.win * 100 / result_unit.comb));
 			seat.setWinRate(rate);
 		}
+
+        this.updateDeckList();
 
     }
 
@@ -605,6 +611,26 @@
             {
                 probe.Monitor.hideStatsMode();
             }
+        }
+    }
+
+    /// <summary>
+    /// デッキ残カード一覧の更新
+    /// </summary>
+    cProbeManager.prototype.updateDeckList = function()
+    {
+        const usedSet = new Set();
+        for (let card = 1; card <= 52; card++)
+        {
+            if (this.Carddeck.isUsed(card))
+            {
+                usedSet.add(card);
+            }
+        }
+        const view = this.DealerProbe ? this.DealerProbe.View : null;
+        if (view && view.showDeckList)
+        {
+            view.showDeckList(usedSet);
         }
     }
 

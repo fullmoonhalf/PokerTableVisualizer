@@ -37,6 +37,7 @@
             this.BettingroundEndButton
         ];
         this.ControlNexthandButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEDEALER_PANEL_CONTROL_NEXT_HAND);
+        this.DeckListValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEDEALER_PANEL_DECKLIST);
 
         ns.cProbeViewBase.call(this, this.HtmlRoot);
 
@@ -115,6 +116,17 @@
     cProbeDealerView.prototype.showRiverCard = function(argCard)
     {
         this.BoardRiverValue.innerHTML = this.createHoleCardsHTML(argCard, ns.Defines.TEMPLATE_GLOBAL_CARD_SMALL, 1);
+    }
+
+    /// <summary>
+    /// デッキ残カード一覧の表示
+    /// argUsedSet: 使用済みカード番号の Set
+    /// </summary>
+    cProbeDealerView.prototype.showDeckList = function(argUsedSet)
+    {
+        if (!this.DeckListValue) return;
+        const allCards = Array.from({ length: 52 }, (_, i) => i + 1);
+        this.DeckListValue.innerHTML = ns.CardListView.createCardListHTML(allCards, argUsedSet);
     }
 
     /// <summary>
