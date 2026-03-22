@@ -73,18 +73,17 @@
                 break;
             case PokerConst.BettingRound.Preflop:
                 this.BetStage = 2;
-                this._updateAggressiveButtonLabels();
                 this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 for(const probe of this.PlayerProbeCollection)
                 {
                     probe.onStartBettingRound();
                 }
+                this._updateAggressiveButtonLabels();
                 this.setActionPlayer(this.getFirstActionPlayer(PokerConst.BettingRound.Preflop));
                 break;
             case PokerConst.BettingRound.Flop:
                 this.BetStage = 1;
-                this._updateAggressiveButtonLabels();
                 this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
@@ -92,30 +91,31 @@
                 {
                     probe.onStartNextBettingRound();
                 }
+                this._updateAggressiveButtonLabels();
                 this.DealerProbe.onStartFlop();
                 this.setActionPlayer(this.getFirstActionPlayer(PokerConst.BettingRound.Flop));
                 break;
             case PokerConst.BettingRound.Turn:
                 this.BetStage = 1;
-                this._updateAggressiveButtonLabels();
                 this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
                 for(const probe of this.PlayerProbeCollection)
                 {
                     probe.onStartNextBettingRound();
                 }
+                this._updateAggressiveButtonLabels();
                 this.DealerProbe.onStartTurn();
                 this.setActionPlayer(this.getFirstActionPlayer(PokerConst.BettingRound.Turn));
                 break;
             case PokerConst.BettingRound.River:
                 this.BetStage = 1;
-                this._updateAggressiveButtonLabels();
                 this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
                 for(const probe of this.PlayerProbeCollection)
                 {
                     probe.onStartNextBettingRound();
                 }
+                this._updateAggressiveButtonLabels();
                 this.DealerProbe.onStartRiver();
                 this.setActionPlayer(this.getFirstActionPlayer(PokerConst.BettingRound.River));
                 break;
@@ -534,7 +534,10 @@
         const label = this.getBetStageLabel();
         for (const probe of this.PlayerProbeCollection)
         {
-            probe.View.updateAggressiveButtonLabel(label);
+            if (this._isActionable(probe))
+            {
+                probe.View.updateAggressiveButtonLabel(label);
+            }
         }
     }
 
