@@ -111,9 +111,19 @@
 .TEMPLATE_MONITORPLAYER_PANEL_STATS_VPIP_VALUE
 {
     position: absolute;
-    top: 20px;
-    font-size: 10px;
+    top: 2px;
+    left: 2px;
+    font-size: 7px;
     font-weight: bold;
-    text-align: center;
-    width: 100%;
+    z-index: 1;
+}
+
+.TEMPLATE_MONITORPLAYER_PANEL_STATS_HANDRANGE_CANVAS
+{
+    position: absolute;
+    top: 0;
+    left: 10px;
+    width: 60px;
+    height: 60px;
+    display: block;
 }

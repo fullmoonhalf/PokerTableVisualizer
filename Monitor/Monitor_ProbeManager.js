@@ -245,6 +245,13 @@
             {
                 argModel.incrementVpipCount();
             }
+
+            // プリフロップ初手アクションをハンドレンジ統計に記録する
+            if (!argModel.PreflopFirstActionRecorded)
+            {
+                const cards = argModel.Cardslot.Cards ?? argModel.Cardslot.estimate();
+                argModel.recordPreflopFirstAction(cards, argAction);
+            }
         }
 
         const nextPlayer = this.getNextActionPlayer(argModel);
@@ -605,7 +612,7 @@
         {
             if (argEnabled)
             {
-                probe.Monitor.showStatsMode(probe.getVpip());
+                probe.Monitor.showStatsMode(probe.getVpip(), probe.HandRangeStats);
             }
             else
             {

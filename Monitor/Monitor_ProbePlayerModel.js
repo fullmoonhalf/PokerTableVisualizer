@@ -22,6 +22,8 @@
         this.HandCount = 0;
         this.VpipCount = 0;
         this.VpipCountedInHand = false;
+        this.HandRangeStats = {};
+        this.PreflopFirstActionRecorded = false;
     }
     cProbePlayerModel.prototype = Object.create(ns.cProbeModelBase.prototype);
     cProbePlayerModel.prototype.constructor = cProbePlayerModel;
@@ -57,6 +59,7 @@
         this.ActedInRound = false;
         this.Reactionable = false;
         this.setPlayerAction(PokerConst.PlayerAction.None);
+        this.PreflopFirstActionRecorded = false;
     }
 
     cProbePlayerModel.prototype.onStartNextBettingRound = function()
@@ -299,6 +302,29 @@
     {
         if (this.HandCount === 0) return 0;
         return Math.round(this.VpipCount * 100 / this.HandCount);
+    }
+
+    /// <summary>
+    /// プリフロップ初手アクションをハンドレンジ統計に記録する（同一ハンド内での重複記録を防ぐ）
+    /// </summary>
+    cProbePlayerModel.prototype.recordPreflopFirstAction = function(argCards, argAction)
+    {
+        if (this.PreflopFirstActionRecorded) return;
+        if (!argCards || argCards.length < 2) return;
+
+        this.PreflopFirstActionRecorded = true;
+
+        const key = ns.HandRange.getHandKey(argCards[0], argCards[1]);
+        if (key === null) return;
+
+        const value = ns.HandRange.getActionValue(argAction);
+
+        if (!this.HandRangeStats[key])
+        {
+            this.HandRangeStats[key] = { count: 0, sum: 0.0 };
+        }
+        this.HandRangeStats[key].count++;
+        this.HandRangeStats[key].sum += value;
     }
 
     ns.cProbePlayerModel = cProbePlayerModel;
