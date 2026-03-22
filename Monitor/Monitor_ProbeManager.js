@@ -167,22 +167,44 @@
         argModel.ActedInRound = true;
         argModel.Reactionable = false;
 
-        if (argAction == PokerConst.PlayerAction.Raise)
-        {
-            for (const probe of this.PlayerProbeCollection)
-            {
-                if (probe == argModel) continue;
-                if (!probe.Alive) continue;
-                if (probe.LastAction == PokerConst.PlayerAction.Fold) continue;
-                if (probe.LastAction == PokerConst.PlayerAction.AllIn) continue;
-                if (probe.ActedInRound &&
-                    (probe.LastAction == PokerConst.PlayerAction.Check ||
-                     probe.LastAction == PokerConst.PlayerAction.Call  ||
-                     probe.LastAction == PokerConst.PlayerAction.Raise))
+        switch (argAction) {
+            case PokerConst.PlayerAction.Call:
+            case PokerConst.PlayerAction.Bet:
                 {
-                    probe.Reactionable = true;
+                    for (const probe of this.PlayerProbeCollection)
+                    {
+                        if (probe == argModel) continue;
+                        if (!probe.Alive) continue;
+                        if (probe.LastAction == PokerConst.PlayerAction.Fold) continue;
+                        if (probe.LastAction == PokerConst.PlayerAction.AllIn) continue;
+                        if (probe.ActedInRound &&
+                            (probe.LastAction == PokerConst.PlayerAction.Check))
+                        {
+                            probe.Reactionable = true;
+                        }
+                    }
                 }
-            }
+                break;
+            case PokerConst.PlayerAction.Raise:
+            case PokerConst.PlayerAction.AllIn:
+                {
+                    for (const probe of this.PlayerProbeCollection)
+                    {
+                        if (probe == argModel) continue;
+                        if (!probe.Alive) continue;
+                        if (probe.LastAction == PokerConst.PlayerAction.Fold) continue;
+                        if (probe.LastAction == PokerConst.PlayerAction.AllIn) continue;
+                        if (probe.ActedInRound &&
+                            (probe.LastAction == PokerConst.PlayerAction.Check ||
+                            probe.LastAction == PokerConst.PlayerAction.Call  ||
+                            probe.LastAction == PokerConst.PlayerAction.Bet  ||
+                            probe.LastAction == PokerConst.PlayerAction.Raise))
+                        {
+                            probe.Reactionable = true;
+                        }
+                    }
+                }
+                break;
         }
 
         const nextPlayer = this.getNextActionPlayer(argModel);
