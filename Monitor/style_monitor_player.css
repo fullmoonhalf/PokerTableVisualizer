@@ -40,6 +40,11 @@
     background: #fcc;
     border-color: #f00;
 }
+.TEMPLATE_MONITORPLAYER_PANEL_LAYOUT_ROOT.active-player
+{
+    background: #ff8;
+    border-color: #fa0;
+}
 
 
 .TEMPLATE_MONITORPLAYER_PANEL_NAME_VALUE

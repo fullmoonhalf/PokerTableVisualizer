@@ -34,6 +34,7 @@
             this.ActoinAllinButton
         ];
         this.ControlAliveButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_ALIVE );
+        this.ControlActButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_ACT );
         this.ControlPositionButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_POSITION );
 
         ns.cProbeViewBase.call(this, this.HtmlRoot);
@@ -45,6 +46,7 @@
         HtmlUtil.addEventListenerToElement(this.ActoinRaiseButton, "click", this._onPlayerActionRaise.bind(this));
         HtmlUtil.addEventListenerToElement(this.ActoinAllinButton, "click", this._onPlayerActionAllin.bind(this));
         HtmlUtil.addEventListenerToElement(this.ControlAliveButton, "click", this._onControlAlive.bind(this));
+        HtmlUtil.addEventListenerToElement(this.ControlActButton, "click", this._onControlAct.bind(this));
         HtmlUtil.addEventListenerToElement(this.ControlPositionButton, "click", this._onControlPositionButton.bind(this));
         HtmlUtil.addEventListenerToElement(this.NickInput, "change", this.onInputNick.bind(this));
 
@@ -152,6 +154,14 @@
 
 
     /// <summary>
+    /// アクション中かどうかの表示
+    /// </summary>
+    cProbePlayerView.prototype.setActing = function(argActing)
+    {
+        this.HtmlRoot.classList.toggle("status_acting", argActing);
+    }
+
+    /// <summary>
     /// </summary>
     cProbePlayerView.prototype.toAlive = function()
     {
@@ -220,6 +230,16 @@
     cProbePlayerView.prototype._onControlAlive = function(argEvent)
     {
         this.Model.toggleAlive();
+    }
+
+    /// <summary>
+    /// アクション中プレイヤーの設定
+    /// </summary>
+    cProbePlayerView.prototype._onControlAct = function(argEvent)
+    {
+        if (this.Model.Alive) {
+            ns.Engine.ProbeManager.setActionPlayer(this.Model);
+        }
     }
 
     /// <summary>

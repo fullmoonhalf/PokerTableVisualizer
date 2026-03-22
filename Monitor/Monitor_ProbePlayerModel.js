@@ -148,6 +148,15 @@
     
 
     /// <summary>
+    /// アクション中かどうかの設定
+    /// </summary>
+    cProbePlayerModel.prototype.setActing = function(argActing)
+    {
+        this.View.setActing(argActing);
+        this.Monitor.setActing(argActing);
+    }
+
+    /// <summary>
     /// ポジションの設定
     /// </summary>
     cProbePlayerModel.prototype.setPosition = function(argPositionName)

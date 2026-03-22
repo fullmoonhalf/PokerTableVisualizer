@@ -12,6 +12,7 @@
     {
         this.PlayerProbeCollection = [];
         this.ButtonPlayer = null;
+        this.ActionPlayer = null;
         this.DealerProbe = null;
     }
 
@@ -59,6 +60,7 @@
         switch(argBettingRound)
         {
             case PokerConst.BettingRound.DealHand:
+                this.resetActionPlayer();
                 this.Carddeck.reset();
                 for(const probe of this.PlayerProbeCollection)
                 {
@@ -68,9 +70,11 @@
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 break;
             case PokerConst.BettingRound.Preflop:
+                this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 break;
             case PokerConst.BettingRound.Flop:
+                this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
                 for(const probe of this.PlayerProbeCollection)
@@ -80,6 +84,7 @@
                 this.DealerProbe.onStartFlop();
                 break;
             case PokerConst.BettingRound.Turn:
+                this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
                 for(const probe of this.PlayerProbeCollection)
                 {
@@ -88,6 +93,7 @@
                 this.DealerProbe.onStartTurn();
                 break;
             case PokerConst.BettingRound.River:
+                this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
                 for(const probe of this.PlayerProbeCollection)
                 {
@@ -121,6 +127,28 @@
         return count;
     }
 
+
+    /// <summary>
+    /// アクション中プレイヤーの設定
+    /// </summary>
+    cProbeManager.prototype.setActionPlayer = function(argPlayerModel)
+    {
+        if (this.ActionPlayer != null) {
+            this.ActionPlayer.setActing(false);
+        }
+        this.ActionPlayer = argPlayerModel;
+        if (this.ActionPlayer != null) {
+            this.ActionPlayer.setActing(true);
+        }
+    }
+
+    /// <summary>
+    /// アクション中プレイヤーのリセット
+    /// </summary>
+    cProbeManager.prototype.resetActionPlayer = function()
+    {
+        this.setActionPlayer(null);
+    }
 
     /// <summary>
     /// ボタンの変更(直接指定)
