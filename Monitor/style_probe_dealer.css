@@ -131,3 +131,23 @@
     top: 60px;
     left: 10px;
 }
+
+.TEMPLATE_PROBEDEALER_PANEL_DECKLIST
+{
+    position: absolute;   /* 親を基準に */
+    top: 0px;
+    right: 4px;
+}
+
+.CARD_LIST_GRID
+{
+    display: grid;
+    grid-template-columns: repeat(13, 10px);
+    gap: 0;
+}
+
+.CARD_LIST_ITEM
+{
+    width: 10px;
+    height: 20px;
+}
