@@ -176,6 +176,19 @@
     
 
     /// <summary>
+    /// アクション可能かどうかの判定
+    /// </summary>
+    cProbePlayerModel.prototype.isActionable = function()
+    {
+        if (!this.Alive) return false;
+        if (this.LastAction == PokerConst.PlayerAction.Fold) return false;
+        if (this.LastAction == PokerConst.PlayerAction.AllIn) return false;
+        if (this.ActedInRound && !this.Reactionable) return false;
+        return true;
+    }
+
+
+    /// <summary>
     /// アクション中かどうかの設定
     /// </summary>
     cProbePlayerModel.prototype.setActing = function(argActing)

@@ -229,18 +229,6 @@
     }
 
     /// <summary>
-    /// アクション可能かどうかの判定
-    /// </summary>
-    cProbeManager.prototype._isActionable = function(argPlayer)
-    {
-        if (!argPlayer.Alive) return false;
-        if (argPlayer.LastAction == PokerConst.PlayerAction.Fold) return false;
-        if (argPlayer.LastAction == PokerConst.PlayerAction.AllIn) return false;
-        if (argPlayer.ActedInRound && !argPlayer.Reactionable) return false;
-        return true;
-    }
-
-    /// <summary>
     /// ベッティングラウンド開始時の最初のアクションプレイヤーを取得
     /// </summary>
     cProbeManager.prototype.getFirstActionPlayer = function(argBettingRound)
@@ -255,7 +243,7 @@
 
             // 指定されたポジションのプレイヤーを探す
             const startPlayer = this.PlayerProbeCollection.find(
-                p => p.Alive && p.Position == startPositionName && this._isActionable(p)
+                p => p.Alive && p.Position == startPositionName && p.isActionable()
             );
             if (startPlayer) return startPlayer;
 
@@ -270,7 +258,7 @@
             let bestRank = -1;
             for (const probe of this.PlayerProbeCollection)
             {
-                if (!this._isActionable(probe)) continue;
+                if (!probe.isActionable()) continue;
                 const rank = ns.Defines.getPositionRank(probe.Position);
                 if (rank > bestRank)
                 {
@@ -294,7 +282,7 @@
         let nextRank = -1;
         for (const probe of this.PlayerProbeCollection)
         {
-            if (!this._isActionable(probe)) continue;
+            if (!probe.isActionable()) continue;
             const rank = ns.Defines.getPositionRank(probe.Position);
             if (rank < currentRank && rank > nextRank)
             {
@@ -318,7 +306,7 @@
         let bestRank = -1;
         for (const probe of this.PlayerProbeCollection)
         {
-            if (!this._isActionable(probe)) continue;
+            if (!probe.isActionable()) continue;
             const rank = ns.Defines.getPositionRank(probe.Position);
             if (rank <= argMaxRank && rank > bestRank)
             {
@@ -338,7 +326,7 @@
         let bestRank = -1;
         for (const probe of this.PlayerProbeCollection)
         {
-            if (!this._isActionable(probe)) continue;
+            if (!probe.isActionable()) continue;
             const rank = ns.Defines.getPositionRank(probe.Position);
             if (rank > bestRank)
             {
@@ -534,7 +522,7 @@
         const label = this.getBetStageLabel();
         for (const probe of this.PlayerProbeCollection)
         {
-            if (this._isActionable(probe))
+            if (probe.isActionable())
             {
                 probe.View.updateAggressiveButtonLabel(label);
             }
