@@ -92,7 +92,16 @@
     {
         this.LastAction = argPlayerAction;
         this.View.showPlayerAction(this.LastAction);
-        this.Monitor.showPlayerAction(this.LastAction);
+        if (argPlayerAction == PokerConst.PlayerAction.Bet ||
+            argPlayerAction == PokerConst.PlayerAction.Raise)
+        {
+            const label = ns.Engine.ProbeManager.getBetStageLabel();
+            this.Monitor.showPlayerAction(this.LastAction, label);
+        }
+        else
+        {
+            this.Monitor.showPlayerAction(this.LastAction);
+        }
         ns.Engine.ProbeManager.updateWinRate();
     }
 
@@ -165,6 +174,28 @@
         }
     }
     
+
+    /// <summary>
+    /// アクション可能かどうかの判定
+    /// </summary>
+    cProbePlayerModel.prototype.isActionable = function()
+    {
+        if (!this.Alive) return false;
+        if (this.LastAction == PokerConst.PlayerAction.Fold) return false;
+        if (this.LastAction == PokerConst.PlayerAction.AllIn) return false;
+        if (this.ActedInRound && !this.Reactionable) return false;
+        return true;
+    }
+
+    /// <summary>
+    /// アグレッシブアクションを選択済みかどうかの判定
+    /// </summary>
+    cProbePlayerModel.prototype.hasSelectedAggressiveAction = function()
+    {
+        return this.LastAction == PokerConst.PlayerAction.Bet ||
+               this.LastAction == PokerConst.PlayerAction.Raise;
+    }
+
 
     /// <summary>
     /// アクション中かどうかの設定

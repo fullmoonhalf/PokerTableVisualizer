@@ -25,7 +25,7 @@
     /// <summary>
     /// プレイヤーアクションの表示
     /// </summary>
-    cProbePlayerMonitor.prototype.showPlayerAction = function(argPlayerAction)
+    cProbePlayerMonitor.prototype.showPlayerAction = function(argPlayerAction, argAggressiveLabel)
     {
         switch (argPlayerAction) {
             case PokerConst.PlayerAction.None:
@@ -44,7 +44,7 @@
         		this.LayoutRoot.classList.toggle("fold", false);
         		this.LayoutRoot.classList.toggle("allin", false);
         		this.LayoutRoot.classList.toggle("aggressive", true);
-                this.ActionValue.innerHTML = "Bet";
+                this.ActionValue.innerHTML = argAggressiveLabel || "Bet";
                 break;
             case PokerConst.PlayerAction.Call:
         		this.LayoutRoot.classList.toggle("fold", false);
@@ -56,7 +56,7 @@
         		this.LayoutRoot.classList.toggle("fold", false);
         		this.LayoutRoot.classList.toggle("allin", false);
         		this.LayoutRoot.classList.toggle("aggressive", true);
-                this.ActionValue.innerHTML = "Raise";
+                this.ActionValue.innerHTML = argAggressiveLabel || "Raise";
                 break;
             case PokerConst.PlayerAction.Fold:
         		this.LayoutRoot.classList.toggle("fold", true);

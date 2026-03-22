@@ -14,6 +14,7 @@
         this.ButtonPlayer = null;
         this.ActionPlayer = null;
         this.DealerProbe = null;
+        this.BetStage = 1;
     }
 
     /// <summary>
@@ -60,6 +61,7 @@
         switch(argBettingRound)
         {
             case PokerConst.BettingRound.DealHand:
+                this.BetStage = 1;
                 this.resetActionPlayer();
                 this.Carddeck.reset();
                 for(const probe of this.PlayerProbeCollection)
@@ -70,15 +72,18 @@
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 break;
             case PokerConst.BettingRound.Preflop:
+                this.BetStage = 2;
                 this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 for(const probe of this.PlayerProbeCollection)
                 {
                     probe.onStartBettingRound();
                 }
+                this._updateAggressiveButtonLabels();
                 this.setActionPlayer(this.getFirstActionPlayer(PokerConst.BettingRound.Preflop));
                 break;
             case PokerConst.BettingRound.Flop:
+                this.BetStage = 1;
                 this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
@@ -86,30 +91,36 @@
                 {
                     probe.onStartNextBettingRound();
                 }
+                this._updateAggressiveButtonLabels();
                 this.DealerProbe.onStartFlop();
                 this.setActionPlayer(this.getFirstActionPlayer(PokerConst.BettingRound.Flop));
                 break;
             case PokerConst.BettingRound.Turn:
+                this.BetStage = 1;
                 this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
                 for(const probe of this.PlayerProbeCollection)
                 {
                     probe.onStartNextBettingRound();
                 }
+                this._updateAggressiveButtonLabels();
                 this.DealerProbe.onStartTurn();
                 this.setActionPlayer(this.getFirstActionPlayer(PokerConst.BettingRound.Turn));
                 break;
             case PokerConst.BettingRound.River:
+                this.BetStage = 1;
                 this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
                 for(const probe of this.PlayerProbeCollection)
                 {
                     probe.onStartNextBettingRound();
                 }
+                this._updateAggressiveButtonLabels();
                 this.DealerProbe.onStartRiver();
                 this.setActionPlayer(this.getFirstActionPlayer(PokerConst.BettingRound.River));
                 break;
             case PokerConst.BettingRound.EndHand:
+                this.BetStage = 1;
                 this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.DEALER_PROBE_PREFIX);
@@ -148,6 +159,9 @@
         this.ActionPlayer = argPlayerModel;
         if (this.ActionPlayer != null) {
             this.ActionPlayer.setActing(true);
+            if (this.ActionPlayer.isActionable()) {
+                this.ActionPlayer.View.updateAggressiveButtonLabel(this.getBetStageLabel());
+            }
         }
     }
 
@@ -207,20 +221,14 @@
                 break;
         }
 
+        if (argAction == PokerConst.PlayerAction.Bet || argAction == PokerConst.PlayerAction.Raise)
+        {
+            this.BetStage++;
+            this._updateAggressiveButtonLabels();
+        }
+
         const nextPlayer = this.getNextActionPlayer(argModel);
         this.setActionPlayer(nextPlayer);
-    }
-
-    /// <summary>
-    /// アクション可能かどうかの判定
-    /// </summary>
-    cProbeManager.prototype._isActionable = function(argPlayer)
-    {
-        if (!argPlayer.Alive) return false;
-        if (argPlayer.LastAction == PokerConst.PlayerAction.Fold) return false;
-        if (argPlayer.LastAction == PokerConst.PlayerAction.AllIn) return false;
-        if (argPlayer.ActedInRound && !argPlayer.Reactionable) return false;
-        return true;
     }
 
     /// <summary>
@@ -238,7 +246,7 @@
 
             // 指定されたポジションのプレイヤーを探す
             const startPlayer = this.PlayerProbeCollection.find(
-                p => p.Alive && p.Position == startPositionName && this._isActionable(p)
+                p => p.Alive && p.Position == startPositionName && p.isActionable()
             );
             if (startPlayer) return startPlayer;
 
@@ -253,7 +261,7 @@
             let bestRank = -1;
             for (const probe of this.PlayerProbeCollection)
             {
-                if (!this._isActionable(probe)) continue;
+                if (!probe.isActionable()) continue;
                 const rank = ns.Defines.getPositionRank(probe.Position);
                 if (rank > bestRank)
                 {
@@ -277,7 +285,7 @@
         let nextRank = -1;
         for (const probe of this.PlayerProbeCollection)
         {
-            if (!this._isActionable(probe)) continue;
+            if (!probe.isActionable()) continue;
             const rank = ns.Defines.getPositionRank(probe.Position);
             if (rank < currentRank && rank > nextRank)
             {
@@ -301,7 +309,7 @@
         let bestRank = -1;
         for (const probe of this.PlayerProbeCollection)
         {
-            if (!this._isActionable(probe)) continue;
+            if (!probe.isActionable()) continue;
             const rank = ns.Defines.getPositionRank(probe.Position);
             if (rank <= argMaxRank && rank > bestRank)
             {
@@ -321,7 +329,7 @@
         let bestRank = -1;
         for (const probe of this.PlayerProbeCollection)
         {
-            if (!this._isActionable(probe)) continue;
+            if (!probe.isActionable()) continue;
             const rank = ns.Defines.getPositionRank(probe.Position);
             if (rank > bestRank)
             {
@@ -489,6 +497,39 @@
         return {
             infos: infos,
         };
+    }
+
+    /// <summary>
+    /// 現在のベット段階のラベルを取得する
+    /// </summary>
+    cProbeManager.prototype.getBetStageLabel = function()
+    {
+        if (this.BetStage === 1) return "Bet";
+        if (this.BetStage === 2) return "Raise";
+        return this.BetStage + "-Bet";
+    }
+
+    /// <summary>
+    /// 現在のベット段階に対応するプレイヤーアクションを取得する
+    /// </summary>
+    cProbeManager.prototype.getAggressivePlayerAction = function()
+    {
+        return this.BetStage === 1 ? PokerConst.PlayerAction.Bet : PokerConst.PlayerAction.Raise;
+    }
+
+    /// <summary>
+    /// 全プレイヤービューのアグレッシブボタンラベルを更新する
+    /// </summary>
+    cProbeManager.prototype._updateAggressiveButtonLabels = function()
+    {
+        const label = this.getBetStageLabel();
+        for (const probe of this.PlayerProbeCollection)
+        {
+            if (probe.isActionable() && !probe.hasSelectedAggressiveAction())
+            {
+                probe.View.updateAggressiveButtonLabel(label);
+            }
+        }
     }
 
     /// <summary>
