@@ -181,12 +181,7 @@
     /// </summary>
     cProbeManager.prototype.updateWinRate = function()
     {
-		// 現在の制約上、フロップが開くまでは確率表示できない。
 		const community_cards = this.DealerProbe.getCurrentCommunityCards();
-		if(community_cards.length < 3)
-		{
-			return;
-		}
 
 		// 勝率計算処理に食わせられるようにする
 		let index_table = [];
@@ -212,8 +207,15 @@
             hand_info.push(cards);
 		}
 
+        if(hand_info.length < 2)
+        {
+            return;
+        }
+
 		// 勝率計算
-		const result = WinRate.calc(hand_info, community_cards, [])
+        const result = community_cards.length >= 3
+            ? WinRate.calc(hand_info, community_cards, [])
+            : this._calcMonteCarloWinRate(hand_info, community_cards, 1000);
 		for(let result_index=0; result_index<result.infos.length; ++result_index)
 		{
 			const access_index = index_table[result_index];
@@ -223,6 +225,60 @@
 			seat.setWinRate(rate);
 		}
 
+    }
+
+    /// <summary>
+    /// フロップ未満の勝率をモンテカルロで推定する
+    /// </summary>
+    cProbeManager.prototype._calcMonteCarloWinRate = function(argHands, argBoard, argTrialCount)
+    {
+        const exclude = []
+            .concat(...argHands)
+            .concat(argBoard ?? []);
+        const baseDeck = WinRate.genDeck(exclude);
+        const drawCount = 5 - argBoard.length;
+        const infos = argHands.map(hand => ({
+            hand: hand,
+            win: 0,
+            comb: argTrialCount,
+        }));
+
+        for(let trial = 0; trial < argTrialCount; ++trial)
+        {
+            const remainDeck = baseDeck.slice();
+            const sampledBoard = argBoard.slice();
+            for(let draw = 0; draw < drawCount; ++draw)
+            {
+                const index = Math.floor(Math.random() * remainDeck.length);
+                sampledBoard.push(remainDeck[index]);
+                remainDeck.splice(index, 1);
+            }
+
+            let winners = [];
+            let maxPower = 0;
+            for(let handIndex = 0; handIndex < argHands.length; ++handIndex)
+            {
+                const power = WinRate.calcPower7Cards(argHands[handIndex].concat(sampledBoard));
+                if(maxPower < power)
+                {
+                    maxPower = power;
+                    winners = [handIndex];
+                }
+                else if(maxPower == power)
+                {
+                    winners.push(handIndex);
+                }
+            }
+
+            for(const winnerIndex of winners)
+            {
+                infos[winnerIndex].win++;
+            }
+        }
+
+        return {
+            infos: infos,
+        };
     }
 
     /// <summary>
