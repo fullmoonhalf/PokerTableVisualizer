@@ -39,13 +39,22 @@
 
 .TEMPLATE_PROBEDEALER_PANEL_FLOP_VALUE
 {
-    margin-right: 10px;
+    position: absolute;   /* 親を基準に */
+    left: 60px;
+    width: 100px;
 }
 
 
 .TEMPLATE_PROBEDEALER_PANEL_TURN_VALUE
 {
-    margin-right: 10px;
+    position: absolute;   /* 親を基準に */
+    left: 30px;
+}
+
+.TEMPLATE_PROBEDEALER_PANEL_RIVER_VALUE
+{
+    position: absolute;   /* 親を基準に */
+    left: 0px;
 }
 
 .TEMPLATE_PROBEDEALER_PANEL_LASTUPDATE
@@ -56,9 +65,6 @@
     left: 10px;
 }
 
-.TEMPLATE_PROBEDEALER_PANEL_RIVER_VALUE
-{
-}
 
 
 .TEMPLATE_PROBEDEALER_PANEL_BLIND
