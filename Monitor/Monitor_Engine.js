@@ -25,12 +25,14 @@
         this.ProbeManager = new ns.cProbeManager();
         this.ViewManager = new ns.cViewManager();
         this.MonitorManager = new ns.cMonitorManager();
+        this.GuideManager = new ns.cGuideManager();
 
         // 初期化
         this.ProbeDeviceManager.init();
         this.ProbeManager.init();
         this.ViewManager.setup();
         this.MonitorManager.setup();
+        this.GuideManager.setup();
     }
 
     ns.cEngine = cEngine;
