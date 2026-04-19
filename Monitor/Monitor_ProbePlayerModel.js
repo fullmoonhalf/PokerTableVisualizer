@@ -231,6 +231,7 @@
         // 基本情報
         this.setStatus(true);
         this.setBattery(argValue.battery);
+        this.setCharging(argValue.charging !== undefined ? argValue.charging : null);
         this.View.updateLastupdateTime();
 
         // モードに合わせた対応

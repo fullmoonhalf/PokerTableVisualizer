@@ -144,6 +144,7 @@
         // 共通
         this.setStatus(true);
         this.setBattery(argValue.battery);
+        this.setCharging(argValue.charging !== undefined ? argValue.charging : null);
         this.View.updateLastupdateTime();
     }
 

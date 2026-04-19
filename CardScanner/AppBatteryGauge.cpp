@@ -41,6 +41,12 @@ int AppBatteryGauge::getBatteryLevel()
 }
 
 
+bool AppBatteryGauge::isCharging()
+{
+    return M5.Power.isCharging();
+}
+
+
 void AppBatteryGauge::update()
 {
     char buffer[32];

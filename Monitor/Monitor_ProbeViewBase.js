@@ -43,6 +43,25 @@
     }
 
     /// <summary>
+    /// 充電状態の表示
+    /// </summary>
+    cProbeViewBase.prototype.showCharging = function(argCharging)
+    {
+        if(argCharging === true)
+        {
+            this.BatteryLabel.innerHTML = ns.Defines.CHARGING_EMOJI_CHARGING;
+        }
+        else if(argCharging === false)
+        {
+            this.BatteryLabel.innerHTML = ns.Defines.CHARGING_EMOJI_NOT_CHARGING;
+        }
+        else
+        {
+            this.BatteryLabel.innerHTML = ns.Defines.CHARGING_EMOJI_UNKNOWN;
+        }
+    }
+
+    /// <summary>
     /// 接続状態の表示
     /// </summary>
     cProbeViewBase.prototype.showStatus = function(argValue)

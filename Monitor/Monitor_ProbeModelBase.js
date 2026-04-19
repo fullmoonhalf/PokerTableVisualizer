@@ -12,6 +12,7 @@
     {
         this.Status = false;
         this.Battery = 0;
+        this.IsCharging = null;
         this.View = null;
     }
 
@@ -31,6 +32,15 @@
     {
         this.Battery = argBattery;
         this.View.showBattery(this.Battery);
+    }
+
+    /// <summary>
+    /// 充電状態の設定
+    /// </summary>
+    cProbeModelBase.prototype.setCharging = function(argCharging)
+    {
+        this.IsCharging = argCharging;
+        this.View.showCharging(this.IsCharging);
     }
 
     /// <summary>
