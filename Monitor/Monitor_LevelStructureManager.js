@@ -251,9 +251,10 @@
     /// </summary>
     cLevelStructureManager.prototype._addLevel = function () {
         var levels = this._levelStructure.levels;
-        var nextLevel = levels.length > 0 ? levels[levels.length - 1].level + 1 : 1;
-        var lastSB = levels.length > 0 ? levels[levels.length - 1].smallBlind : 100;
-        var lastBB = levels.length > 0 ? levels[levels.length - 1].bigBlind : 200;
+        var lastLevel = levels.length > 0 ? levels[levels.length - 1] : null;
+        var nextLevel = lastLevel ? lastLevel.level + 1 : 1;
+        var lastSB = lastLevel ? lastLevel.smallBlind : 100;
+        var lastBB = lastLevel ? lastLevel.bigBlind : 200;
         levels.push({ level: nextLevel, smallBlind: lastSB, bigBlind: lastBB });
         this._scheduleSave();
         this._renderLevelList();

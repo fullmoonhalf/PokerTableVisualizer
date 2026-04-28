@@ -234,7 +234,7 @@
         var self = this;
         argLevels.forEach(function (levelItem) {
             var option = document.createElement("option");
-            option.textContent = "Level " + levelItem.level + ": " + levelItem.smallBlind + " / " + levelItem.bigBlind;
+            option.textContent = `Level ${levelItem.level}: ${levelItem.smallBlind} / ${levelItem.bigBlind}`;
             option.dataset.level = levelItem.level;
             option.dataset.sb = levelItem.smallBlind;
             option.dataset.bb = levelItem.bigBlind;
