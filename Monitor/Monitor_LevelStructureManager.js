@@ -215,7 +215,7 @@
             delBtn.textContent = "✕";
             delBtn.addEventListener("click", function () {
                 // レベルが1つしかない場合は削除不可
-                if(self._levelStructure.level.length <= 1)
+                if(self._levelStructure.levels.length <= 1)
                 {
                     return;
                 }
