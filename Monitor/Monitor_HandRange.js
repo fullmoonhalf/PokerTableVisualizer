@@ -141,6 +141,8 @@
         const cellW = w / MATRIX_SIZE;
         const cellH = h / MATRIX_SIZE;
 
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, w, h);
         for (let r = 0; r < MATRIX_SIZE; r++)
         {
             for (let c = 0; c < MATRIX_SIZE; c++)
@@ -161,6 +163,17 @@
                 ctx.fillRect(c * cellW, r * cellH, cellW, cellH);
             }
         }
+
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(0, cellH*4);
+        ctx.lineTo(w, cellH*4);
+        ctx.stroke();
+        ctx.moveTo(cellW*4, 0);
+        ctx.lineTo(cellW*4, h);
+        ctx.stroke();
+
     };
 
 })(Monitor = Monitor || {});
