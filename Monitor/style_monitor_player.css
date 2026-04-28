@@ -119,6 +119,17 @@
     font-weight: bold;
 }
 
+.TEMPLATE_MONITORPLAYER_PANEL_STATS_PFR_VALUE
+{
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 7px;
+    font-weight: bold;
+}
+
 .TEMPLATE_MONITORPLAYER_PANEL_STATS_HANDRANGE_CANVAS
 {
     position: absolute;
