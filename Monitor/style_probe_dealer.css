@@ -76,19 +76,11 @@
 }
 
 
-.TEMPLATE_PROBEDEALER_PANEL_BLIND_SB_INPUT
+.TEMPLATE_PROBEDEALER_PANEL_BLIND_SELECT
 {
-    width: 35px;
     font-size: 8px;
     margin: 0px 2px;
-}
-
-
-.TEMPLATE_PROBEDEALER_PANEL_BLIND_BB_INPUT
-{
-    width: 35px;
-    font-size: 8px;
-    margin: 0px 2px;
+    max-width: 120px;
 }
 
 

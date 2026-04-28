@@ -43,11 +43,19 @@
     }
 
     /// <summary>
-    /// localStorage へ設定を保存する
+    /// localStorage の guide セクションだけを上書き保存する
     /// </summary>
     function saveSettings(settings) {
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+            var current = {};
+            try {
+                var raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    current = JSON.parse(raw);
+                }
+            } catch (e) {}
+            current.guide = settings.guide;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
         } catch (e) {
             console.error("monitor_settings: save failed.", e);
         }

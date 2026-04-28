@@ -26,6 +26,7 @@
         this.ViewManager = new ns.cViewManager();
         this.MonitorManager = new ns.cMonitorManager();
         this.GuideManager = new ns.cGuideManager();
+        this.LevelStructureManager = new ns.cLevelStructureManager();
 
         // 初期化
         this.ProbeDeviceManager.init();
@@ -33,6 +34,7 @@
         this.ViewManager.setup();
         this.MonitorManager.setup();
         this.GuideManager.setup();
+        this.LevelStructureManager.setup();
     }
 
     ns.cEngine = cEngine;
