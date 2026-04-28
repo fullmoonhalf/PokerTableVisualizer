@@ -214,6 +214,12 @@
             delBtn.className = "DEVELOP_COMMAND_BUTTON";
             delBtn.textContent = "✕";
             delBtn.addEventListener("click", function () {
+                // レベルが1つしかない場合は削除不可
+                if(self._levelStructure.level.length <= 1)
+                {
+                    return;
+                }
+                // 削除
                 var idx = self._levelStructure.levels.indexOf(levelItem);
                 if (idx !== -1) {
                     self._levelStructure.levels.splice(idx, 1);
