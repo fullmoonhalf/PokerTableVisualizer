@@ -16,6 +16,7 @@
         this.DealerProbe = null;
         this.BetStage = 1;
         this.CurrentBettingRound = PokerConst.BettingRound.Invalid;
+        this.hasPreflopRaiseOccurred = false;
     }
 
     /// <summary>
@@ -78,6 +79,7 @@
                 break;
             case PokerConst.BettingRound.Preflop:
                 this.BetStage = 2;
+                this.hasPreflopRaiseOccurred = false;
                 this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 for(const probe of this.PlayerProbeCollection)
@@ -249,6 +251,24 @@
                 argAction === PokerConst.PlayerAction.AllIn)
             {
                 argModel.incrementPfrCount();
+            }
+
+            if (this.hasPreflopRaiseOccurred)
+            {
+                argModel.markThreeBetOpportunity();
+                if (argAction === PokerConst.PlayerAction.Raise ||
+                    argAction === PokerConst.PlayerAction.Bet   ||
+                    argAction === PokerConst.PlayerAction.AllIn)
+                {
+                    argModel.incrementThreeBetCount();
+                }
+            }
+
+            if (argAction === PokerConst.PlayerAction.Raise ||
+                argAction === PokerConst.PlayerAction.Bet   ||
+                argAction === PokerConst.PlayerAction.AllIn)
+            {
+                this.hasPreflopRaiseOccurred = true;
             }
 
             // プリフロップ初手アクションをハンドレンジ統計に記録する
@@ -617,7 +637,7 @@
         {
             if (argEnabled)
             {
-                probe.Monitor.showStatsMode(probe.getVpip(), probe.getPfr(), probe.HandRangeStats);
+                probe.Monitor.showStatsMode(probe.getVpip(), probe.getPfr(), probe.getThreeBet(), probe.HandRangeStats);
             }
             else
             {
