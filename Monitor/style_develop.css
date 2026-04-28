@@ -1,9 +1,14 @@
 /* 開発エリア */
 .develop
 {
-    display: flex;
+    display:block;
     align-items: center;
     border: 1px solid red;
+}
+
+.develop_unit
+{
+    width: 100%;
 }
 
 .DEVELOP_COMMAND_BUTTON
