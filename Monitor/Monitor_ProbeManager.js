@@ -16,7 +16,6 @@
         this.DealerProbe = null;
         this.BetStage = 1;
         this.CurrentBettingRound = PokerConst.BettingRound.Invalid;
-        this.hasPreflopRaiseOccurred = false;
     }
 
     /// <summary>
@@ -79,7 +78,6 @@
                 break;
             case PokerConst.BettingRound.Preflop:
                 this.BetStage = 2;
-                this.hasPreflopRaiseOccurred = false;
                 this.resetActionPlayer();
                 ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 for(const probe of this.PlayerProbeCollection)
@@ -232,6 +230,7 @@
                 break;
         }
 
+        // BetStage の更新
         if (argAction == PokerConst.PlayerAction.Bet || argAction == PokerConst.PlayerAction.Raise)
         {
             this.BetStage++;
@@ -240,6 +239,7 @@
 
         if (this.CurrentBettingRound === PokerConst.BettingRound.Preflop)
         {
+            // VPIP のカウント
             if (argAction === PokerConst.PlayerAction.Call  ||
                 argAction === PokerConst.PlayerAction.Raise ||
                 argAction === PokerConst.PlayerAction.AllIn)
@@ -247,13 +247,15 @@
                 argModel.incrementVpipCount();
             }
 
+            // PFR のカウント
             if (argAction === PokerConst.PlayerAction.Raise ||
                 argAction === PokerConst.PlayerAction.AllIn)
             {
                 argModel.incrementPfrCount();
             }
 
-            if (this.hasPreflopRaiseOccurred)
+            // 3Bet のカウント
+            if (this.BetStage == 3)
             {
                 argModel.markThreeBetOpportunity();
                 if (argAction === PokerConst.PlayerAction.Raise ||
@@ -262,13 +264,6 @@
                 {
                     argModel.incrementThreeBetCount();
                 }
-            }
-
-            if (argAction === PokerConst.PlayerAction.Raise ||
-                argAction === PokerConst.PlayerAction.Bet   ||
-                argAction === PokerConst.PlayerAction.AllIn)
-            {
-                this.hasPreflopRaiseOccurred = true;
             }
 
             // プリフロップ初手アクションをハンドレンジ統計に記録する
