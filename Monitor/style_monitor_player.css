@@ -125,7 +125,7 @@
 .TEMPLATE_MONITORPLAYER_PANEL_STATS_VPIP_VALUE
 {
     position: absolute;
-    top: 10px;
+    top: 12px;
     left: 55px;
     font-size: 8px;
 }
@@ -133,7 +133,7 @@
 .TEMPLATE_MONITORPLAYER_PANEL_STATS_PFR_VALUE
 {
     position: absolute;
-    top: 18px;
+    top: 22px;
     left: 55px;
     font-size: 8px;
 }
@@ -141,7 +141,7 @@
 .TEMPLATE_MONITORPLAYER_PANEL_STATS_3BET_VALUE
 {
     position: absolute;
-    top: 26px;
+    top: 32px;
     left: 55px;
     font-size: 8px;
 }
