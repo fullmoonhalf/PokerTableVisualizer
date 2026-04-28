@@ -130,6 +130,14 @@
     font-size: 8px;
 }
 
+.TEMPLATE_MONITORPLAYER_PANEL_STATS_3BET_VALUE
+{
+    position: absolute;
+    top: 18px;
+    left: 55px;
+    font-size: 8px;
+}
+
 .TEMPLATE_MONITORPLAYER_PANEL_STATS_HANDRANGE_CANVAS
 {
     position: absolute;
