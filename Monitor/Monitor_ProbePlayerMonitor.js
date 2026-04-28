@@ -23,6 +23,7 @@
         this.VpipValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_STATS_VPIP_VALUE, "");
         this.PfrValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_STATS_PFR_VALUE, "");
         this.ThreeBetValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_STATS_3BET_VALUE, "");
+        this.HandCountValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_STATS_HANDCOUNT_VALUE, "");
         this.HandRangeCanvas = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_STATS_HANDRANGE_CANVAS);
     }
     cProbePlayerMonitor.prototype = Object.create(ns.cHtmlBase.prototype);
@@ -147,10 +148,11 @@
     /// <summary>
     /// 統計表示モード ON（通常グループを隠し、統計グループを表示）
     /// </summary>
-    cProbePlayerMonitor.prototype.showStatsMode = function(argVpip, argPfr, arg3Bet, argHandRangeStats)
+    cProbePlayerMonitor.prototype.showStatsMode = function(argHandCount, argVpip, argPfr, arg3Bet, argHandRangeStats)
     {
         this.NormalGroup.style.display = "none";
         this.StatsGroup.style.display = "";
+        this.HandCountValue.innerHTML = `Hands: ${argHandCount}`;
         this.VpipValue.innerHTML = `VPIP: ${argVpip}%`;
         this.PfrValue.innerHTML = `PFR: ${argPfr}%`;
         this.ThreeBetValue.innerHTML = `3BET: ${arg3Bet}%`;
