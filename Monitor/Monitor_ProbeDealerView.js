@@ -19,8 +19,7 @@
         this.BoardTurnValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEDEALER_PANEL_TURN_VALUE);
         this.BoardRiverValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEDEALER_PANEL_RIVER_VALUE);
 
-        this.BlindSBInput = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEDEALER_PANEL_BLIND_SB_INPUT);
-        this.BlindBBInput = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEDEALER_PANEL_BLIND_BB_INPUT);
+        this.BlindSelect = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEDEALER_PANEL_BLIND_SELECT);
 
         this.BettingroundDealButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEDEALER_PANEL_BETTINGROUND_DEAL);
         this.BettingroundPreflopButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEDEALER_PANEL_BETTINGROUND_PREFLOP);
@@ -49,8 +48,7 @@
         HtmlUtil.addEventListenerToElement(this.BettingroundEndButton, "click", this._onBettingroundEnd.bind(this));
         HtmlUtil.addEventListenerToElement(this.ControlNexthandButton, "click", this._ControlNexthandButton.bind(this));
         HtmlUtil.addEventListenerToElement(this.HandcountValue, "change", this._onHandcountValueChange.bind(this));
-        HtmlUtil.addEventListenerToElement(this.BlindSBInput, "change", this._onBlindValueChange.bind(this));
-        HtmlUtil.addEventListenerToElement(this.BlindBBInput, "change", this._onBlindValueChange.bind(this));
+        HtmlUtil.addEventListenerToElement(this.BlindSelect, "change", this._onBlindSelectChange.bind(this));
 
         this.StatsButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORDEALER_PANEL_STATS_BUTTON);
         HtmlUtil.addEventListenerToElement(this.StatsButton, "pointerdown", this._onStatsButtonDown.bind(this));
@@ -210,21 +208,47 @@
     }
 
     /// <summary>
-    /// ブラインド
+    /// ブラインドセレクト変更
     /// </summary>
-    cProbeDealerView.prototype._onBlindValueChange = function(argEvent)
+    cProbeDealerView.prototype._onBlindSelectChange = function(argEvent)
     {
-        const sb = HtmlUtil.tryGetInputNumber(this.BlindSBInput);
-        if(sb == undefined)
-        {
-            return;
-        }
-        const bb = HtmlUtil.tryGetInputNumber(this.BlindBBInput);
-        if(bb == undefined)
-        {
-            return;
-        }
+        if (!this.BlindSelect) return;
+        var selectedOption = this.BlindSelect.options[this.BlindSelect.selectedIndex];
+        if (!selectedOption) return;
+        var sb = Number(selectedOption.dataset.sb);
+        var bb = Number(selectedOption.dataset.bb);
+        var level = Number(selectedOption.dataset.level);
         this.Model.setBlind(sb, bb);
+        if (ns.Engine && ns.Engine.LevelStructureManager) {
+            ns.Engine.LevelStructureManager.setSelectedLevel(level);
+        }
+    }
+
+    /// <summary>
+    /// ブラインドセレクトの選択肢を再構築する
+    /// </summary>
+    cProbeDealerView.prototype.buildBlindSelect = function(argLevels, argSelectedLevel)
+    {
+        if (!this.BlindSelect) return;
+        this.BlindSelect.innerHTML = "";
+        var self = this;
+        argLevels.forEach(function (levelItem) {
+            var option = document.createElement("option");
+            option.textContent = `Level ${levelItem.level}: ${levelItem.smallBlind} / ${levelItem.bigBlind}`;
+            option.dataset.level = levelItem.level;
+            option.dataset.sb = levelItem.smallBlind;
+            option.dataset.bb = levelItem.bigBlind;
+            option.value = levelItem.level;
+            if (levelItem.level === argSelectedLevel) {
+                option.selected = true;
+            }
+            self.BlindSelect.appendChild(option);
+        });
+        // 現在の選択に合わせて Model を更新する
+        var selectedOption = self.BlindSelect.options[self.BlindSelect.selectedIndex];
+        if (selectedOption && self.Model) {
+            self.Model.setBlind(Number(selectedOption.dataset.sb), Number(selectedOption.dataset.bb));
+        }
     }
     
 

@@ -125,6 +125,44 @@
     pointer-events: none;
 }
 
+/* 設定エリア区切り */
+.settings_separator
+{
+    border: none;
+    border-top: 1px solid #bbb;
+    margin: 4px 0;
+}
+
+/* レベルストラクチャー設定 */
+.level_list
+{
+    margin: 4px 0;
+}
+
+.level_row
+{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-bottom: 2px;
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 2px;
+}
+
+.level_field
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    font-size: 10px;
+}
+
+.level_input
+{
+    font-size: 10px;
+}
+
 
 
 
