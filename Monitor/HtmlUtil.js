@@ -88,6 +88,7 @@ var HtmlUtil = HtmlUtil || (function(){
 		this.DragPrevY = 0;
 		this.TransX = 0;
 		this.TransY = 0;
+		this.onDragEndCallback = null;
 	}
 	cDragableElement.prototype.onDragStart = function(event)
 	{
@@ -111,6 +112,9 @@ var HtmlUtil = HtmlUtil || (function(){
 	cDragableElement.prototype.onDragEnd = function(event)
 	{
 		this.Draggning = false;
+		if (this.onDragEndCallback) {
+			this.onDragEndCallback(this.TransX, this.TransY);
+		}
 	}
 	cDragableElement.prototype.setPosition = function(x, y)
 	{
