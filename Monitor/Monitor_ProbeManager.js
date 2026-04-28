@@ -239,15 +239,13 @@
         if (this.CurrentBettingRound === PokerConst.BettingRound.Preflop)
         {
             if (argAction === PokerConst.PlayerAction.Call  ||
-                argAction === PokerConst.PlayerAction.Bet   ||
                 argAction === PokerConst.PlayerAction.Raise ||
                 argAction === PokerConst.PlayerAction.AllIn)
             {
                 argModel.incrementVpipCount();
             }
 
-            if (argAction === PokerConst.PlayerAction.Bet   ||
-                argAction === PokerConst.PlayerAction.Raise ||
+            if (argAction === PokerConst.PlayerAction.Raise ||
                 argAction === PokerConst.PlayerAction.AllIn)
             {
                 argModel.incrementPfrCount();
