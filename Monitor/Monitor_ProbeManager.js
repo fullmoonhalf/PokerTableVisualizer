@@ -31,7 +31,7 @@
             const cardslot = new ns.cCardslot(this.Carddeck, 2);
             const model = new ns.cProbePlayerModel(player_probe_name, cardslot);
             const view = ns.Engine.ViewManager.createProbePlayerView();
-            const monitor = ns.Engine.MonitorManager.createMonitorPlayer();
+            const monitor = ns.Engine.MonitorManager.createMonitorPlayer(player_probe_name);
             view.bindModel(model);
             model.bindView(view);
             model.bindMonitor(monitor);
@@ -45,7 +45,7 @@
             const cardslot_turn = new ns.cCardslot(this.Carddeck, 1);
             const cardslot_river = new ns.cCardslot(this.Carddeck, 1);
             const view = ns.Engine.ViewManager.createProbeDealerView();
-            const monitor = ns.Engine.MonitorManager.createMonitorDealer();
+            const monitor = ns.Engine.MonitorManager.createMonitorDealer(ns.Defines.DEALER_PROBE_PREFIX);
             this.DealerProbe = new ns.cProbeDealerModel(cardslot_flop, cardslot_turn, cardslot_river);
             view.bindModel(this.DealerProbe)
             this.DealerProbe.bindView(view);
