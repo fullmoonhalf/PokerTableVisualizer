@@ -286,7 +286,10 @@
     /// </summary>
     cProbePlayerModel.prototype.onPreflopStart = function()
     {
-        this.HandCount++;
+        if (!ns.Engine.ProbeManager.ExcludeFromStats)
+        {
+            this.HandCount++;
+        }
         this.VpipCountedInHand = false;
         this.PfrCountedInHand = false;
         this.HadThreeBetOpportunityThisHand = false;

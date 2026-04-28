@@ -16,6 +16,7 @@
         this.DealerProbe = null;
         this.BetStage = 1;
         this.CurrentBettingRound = PokerConst.BettingRound.Invalid;
+        this.ExcludeFromStats = false;
     }
 
     /// <summary>
@@ -54,6 +55,8 @@
         }
 
         this.updateDeckList();
+
+        HtmlUtil.addButtonEventListenerByID(ns.Defines.COMMAND_DEVELOP_TOGGLE_EXCLUDE_FROM_STATS, this._onToggleExcludeFromStats.bind(this));
     }
 
     /// <summary>
@@ -239,38 +242,41 @@
 
         if (this.CurrentBettingRound === PokerConst.BettingRound.Preflop)
         {
-            // VPIP のカウント
-            if (argAction === PokerConst.PlayerAction.Call  ||
-                argAction === PokerConst.PlayerAction.Raise ||
-                argAction === PokerConst.PlayerAction.AllIn)
+            if (!this.ExcludeFromStats)
             {
-                argModel.incrementVpipCount();
-            }
-
-            // PFR のカウント
-            if (argAction === PokerConst.PlayerAction.Raise ||
-                argAction === PokerConst.PlayerAction.AllIn)
-            {
-                argModel.incrementPfrCount();
-            }
-
-            // 3Bet のカウント
-            if (this.BetStage == 3)
-            {
-                argModel.markThreeBetOpportunity();
-                if (argAction === PokerConst.PlayerAction.Raise ||
-                    argAction === PokerConst.PlayerAction.Bet   ||
+                // VPIP のカウント
+                if (argAction === PokerConst.PlayerAction.Call  ||
+                    argAction === PokerConst.PlayerAction.Raise ||
                     argAction === PokerConst.PlayerAction.AllIn)
                 {
-                    argModel.incrementThreeBetCount();
+                    argModel.incrementVpipCount();
                 }
-            }
 
-            // プリフロップ初手アクションをハンドレンジ統計に記録する
-            if (!argModel.PreflopFirstActionRecorded)
-            {
-                const cards = argModel.Cardslot.Cards ?? argModel.Cardslot.estimate();
-                argModel.recordPreflopFirstAction(cards, argAction);
+                // PFR のカウント
+                if (argAction === PokerConst.PlayerAction.Raise ||
+                    argAction === PokerConst.PlayerAction.AllIn)
+                {
+                    argModel.incrementPfrCount();
+                }
+
+                // 3Bet のカウント
+                if (this.BetStage === 3)
+                {
+                    argModel.markThreeBetOpportunity();
+                    if (argAction === PokerConst.PlayerAction.Raise ||
+                        argAction === PokerConst.PlayerAction.Bet   ||
+                        argAction === PokerConst.PlayerAction.AllIn)
+                    {
+                        argModel.incrementThreeBetCount();
+                    }
+                }
+
+                // プリフロップ初手アクションをハンドレンジ統計に記録する
+                if (!argModel.PreflopFirstActionRecorded)
+                {
+                    const cards = argModel.Cardslot.Cards ?? argModel.Cardslot.estimate();
+                    argModel.recordPreflopFirstAction(cards, argAction);
+                }
             }
         }
 
@@ -639,6 +645,36 @@
                 probe.Monitor.hideStatsMode();
             }
         }
+    }
+
+    /// <summary>
+    /// 統計除外状態の設定
+    /// </summary>
+    cProbeManager.prototype.setExcludeFromStats = function(value)
+    {
+        this.ExcludeFromStats = value;
+        const label = document.getElementById(ns.Defines.DEVELOP_EXCLUDE_FROM_STATS_STATUS);
+        if (label)
+        {
+            if (value)
+            {
+                label.textContent = "Stats: Excluded";
+                label.classList.add("excluded");
+            }
+            else
+            {
+                label.textContent = "Stats: ON";
+                label.classList.remove("excluded");
+            }
+        }
+    }
+
+    /// <summary>
+    /// 統計除外状態のトグル
+    /// </summary>
+    cProbeManager.prototype._onToggleExcludeFromStats = function()
+    {
+        this.setExcludeFromStats(!this.ExcludeFromStats);
     }
 
     /// <summary>

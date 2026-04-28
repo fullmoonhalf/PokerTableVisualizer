@@ -1,11 +1,29 @@
 /* 開発エリア */
 .develop
 {
-    display: flex;
+    display:block;
+    align-items: center;
     border: 1px solid red;
+}
+
+.develop_unit
+{
+    width: 100%;
 }
 
 .DEVELOP_COMMAND_BUTTON
 {
     width: 60px;
+}
+
+.DEVELOP_EXCLUDE_FROM_STATS_STATUS
+{
+    margin-left: 4px;
+    font-weight: bold;
+    color: green;
+}
+
+.DEVELOP_EXCLUDE_FROM_STATS_STATUS.excluded
+{
+    color: red;
 }
