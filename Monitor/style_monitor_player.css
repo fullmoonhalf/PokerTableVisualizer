@@ -16,7 +16,7 @@
 {
     position: relative;   /* 基準にする */
     background: #cff;
-    width: 80px;
+    width: 100px;
     height: 60px;
     margin: 1px;
     font-size: 8px;
@@ -53,30 +53,33 @@
     font-size: 12px;
     font-weight: bold;
     text-align: center;
-    width: 100%;
+    width: 80%;
     top: 44px;
+    left: 20%;
 }
 
 .TEMPLATE_MONITORPLAYER_PANEL_WINRATE_VALUE
 {
     position: absolute;
-    text-align: center;
-    width: 100%;
-    font-size: 10px;
+    top: 4px;
+    left: 50px;
+    font-size: 12px;
     font-weight: bold;
 }
 
 .TEMPLATE_MONITORPLAYER_PANEL_ACTION_VALUE
 {
     position: absolute;
-    top: 20px;
+    top: 24px;
+    left: 50px;
+    font-size: 12px;
 }
 
 .TEMPLATE_MONITORPLAYER_PANEL_HOLECARD
 {
     position: absolute;
-    left: 20px;
-    top: 13px;
+    left: 4px;
+    top: 4px;
 }
 
 .TEMPLATE_PROBEPLAYER_PANEL_CONTROL_POSITION
@@ -91,6 +94,9 @@
 
 .TEMPLATE_MONITORPLAYER_PANEL_POSITION_VALUE
 {    
+    position: absolute;
+    top: 44px;
+    width: 20%;
     font-weight: bold;
     font-size: 10px;
 }
@@ -112,18 +118,23 @@
 {
     position: absolute;
     top: 2px;
-    left: 0;
-    width: 100%;
-    text-align: center;
-    font-size: 7px;
-    font-weight: bold;
+    left: 55px;
+    font-size: 8px;
+}
+
+.TEMPLATE_MONITORPLAYER_PANEL_STATS_PFR_VALUE
+{
+    position: absolute;
+    top: 10px;
+    left: 55px;
+    font-size: 8px;
 }
 
 .TEMPLATE_MONITORPLAYER_PANEL_STATS_HANDRANGE_CANVAS
 {
     position: absolute;
-    top: 13px;
-    left: 17px;
+    top: 2px;
+    left: 4px;
     width: 45px;
     height: 45px;
     display: block;

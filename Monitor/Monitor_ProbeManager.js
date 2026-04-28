@@ -239,11 +239,16 @@
         if (this.CurrentBettingRound === PokerConst.BettingRound.Preflop)
         {
             if (argAction === PokerConst.PlayerAction.Call  ||
-                argAction === PokerConst.PlayerAction.Bet   ||
                 argAction === PokerConst.PlayerAction.Raise ||
                 argAction === PokerConst.PlayerAction.AllIn)
             {
                 argModel.incrementVpipCount();
+            }
+
+            if (argAction === PokerConst.PlayerAction.Raise ||
+                argAction === PokerConst.PlayerAction.AllIn)
+            {
+                argModel.incrementPfrCount();
             }
 
             // プリフロップ初手アクションをハンドレンジ統計に記録する
@@ -612,7 +617,7 @@
         {
             if (argEnabled)
             {
-                probe.Monitor.showStatsMode(probe.getVpip(), probe.HandRangeStats);
+                probe.Monitor.showStatsMode(probe.getVpip(), probe.getPfr(), probe.HandRangeStats);
             }
             else
             {

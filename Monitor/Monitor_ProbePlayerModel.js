@@ -22,6 +22,8 @@
         this.HandCount = 0;
         this.VpipCount = 0;
         this.VpipCountedInHand = false;
+        this.PfrCount = 0;
+        this.PfrCountedInHand = false;
         this.HandRangeStats = {};
         this.PreflopFirstActionRecorded = false;
     }
@@ -282,6 +284,7 @@
     {
         this.HandCount++;
         this.VpipCountedInHand = false;
+        this.PfrCountedInHand = false;
     }
 
     /// <summary>
@@ -303,6 +306,27 @@
     {
         if (this.HandCount === 0) return 0;
         return Math.round(this.VpipCount * 100 / this.HandCount);
+    }
+
+    /// <summary>
+    /// PFR カウントの加算（同一ハンド内での重複加算を防ぐ）
+    /// </summary>
+    cProbePlayerModel.prototype.incrementPfrCount = function()
+    {
+        if (!this.PfrCountedInHand)
+        {
+            this.PfrCountedInHand = true;
+            this.PfrCount++;
+        }
+    }
+
+    /// <summary>
+    /// PFR 値の取得（整数 % で四捨五入、ハンド数 0 の場合は 0）
+    /// </summary>
+    cProbePlayerModel.prototype.getPfr = function()
+    {
+        if (this.HandCount === 0) return 0;
+        return Math.round(this.PfrCount * 100 / this.HandCount);
     }
 
     /// <summary>
