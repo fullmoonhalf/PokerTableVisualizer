@@ -15,6 +15,7 @@ public:
     int getWidth();
     int getHeight();
     int getBatteryLevel();
+    bool isCharging();
 
 private:
     SysGuiGauge *_Gauge;

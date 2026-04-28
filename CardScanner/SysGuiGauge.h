@@ -13,6 +13,7 @@ public:
     virtual void draw(int x, int y);
     void update();
     void setCurrentValue(int current_value);
+    void setColor(uint16_t color);
 
 private:
     SysSprite *_Sprite;
@@ -21,6 +22,7 @@ private:
     int _Width;
     int _Height;
     bool _NeedToUpdate;
+    uint16_t _Color;
 };
 
 

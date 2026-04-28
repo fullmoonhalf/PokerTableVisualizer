@@ -174,7 +174,7 @@ void AppModeReader::update()
 void AppModeReader::send(bool send_scan_data)
 {
     char *seek = _SendInfoBuffer;
-    seek += sprintf(seek, "{\"probe\":\"%s\",\"battery\":\"%d\"", _ProbeName, _BatteryGauge->getBatteryLevel());
+    seek += sprintf(seek, "{\"probe\":\"%s\",\"battery\":\"%d\",\"charging\":%s", _ProbeName, _BatteryGauge->getBatteryLevel(), _BatteryGauge->isCharging() ? "true" : "false");
     if(send_scan_data)
     {
         seek += sprintf(seek, ",\"mode\":\"scan\",");

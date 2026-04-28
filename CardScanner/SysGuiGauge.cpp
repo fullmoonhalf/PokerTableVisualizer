@@ -15,6 +15,7 @@ SysGuiGauge::SysGuiGauge(SysSprite *argSprite, int current_value, int max_value,
     , _Width(width)
     , _Height(height)
     , _NeedToUpdate(true)
+    , _Color(TFT_WHITE)
 {
 }
 
@@ -45,10 +46,10 @@ void SysGuiGauge::update()
     }
     if(bar_width > 0)
     {
-        _Sprite->fillRect(0, 0, bar_width, _Height, TFT_LIGHTGREY);
+        _Sprite->fillRect(0, 0, bar_width, _Height, _Color);
     }
 
-    _Sprite->drawRect(0, 0, _Width, _Height, TFT_WHITE);
+    _Sprite->drawRect(0, 0, _Width, _Height, _Color);
 
 }
 
@@ -71,4 +72,16 @@ void SysGuiGauge::setCurrentValue(int current_value)
         _NeedToUpdate = true;
     }
     _CurrentValue = current_value;
+}
+
+
+/// @brief ゲージの色を設定する
+/// @param color ゲージのアウトラインに使用する16ビットカラー値
+void SysGuiGauge::setColor(uint16_t color)
+{
+    if(_Color != color)
+    {
+        _NeedToUpdate = true;
+    }
+    _Color = color;
 }

@@ -41,13 +41,23 @@ int AppBatteryGauge::getBatteryLevel()
 }
 
 
+bool AppBatteryGauge::isCharging()
+{
+    return M5.Power.isCharging();
+}
+
+
 void AppBatteryGauge::update()
 {
     char buffer[32];
     _CurrentBatteryLevel = M5.Power.getBatteryLevel();
     sprintf(buffer, "Battery %3d%%", _CurrentBatteryLevel);
+
+    uint16_t color = isCharging() ? TFT_YELLOW : TFT_WHITE;
+
     _Label->clear();
-    _Label->drawText(0, 0, buffer);
+    _Label->drawText(0, 0, 1.0f, color, buffer);
+    _Gauge->setColor(color);
     _Gauge->setCurrentValue(_CurrentBatteryLevel);
     _Gauge->update();
 }
