@@ -46,7 +46,7 @@ void SysGuiGauge::update()
     }
     if(bar_width > 0)
     {
-        _Sprite->fillRect(0, 0, bar_width, _Height, TFT_LIGHTGREY);
+        _Sprite->fillRect(0, 0, bar_width, _Height, _Color);
     }
 
     _Sprite->drawRect(0, 0, _Width, _Height, _Color);

@@ -53,7 +53,7 @@ void AppBatteryGauge::update()
     _CurrentBatteryLevel = M5.Power.getBatteryLevel();
     sprintf(buffer, "Battery %3d%%", _CurrentBatteryLevel);
 
-    uint16_t color = isCharging() ? TFT_BLUE : TFT_WHITE;
+    uint16_t color = isCharging() ? TFT_YELLOW : TFT_WHITE;
 
     _Label->clear();
     _Label->drawText(0, 0, 1.0f, color, buffer);
