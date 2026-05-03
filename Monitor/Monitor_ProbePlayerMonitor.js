@@ -148,14 +148,15 @@
     /// <summary>
     /// 統計表示モード ON（通常グループを隠し、統計グループを表示）
     /// </summary>
-    cProbePlayerMonitor.prototype.showStatsMode = function(argHandCount, argVpip, argPfr, arg3Bet, argHandRangeStats)
+    cProbePlayerMonitor.prototype.showStatsMode = function(argStats, argHandRangeStats)
     {
         this.NormalGroup.style.display = "none";
         this.StatsGroup.style.display = "";
-        this.HandCountValue.innerHTML = `Hands: ${argHandCount}`;
-        this.VpipValue.innerHTML = `VPIP: ${argVpip}%`;
-        this.PfrValue.innerHTML = `PFR: ${argPfr}%`;
-        this.ThreeBetValue.innerHTML = `3BET: ${arg3Bet["Rate"]}% (${arg3Bet["Attempt"]}/${arg3Bet["Opportunities"]})`;
+        this.HandCountValue.innerHTML = `Hands: ${argStats.handCount}`;
+        this.VpipValue.innerHTML = `VPIP: ${argStats.getVpip()}%`;
+        this.PfrValue.innerHTML = `PFR: ${argStats.getPfr()}%`;
+        const threeBet = argStats.getThreeBet();
+        this.ThreeBetValue.innerHTML = `3BET: ${threeBet["Rate"]}% (${threeBet["Attempt"]}/${threeBet["Opportunities"]})`;
 
         if (this.HandRangeCanvas && argHandRangeStats)
         {

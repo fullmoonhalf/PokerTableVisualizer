@@ -638,7 +638,7 @@
         {
             if (argEnabled)
             {
-                probe.Monitor.showStatsMode(probe.HandCount, probe.getVpip(), probe.getPfr(), probe.getThreeBet(), probe.HandRangeStats);
+                probe.Monitor.showStatsMode(probe.getStats(), probe.HandRangeStats);
             }
             else
             {

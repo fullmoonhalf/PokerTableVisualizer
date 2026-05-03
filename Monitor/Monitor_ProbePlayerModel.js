@@ -19,15 +19,8 @@
         this.Reactionable = false;
         this.Cardslot = argCardslot;
         this.Position = ns.Defines.POKER_POSITION_OPENSEAT;
-        this.HandCount = 0;
-        this.VpipCount = 0;
-        this.VpipCountedInHand = false;
-        this.PfrCount = 0;
-        this.PfrCountedInHand = false;
-        this.ThreeBetOpportunities = 0;
-        this.ThreeBetHands = 0;
-        this.HadThreeBetOpportunityThisHand = false;
-        this.HasThreeBetThisHand = false;
+        this.Stats = new ns.PlayerStats();
+        this.HandFlags = new ns.HandStatsFlags();
         this.HandRangeStats = {};
         this.PreflopFirstActionRecorded = false;
     }
@@ -282,18 +275,16 @@
     }
 
     /// <summary>
-    /// プリフロップ開始時の処理（ハンド数のカウントアップ）
+    /// プリフロップ開始時の処理（前ハンドの統計確定とハンド数のカウントアップ）
     /// </summary>
     cProbePlayerModel.prototype.onPreflopStart = function()
     {
         if (!ns.Engine.ProbeManager.ExcludeFromStats)
         {
-            this.HandCount++;
+            this.Stats.commit(this.HandFlags);
+            this.Stats.handCount++;
         }
-        this.VpipCountedInHand = false;
-        this.PfrCountedInHand = false;
-        this.HadThreeBetOpportunityThisHand = false;
-        this.HasThreeBetThisHand = false;
+        this.HandFlags = new ns.HandStatsFlags();
     }
 
     /// <summary>
@@ -301,20 +292,7 @@
     /// </summary>
     cProbePlayerModel.prototype.incrementVpipCount = function()
     {
-        if (!this.VpipCountedInHand)
-        {
-            this.VpipCountedInHand = true;
-            this.VpipCount++;
-        }
-    }
-
-    /// <summary>
-    /// VPIP 値の取得（整数 % で四捨五入、ハンド数 0 の場合は 0）
-    /// </summary>
-    cProbePlayerModel.prototype.getVpip = function()
-    {
-        if (this.HandCount === 0) return 0;
-        return Math.round(this.VpipCount * 100 / this.HandCount);
+        this.HandFlags.hasVpipedThisHand = true;
     }
 
     /// <summary>
@@ -322,20 +300,7 @@
     /// </summary>
     cProbePlayerModel.prototype.incrementPfrCount = function()
     {
-        if (!this.PfrCountedInHand)
-        {
-            this.PfrCountedInHand = true;
-            this.PfrCount++;
-        }
-    }
-
-    /// <summary>
-    /// PFR 値の取得（整数 % で四捨五入、ハンド数 0 の場合は 0）
-    /// </summary>
-    cProbePlayerModel.prototype.getPfr = function()
-    {
-        if (this.HandCount === 0) return 0;
-        return Math.round(this.PfrCount * 100 / this.HandCount);
+        this.HandFlags.hasPreflopRaisedThisHand = true;
     }
 
     /// <summary>
@@ -343,11 +308,7 @@
     /// </summary>
     cProbePlayerModel.prototype.markThreeBetOpportunity = function()
     {
-        if (!this.HadThreeBetOpportunityThisHand)
-        {
-            this.HadThreeBetOpportunityThisHand = true;
-            this.ThreeBetOpportunities++;
-        }
+        this.HandFlags.hadThreeBetOpportunityThisHand = true;
     }
 
     /// <summary>
@@ -355,33 +316,15 @@
     /// </summary>
     cProbePlayerModel.prototype.incrementThreeBetCount = function()
     {
-        if (!this.HasThreeBetThisHand)
-        {
-            this.HasThreeBetThisHand = true;
-            this.ThreeBetHands++;
-        }
+        this.HandFlags.hasThreeBetThisHand = true;
     }
 
     /// <summary>
-    /// 3bet 統計の取得
+    /// 統計情報の取得
     /// </summary>
-    cProbePlayerModel.prototype.getThreeBet = function()
+    cProbePlayerModel.prototype.getStats = function()
     {
-        let opportunities = this.ThreeBetOpportunities;
-        let attempt = 0;
-        let rate = 0;
-
-        if (opportunities !== 0)
-        {
-            opportunities = this.ThreeBetOpportunities;
-            attempt = this.ThreeBetHands;
-            rate = Math.round(attempt * 100 / opportunities);
-        }
-        return {
-            "Opportunities": opportunities,
-            "Attempt": attempt,
-            "Rate": rate,
-        }
+        return this.Stats;
     }
 
     /// <summary>
