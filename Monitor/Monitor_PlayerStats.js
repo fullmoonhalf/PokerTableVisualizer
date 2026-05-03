@@ -69,6 +69,94 @@
         this.hasThreeBetThisHand = false;
     }
 
+    /// <summary>
+    /// プレイヤー統計を保存用 JSON オブジェクトに変換する
+    /// </summary>
+    ns.exportStatsToJson = function(playerName, stats)
+    {
+        const now = new Date();
+        const threeBet = stats.getThreeBet();
+        return {
+            "savedAt": now.toISOString(),
+            "type": "player_stats_snapshot",
+            "players": [
+                {
+                    "playerName": playerName,
+                    "PlayerStats": {
+                        "handCount":            stats.handCount,
+                        "vpipHands":            stats.vpipHands,
+                        "pfrHands":             stats.pfrHands,
+                        "threeBetHands":        stats.threeBetHands,
+                        "threeBetOpportunities":stats.threeBetOpportunities,
+                        "vpipRate":             stats.getVpip(),
+                        "pfrRate":              stats.getPfr(),
+                        "threeBetRate":         threeBet.Rate,
+                    }
+                }
+            ]
+        };
+    }
+
+    /// <summary>
+    /// JSON オブジェクトをファイルとしてダウンロードする。
+    /// File System Access API (showSaveFilePicker) が利用可能な場合は
+    /// 保存場所を指定できるダイアログを表示する。
+    /// 利用できない環境では従来のアンカークリック方式にフォールバックする。
+    /// </summary>
+    ns.downloadJsonFile = async function(data, filename)
+    {
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: "application/json" });
+
+        if (window.showSaveFilePicker)
+        {
+            try
+            {
+                const fileHandle = await window.showSaveFilePicker({
+                    suggestedName: filename,
+                    types: [{
+                        description: "JSON",
+                        accept: { "application/json": [".json"] },
+                    }],
+                });
+                const writable = await fileHandle.createWritable();
+                await writable.write(blob);
+                await writable.close();
+            }
+            catch (e)
+            {
+                // ユーザーがダイアログをキャンセルした場合は何もしない
+                if (e.name !== "AbortError")
+                {
+                    console.error("[downloadJsonFile] showSaveFilePicker failed:", e);
+                }
+            }
+        }
+        else
+        {
+            const url = URL.createObjectURL(blob);
+            const a   = document.createElement("a");
+            a.href     = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    }
+
+    /// <summary>
+    /// プレイヤー統計を JSON ファイルとして保存する
+    /// </summary>
+    ns.saveStatsAsJsonFile = function(playerName, stats)
+    {
+        const data     = ns.exportStatsToJson(playerName, stats);
+        const dateStr  = HtmlUtil.formatDateForFilename(new Date());
+        const safeName = HtmlUtil.sanitizeFilenameSegment(playerName);
+        const filename = `player_stats_${safeName}_${dateStr}.json`;
+        ns.downloadJsonFile(data, filename);
+    }
+
     ns.PlayerStats = PlayerStats;
     ns.HandStatsFlags = HandStatsFlags;
 })(Monitor = Monitor || {});
