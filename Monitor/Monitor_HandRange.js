@@ -107,26 +107,16 @@
 
     /// <summary>
     /// 平均値を色(CSS文字列)に変換する
-    /// 0.0 → 青, 0.5 → 緑, 1.0 → 赤
+    /// 彩度・明度は固定し、色相のみを変化させる
+    /// 0.0 → 青(240), 0.5 → 緑(120), 1.0 → 赤(0)
     /// </summary>
     function _avgToColor(avg)
     {
-        if (avg <= 0.5)
-        {
-            const t = avg * 2; // 0→0.5: t=0→1
-            const r = 0;
-            const g = Math.round(255 * t);
-            const b = Math.round(255 * (1 - t));
-            return `rgb(${r},${g},${b})`;
-        }
-        else
-        {
-            const t = (avg - 0.5) * 2; // 0.5→1.0: t=0→1
-            const r = Math.round(255 * t);
-            const g = Math.round(255 * (1 - t));
-            const b = 0;
-            return `rgb(${r},${g},${b})`;
-        }
+        const clamped = Math.max(0, Math.min(1, avg));
+        const hue = 240 * (1 - clamped);
+        const saturation = 100;
+        const lightness = 50;
+        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     }
 
     /// <summary>
