@@ -59,6 +59,11 @@
         this.Reactionable = false;
         this.setPlayerAction(PokerConst.PlayerAction.None);
         this.PreflopFirstActionRecorded = false;
+
+        if (!ns.Engine.ProbeManager.ExcludeFromStats)
+        {
+            this.Stats.commit(this.HandFlags);
+        }
     }
 
     cProbePlayerModel.prototype.onStartNextBettingRound = function()
@@ -275,13 +280,12 @@
     }
 
     /// <summary>
-    /// プリフロップ開始時の処理（前ハンドの統計確定とハンド数のカウントアップ）
+    /// プリフロップ開始時の処理（ハンド数のカウントアップ）
     /// </summary>
     cProbePlayerModel.prototype.onPreflopStart = function()
     {
         if (!ns.Engine.ProbeManager.ExcludeFromStats)
         {
-            this.Stats.commit(this.HandFlags);
             this.Stats.handCount++;
         }
         this.HandFlags = new ns.HandStatsFlags();
