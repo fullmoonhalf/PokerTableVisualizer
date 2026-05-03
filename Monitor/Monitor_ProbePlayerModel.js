@@ -21,7 +21,7 @@
         this.Position = ns.Defines.POKER_POSITION_OPENSEAT;
         this.Stats = new ns.PlayerStats();
         this.HandFlags = new ns.HandStatsFlags();
-        this.HandRangeStats = {};
+        this.HandRange = new ns.cHandRange();
         this.PreflopFirstActionRecorded = false;
     }
     cProbePlayerModel.prototype = Object.create(ns.cProbeModelBase.prototype);
@@ -347,7 +347,7 @@
         // 統計表示モードが有効な場合は表示を更新
         if (this.Monitor.StatsGroup.style.display !== "none")
         {
-            this.Monitor.showStatsMode(this.Stats, this.HandRangeStats);
+            this.Monitor.showStatsMode(this.Stats, this.HandRange);
         }
     }
 
@@ -360,18 +360,7 @@
         if (!argCards || argCards.length < 2) return;
 
         this.PreflopFirstActionRecorded = true;
-
-        const key = ns.HandRange.getHandKey(argCards[0], argCards[1]);
-        if (key === null) return;
-
-        const value = ns.HandRange.getActionValue(argAction);
-
-        if (!this.HandRangeStats[key])
-        {
-            this.HandRangeStats[key] = { count: 0, sum: 0.0 };
-        }
-        this.HandRangeStats[key].count++;
-        this.HandRangeStats[key].sum += value;
+        this.HandRange.record(argCards[0], argCards[1], argAction);
     }
 
     ns.cProbePlayerModel = cProbePlayerModel;

@@ -148,7 +148,7 @@
     /// <summary>
     /// 統計表示モード ON（通常グループを隠し、統計グループを表示）
     /// </summary>
-    cProbePlayerMonitor.prototype.showStatsMode = function(argStats, argHandRangeStats)
+    cProbePlayerMonitor.prototype.showStatsMode = function(argStats, argHandRange)
     {
         this.NormalGroup.style.display = "none";
         this.StatsGroup.style.display = "";
@@ -158,9 +158,9 @@
         const threeBet = argStats.getThreeBet();
         this.ThreeBetValue.innerHTML = `3BET: ${threeBet["Rate"]}% (${threeBet["Attempt"]}/${threeBet["Opportunities"]})`;
 
-        if (this.HandRangeCanvas && argHandRangeStats)
+        if (this.HandRangeCanvas && argHandRange)
         {
-            ns.HandRange.drawMatrix(this.HandRangeCanvas, argHandRangeStats);
+            argHandRange.draw(this.HandRangeCanvas);
         }
     }
 
