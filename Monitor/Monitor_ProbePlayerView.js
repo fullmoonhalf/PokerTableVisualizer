@@ -33,6 +33,7 @@
         ];
         this.ControlAliveButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_ALIVE );
         this.ControlPositionButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_POSITION );
+        this.ControlSaveStatsButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_SAVE_STATS );
 
         ns.cProbeViewBase.call(this, this.HtmlRoot);
 
@@ -43,6 +44,7 @@
         HtmlUtil.addEventListenerToElement(this.ActoinAllinButton, "click", this._onPlayerActionAllin.bind(this));
         HtmlUtil.addEventListenerToElement(this.ControlAliveButton, "click", this._onControlAlive.bind(this));
         HtmlUtil.addEventListenerToElement(this.ControlPositionButton, "click", this._onControlPositionButton.bind(this));
+        HtmlUtil.addEventListenerToElement(this.ControlSaveStatsButton, "click", this._onSaveStats.bind(this));
         HtmlUtil.addEventListenerToElement(this.NickInput, "change", this.onInputNick.bind(this));
 
         this.setActiveButton(this.ControlAliveButton);
@@ -239,6 +241,14 @@
     cProbePlayerView.prototype._onControlPositionButton = function(argEvent)
     {
         ns.Engine.ProbeManager.changeButton(this.Model);
+    }
+
+    /// <summary>
+    /// 統計情報の JSON ファイル保存
+    /// </summary>
+    cProbePlayerView.prototype._onSaveStats = function(argEvent)
+    {
+        ns.saveStatsAsJsonFile(this.Model.Nick, this.Model.getStats());
     }
 
     /// <summary>

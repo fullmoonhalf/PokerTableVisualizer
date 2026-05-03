@@ -69,6 +69,74 @@
         this.hasThreeBetThisHand = false;
     }
 
+    /// <summary>
+    /// ファイル名用の日時文字列を生成する（YYYYMMDD_HHmmss 形式）
+    /// </summary>
+    function _formatDateForFilename(date)
+    {
+        const YYYY = date.getFullYear();
+        const MM   = String(date.getMonth() + 1).padStart(2, '0');
+        const DD   = String(date.getDate()).padStart(2, '0');
+        const HH   = String(date.getHours()).padStart(2, '0');
+        const mm   = String(date.getMinutes()).padStart(2, '0');
+        const ss   = String(date.getSeconds()).padStart(2, '0');
+        return `${YYYY}${MM}${DD}_${HH}${mm}${ss}`;
+    }
+
+    /// <summary>
+    /// プレイヤー統計を保存用 JSON オブジェクトに変換する
+    /// </summary>
+    ns.exportStatsToJson = function(playerName, stats)
+    {
+        const now = new Date();
+        const threeBet = stats.getThreeBet();
+        return {
+            "savedAt": now.toISOString(),
+            "type": "player_stats_snapshot",
+            "players": [
+                {
+                    "playerName": playerName,
+                    "PlayerStats": {
+                        "handCount":            stats.handCount,
+                        "vpipHands":            stats.vpipHands,
+                        "pfrHands":             stats.pfrHands,
+                        "threeBetHands":        stats.threeBetHands,
+                        "threeBetOpportunities":stats.threeBetOpportunities,
+                        "vpipRate":             stats.getVpip(),
+                        "pfrRate":              stats.getPfr(),
+                        "threeBetRate":         threeBet.Rate,
+                    }
+                }
+            ]
+        };
+    }
+
+    /// <summary>
+    /// JSON オブジェクトをファイルとしてダウンロードする
+    /// </summary>
+    ns.downloadJsonFile = function(data, filename)
+    {
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: "application/json" });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement("a");
+        a.href     = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    /// <summary>
+    /// プレイヤー統計を JSON ファイルとして保存する
+    /// </summary>
+    ns.saveStatsAsJsonFile = function(playerName, stats)
+    {
+        const data     = ns.exportStatsToJson(playerName, stats);
+        const dateStr  = _formatDateForFilename(new Date());
+        const filename = `player_stats_${playerName}_${dateStr}.json`;
+        ns.downloadJsonFile(data, filename);
+    }
+
     ns.PlayerStats = PlayerStats;
     ns.HandStatsFlags = HandStatsFlags;
 })(Monitor = Monitor || {});
