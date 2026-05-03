@@ -70,20 +70,6 @@
     }
 
     /// <summary>
-    /// ファイル名用の日時文字列を生成する（YYYYMMDD_HHmmss 形式）
-    /// </summary>
-    function _formatDateForFilename(date)
-    {
-        const YYYY = date.getFullYear();
-        const MM   = String(date.getMonth() + 1).padStart(2, '0');
-        const DD   = String(date.getDate()).padStart(2, '0');
-        const HH   = String(date.getHours()).padStart(2, '0');
-        const mm   = String(date.getMinutes()).padStart(2, '0');
-        const ss   = String(date.getSeconds()).padStart(2, '0');
-        return `${YYYY}${MM}${DD}_${HH}${mm}${ss}`;
-    }
-
-    /// <summary>
     /// プレイヤー統計を保存用 JSON オブジェクトに変換する
     /// </summary>
     ns.exportStatsToJson = function(playerName, stats)
@@ -160,22 +146,14 @@
     }
 
     /// <summary>
-    /// ファイル名に使えない文字を除去する
-    /// </summary>
-    function _sanitizeFilenameSegment(name)
-    {
-        return name.replace(/[/\\:*?"<>|]/g, "_");
-    }
-
-    /// <summary>
     /// プレイヤー統計を JSON ファイルとして保存する
     /// </summary>
     ns.saveStatsAsJsonFile = function(playerName, stats)
     {
-        const data          = ns.exportStatsToJson(playerName, stats);
-        const dateStr       = _formatDateForFilename(new Date());
-        const safeName      = _sanitizeFilenameSegment(playerName);
-        const filename      = `player_stats_${safeName}_${dateStr}.json`;
+        const data     = ns.exportStatsToJson(playerName, stats);
+        const dateStr  = HtmlUtil.formatDateForFilename(new Date());
+        const safeName = HtmlUtil.sanitizeFilenameSegment(playerName);
+        const filename = `player_stats_${safeName}_${dateStr}.json`;
         ns.downloadJsonFile(data, filename);
     }
 
