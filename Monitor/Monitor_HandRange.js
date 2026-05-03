@@ -130,6 +130,45 @@
     }
 
     /// <summary>
+    /// ハンドレンジ統計データを保持し、記録と描画を行うクラス
+    /// </summary>
+    function cHandRange()
+    {
+        this.Stats = {};
+    }
+
+    /// <summary>
+    /// プリフロップのアクションをハンドレンジ統計に記録する
+    /// card1, card2: カードインデックス(1-52)
+    /// argAction: PokerConst.PlayerAction の値
+    /// </summary>
+    cHandRange.prototype.record = function(card1, card2, argAction)
+    {
+        const key = ns.HandRange.getHandKey(card1, card2);
+        if (key === null) return;
+
+        const value = ns.HandRange.getActionValue(argAction);
+
+        if (!this.Stats[key])
+        {
+            this.Stats[key] = { count: 0, sum: 0.0 };
+        }
+        this.Stats[key].count++;
+        this.Stats[key].sum += value;
+    };
+
+    /// <summary>
+    /// キャンバスにハンドレンジマトリクスを描画する
+    /// argCanvas: HTMLCanvasElement
+    /// </summary>
+    cHandRange.prototype.draw = function(argCanvas)
+    {
+        ns.HandRange.drawMatrix(argCanvas, this.Stats);
+    };
+
+    ns.cHandRange = cHandRange;
+
+    /// <summary>
     /// キャンバスにハンドレンジマトリクスを描画する
     /// argStats: { "row_col": {count, sum} } の形式
     /// </summary>

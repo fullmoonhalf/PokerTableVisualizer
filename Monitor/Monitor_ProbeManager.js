@@ -638,7 +638,7 @@
         {
             if (argEnabled)
             {
-                probe.Monitor.showStatsMode(probe.getStats(), probe.HandRangeStats);
+                probe.Monitor.showStatsMode(probe.getStats(), probe.HandRange);
             }
             else
             {
