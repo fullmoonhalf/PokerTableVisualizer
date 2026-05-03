@@ -328,6 +328,30 @@
     }
 
     /// <summary>
+    /// JSON からプレイヤー統計を復元する
+    /// </summary>
+    cProbePlayerModel.prototype.applyStatsFromJson = function(json)
+    {
+        const s = json.PlayerStats;
+        this.Stats.handCount             = s.handCount;
+        this.Stats.vpipHands             = s.vpipHands;
+        this.Stats.pfrHands              = s.pfrHands;
+        this.Stats.threeBetHands         = s.threeBetHands;
+        this.Stats.threeBetOpportunities = s.threeBetOpportunities;
+
+        // playerName を更新（monitor_screen 側の名前表示も更新される）
+        this.setNick(json.playerName);
+        // probe パネルの nick input の値も更新
+        this.View.NickInput.value = json.playerName;
+
+        // 統計表示モードが有効な場合は表示を更新
+        if (this.Monitor.StatsGroup.style.display !== "none")
+        {
+            this.Monitor.showStatsMode(this.Stats, this.HandRangeStats);
+        }
+    }
+
+    /// <summary>
     /// プリフロップ初手アクションをハンドレンジ統計に記録する（同一ハンド内での重複記録を防ぐ）
     /// </summary>
     cProbePlayerModel.prototype.recordPreflopFirstAction = function(argCards, argAction)
