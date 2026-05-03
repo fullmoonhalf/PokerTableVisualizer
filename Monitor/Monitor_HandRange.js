@@ -130,7 +130,7 @@
     }
 
     /// <summary>
-    /// ハンドレンジ統計データを保持し操作するクラス
+    /// ハンドレンジ統計データを保持し、記録と描画を行うクラス
     /// </summary>
     function cHandRange()
     {
@@ -139,6 +139,8 @@
 
     /// <summary>
     /// プリフロップのアクションをハンドレンジ統計に記録する
+    /// card1, card2: カードインデックス(1-52)
+    /// argAction: PokerConst.PlayerAction の値
     /// </summary>
     cHandRange.prototype.record = function(card1, card2, argAction)
     {
@@ -157,6 +159,7 @@
 
     /// <summary>
     /// キャンバスにハンドレンジマトリクスを描画する
+    /// argCanvas: HTMLCanvasElement
     /// </summary>
     cHandRange.prototype.draw = function(argCanvas)
     {
