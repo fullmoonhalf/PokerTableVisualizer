@@ -342,6 +342,9 @@
         this.Stats.pfrHands              = s.pfrHands;
         this.Stats.threeBetHands         = s.threeBetHands;
         this.Stats.threeBetOpportunities = s.threeBetOpportunities;
+        this.HandRange.Stats = (json.HandRange && typeof json.HandRange === "object")
+            ? JSON.parse(JSON.stringify(json.HandRange))
+            : {};
 
         // playerName を更新（monitor_screen 側の名前表示も更新される）
         this.setNick(json.playerName);

@@ -72,15 +72,18 @@
     /// <summary>
     /// プレイヤー統計を保存用 JSON オブジェクトに変換する
     /// </summary>
-    ns.exportStatsToJson = function(playerName, stats)
+    ns.exportStatsToJson = function(playerName, stats, handRange)
     {
         const now = new Date();
         const threeBet = stats.getThreeBet();
+        const handRangeStats = (handRange && handRange.Stats && typeof handRange.Stats === "object")
+            ? JSON.parse(JSON.stringify(handRange.Stats))
+            : {};
         return {
             "savedAt": now.toISOString(),
             "format": {
                 "type": "player_stats_snapshot",
-                "version": 1,
+                "version": 2,
             },
             "playerName": playerName,
             "PlayerStats": {
@@ -93,7 +96,24 @@
                 "pfrRate":               stats.getPfr(),
                 "threeBetRate":          threeBet.Rate,
             },
+            "HandRange": handRangeStats,
         };
+    }
+
+    function _isValidHandRangeStats(handRange)
+    {
+        if (!handRange || typeof handRange !== "object") return false;
+        for (const key in handRange)
+        {
+            if (!Object.prototype.hasOwnProperty.call(handRange, key)) continue;
+            if (!/^\d+_\d+$/.test(key)) return false;
+
+            const stat = handRange[key];
+            if (!stat || typeof stat !== "object") return false;
+            if (typeof stat.count !== "number" || stat.count < 0) return false;
+            if (typeof stat.sum !== "number" || stat.sum < 0) return false;
+        }
+        return true;
     }
 
     /// <summary>
@@ -110,6 +130,7 @@
         if (typeof s.pfrHands !== "number" || s.pfrHands < 0) return false;
         if (typeof s.threeBetHands !== "number" || s.threeBetHands < 0) return false;
         if (typeof s.threeBetOpportunities !== "number" || s.threeBetOpportunities < 0) return false;
+        if (json.HandRange !== undefined && !_isValidHandRangeStats(json.HandRange)) return false;
         return true;
     }
 
@@ -164,9 +185,9 @@
     /// <summary>
     /// プレイヤー統計を JSON ファイルとして保存する
     /// </summary>
-    ns.saveStatsAsJsonFile = function(playerName, stats)
+    ns.saveStatsAsJsonFile = function(playerName, stats, handRange)
     {
-        const data     = ns.exportStatsToJson(playerName, stats);
+        const data     = ns.exportStatsToJson(playerName, stats, handRange);
         const dateStr  = HtmlUtil.formatDateForFilename(new Date());
         const safeName = HtmlUtil.sanitizeFilenameSegment(playerName);
         const filename = `player_stats_${safeName}_${dateStr}.json`;

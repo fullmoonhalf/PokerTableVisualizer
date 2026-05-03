@@ -250,7 +250,7 @@
     /// </summary>
     cProbePlayerView.prototype._onSaveStats = function(argEvent)
     {
-        ns.saveStatsAsJsonFile(this.Model.Nick, this.Model.getStats());
+        ns.saveStatsAsJsonFile(this.Model.Nick, this.Model.getStats(), this.Model.HandRange);
     }
 
     /// <summary>
