@@ -112,20 +112,51 @@
     }
 
     /// <summary>
-    /// JSON オブジェクトをファイルとしてダウンロードする
+    /// JSON オブジェクトをファイルとしてダウンロードする。
+    /// File System Access API (showSaveFilePicker) が利用可能な場合は
+    /// 保存場所を指定できるダイアログを表示する。
+    /// 利用できない環境では従来のアンカークリック方式にフォールバックする。
     /// </summary>
-    ns.downloadJsonFile = function(data, filename)
+    ns.downloadJsonFile = async function(data, filename)
     {
         const json = JSON.stringify(data, null, 2);
         const blob = new Blob([json], { type: "application/json" });
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement("a");
-        a.href     = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+
+        if (window.showSaveFilePicker)
+        {
+            try
+            {
+                const fileHandle = await window.showSaveFilePicker({
+                    suggestedName: filename,
+                    types: [{
+                        description: "JSON",
+                        accept: { "application/json": [".json"] },
+                    }],
+                });
+                const writable = await fileHandle.createWritable();
+                await writable.write(blob);
+                await writable.close();
+            }
+            catch (e)
+            {
+                // ユーザーがダイアログをキャンセルした場合は何もしない
+                if (e.name !== "AbortError")
+                {
+                    console.error("[downloadJsonFile] showSaveFilePicker failed:", e);
+                }
+            }
+        }
+        else
+        {
+            const url = URL.createObjectURL(blob);
+            const a   = document.createElement("a");
+            a.href     = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
     }
 
     /// <summary>
