@@ -233,13 +233,6 @@
                 break;
         }
 
-        // BetStage の更新
-        if (argAction == PokerConst.PlayerAction.Bet || argAction == PokerConst.PlayerAction.Raise)
-        {
-            this.BetStage++;
-            this._updateAggressiveButtonLabels();
-        }
-
         if (this.CurrentBettingRound === PokerConst.BettingRound.Preflop)
         {
             if (!this.ExcludeFromStats)
@@ -278,6 +271,13 @@
                     argModel.recordPreflopFirstAction(cards, argAction);
                 }
             }
+        }
+
+        // BetStage の更新
+        if (argAction == PokerConst.PlayerAction.Bet || argAction == PokerConst.PlayerAction.Raise)
+        {
+            this.BetStage++;
+            this._updateAggressiveButtonLabels();
         }
 
         const nextPlayer = this.getNextActionPlayer(argModel);
