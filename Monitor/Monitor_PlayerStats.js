@@ -122,8 +122,18 @@
         const a    = document.createElement("a");
         a.href     = url;
         a.download = filename;
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
         URL.revokeObjectURL(url);
+    }
+
+    /// <summary>
+    /// ファイル名に使えない文字を除去する
+    /// </summary>
+    function _sanitizeFilenameSegment(name)
+    {
+        return name.replace(/[/\\:*?"<>|]/g, "_");
     }
 
     /// <summary>
@@ -131,9 +141,10 @@
     /// </summary>
     ns.saveStatsAsJsonFile = function(playerName, stats)
     {
-        const data     = ns.exportStatsToJson(playerName, stats);
-        const dateStr  = _formatDateForFilename(new Date());
-        const filename = `player_stats_${playerName}_${dateStr}.json`;
+        const data          = ns.exportStatsToJson(playerName, stats);
+        const dateStr       = _formatDateForFilename(new Date());
+        const safeName      = _sanitizeFilenameSegment(playerName);
+        const filename      = `player_stats_${safeName}_${dateStr}.json`;
         ns.downloadJsonFile(data, filename);
     }
 
