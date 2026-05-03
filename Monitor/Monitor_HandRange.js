@@ -135,6 +135,7 @@
     function cHandRange()
     {
         this.Stats = {};
+        this.History = [];
     }
 
     /// <summary>
@@ -155,6 +156,8 @@
         }
         this.Stats[key].count++;
         this.Stats[key].sum += value;
+
+        this.History.push({ cards: [card1, card2], action: argAction });
     };
 
     /// <summary>

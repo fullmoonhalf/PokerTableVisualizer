@@ -342,9 +342,27 @@
         this.Stats.pfrHands              = s.pfrHands;
         this.Stats.threeBetHands         = s.threeBetHands;
         this.Stats.threeBetOpportunities = s.threeBetOpportunities;
-        this.HandRange.Stats = (json.HandRange && typeof json.HandRange === "object")
-            ? JSON.parse(JSON.stringify(json.HandRange))
-            : {};
+        if (json.HandRange && typeof json.HandRange === "object")
+        {
+            const hr = json.HandRange;
+            if (Object.prototype.hasOwnProperty.call(hr, "Stats"))
+            {
+                // v3 新フォーマット: { Stats, History }
+                this.HandRange.Stats   = JSON.parse(JSON.stringify(hr.Stats   || {}));
+                this.HandRange.History = JSON.parse(JSON.stringify(hr.History || []));
+            }
+            else
+            {
+                // v2 旧フォーマット: フラットな Stats マップ
+                this.HandRange.Stats   = JSON.parse(JSON.stringify(hr));
+                this.HandRange.History = [];
+            }
+        }
+        else
+        {
+            this.HandRange.Stats   = {};
+            this.HandRange.History = [];
+        }
 
         // playerName を更新（monitor_screen 側の名前表示も更新される）
         this.setNick(json.playerName);

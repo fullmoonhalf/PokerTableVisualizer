@@ -79,11 +79,14 @@
         const handRangeStats = (handRange && handRange.Stats && typeof handRange.Stats === "object")
             ? JSON.parse(JSON.stringify(handRange.Stats))
             : {};
+        const handRangeHistory = (handRange && Array.isArray(handRange.History))
+            ? JSON.parse(JSON.stringify(handRange.History))
+            : [];
         return {
             "savedAt": now.toISOString(),
             "format": {
                 "type": "player_stats_snapshot",
-                "version": 2,
+                "version": 3,
             },
             "playerName": playerName,
             "PlayerStats": {
@@ -96,24 +99,50 @@
                 "pfrRate":               stats.getPfr(),
                 "threeBetRate":          threeBet.Rate,
             },
-            "HandRange": handRangeStats,
+            "HandRange": {
+                "Stats":   handRangeStats,
+                "History": handRangeHistory,
+            },
         };
     }
 
-    function _isValidHandRangeStats(handRange)
+    function _isValidHandRangeStatsMap(statsMap)
     {
-        if (!handRange || typeof handRange !== "object") return false;
-        for (const key in handRange)
+        if (!statsMap || typeof statsMap !== "object") return false;
+        for (const key in statsMap)
         {
-            if (!Object.prototype.hasOwnProperty.call(handRange, key)) continue;
+            if (!Object.prototype.hasOwnProperty.call(statsMap, key)) continue;
             if (!/^\d+_\d+$/.test(key)) return false;
 
-            const stat = handRange[key];
+            const stat = statsMap[key];
             if (!stat || typeof stat !== "object") return false;
             if (typeof stat.count !== "number" || stat.count < 0) return false;
             if (typeof stat.sum !== "number" || stat.sum < 0) return false;
         }
         return true;
+    }
+
+    function _isValidHandRangeHistory(history)
+    {
+        if (!Array.isArray(history)) return false;
+        for (const entry of history)
+        {
+            if (!entry || typeof entry !== "object") return false;
+            if (!Array.isArray(entry.cards) || entry.cards.length < 2) return false;
+            if (typeof entry.cards[0] !== "number" || typeof entry.cards[1] !== "number") return false;
+            if (typeof entry.action !== "number") return false;
+        }
+        return true;
+    }
+
+    /// 旧フォーマット(v2: HandRange がフラットな Stats マップ)かどうかを判定する
+    function _isLegacyFlatHandRange(handRange)
+    {
+        if (!handRange || typeof handRange !== "object") return false;
+        if (Array.isArray(handRange)) return false;
+        // Stats/History キーを持たないオブジェクトは旧フォーマットとみなす
+        return !Object.prototype.hasOwnProperty.call(handRange, "Stats") &&
+               !Object.prototype.hasOwnProperty.call(handRange, "History");
     }
 
     /// <summary>
@@ -130,7 +159,22 @@
         if (typeof s.pfrHands !== "number" || s.pfrHands < 0) return false;
         if (typeof s.threeBetHands !== "number" || s.threeBetHands < 0) return false;
         if (typeof s.threeBetOpportunities !== "number" || s.threeBetOpportunities < 0) return false;
-        if (json.HandRange !== undefined && !_isValidHandRangeStats(json.HandRange)) return false;
+        if (json.HandRange !== undefined)
+        {
+            const hr = json.HandRange;
+            if (_isLegacyFlatHandRange(hr))
+            {
+                // v2 旧フォーマット: HandRange がフラットな Stats マップ
+                if (!_isValidHandRangeStatsMap(hr)) return false;
+            }
+            else
+            {
+                // v3 新フォーマット: HandRange が { Stats, History }
+                if (!hr || typeof hr !== "object") return false;
+                if (!_isValidHandRangeStatsMap(hr.Stats)) return false;
+                if (!_isValidHandRangeHistory(hr.History)) return false;
+            }
+        }
         return true;
     }
 
