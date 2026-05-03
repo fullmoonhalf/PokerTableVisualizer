@@ -155,7 +155,8 @@
         this.HandCountValue.innerHTML = `Hands: ${argHandCount}`;
         this.VpipValue.innerHTML = `VPIP: ${argVpip}%`;
         this.PfrValue.innerHTML = `PFR: ${argPfr}%`;
-        this.ThreeBetValue.innerHTML = `3BET: ${arg3Bet}%`;
+        this.ThreeBetValue.innerHTML = `3BET: ${arg3Bet["Rate"]}% (${arg3Bet["Attempt"]}/${arg3Bet["Opportunities"]})`;
+
         if (this.HandRangeCanvas && argHandRangeStats)
         {
             ns.HandRange.drawMatrix(this.HandRangeCanvas, argHandRangeStats);

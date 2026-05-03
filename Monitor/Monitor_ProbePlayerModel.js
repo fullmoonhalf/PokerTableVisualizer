@@ -363,12 +363,25 @@
     }
 
     /// <summary>
-    /// 3bet% 値の取得（整数 % で四捨五入、3bet 機会 0 の場合は 0）
+    /// 3bet 統計の取得
     /// </summary>
     cProbePlayerModel.prototype.getThreeBet = function()
     {
-        if (this.ThreeBetOpportunities === 0) return 0;
-        return Math.round(this.ThreeBetHands * 100 / this.ThreeBetOpportunities);
+        let opportunities = this.ThreeBetOpportunities;
+        let attempt = 0;
+        let rate = 0;
+
+        if (opportunities !== 0)
+        {
+            opportunities = this.ThreeBetOpportunities;
+            attempt = this.ThreeBetHands;
+            rate = Math.round(attempt * 100 / opportunities);
+        }
+        return {
+            "Opportunities": opportunities,
+            "Attempt": attempt,
+            "Rate": rate,
+        }
     }
 
     /// <summary>
