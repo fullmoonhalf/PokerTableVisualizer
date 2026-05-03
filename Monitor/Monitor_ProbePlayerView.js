@@ -34,6 +34,7 @@
         this.ControlAliveButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_ALIVE );
         this.ControlPositionButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_POSITION );
         this.ControlSaveStatsButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_SAVE_STATS );
+        this.ControlLoadStatsButton = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_PROBEPLAYER_PANEL_CONTROL_LOAD_STATS );
 
         ns.cProbeViewBase.call(this, this.HtmlRoot);
 
@@ -45,6 +46,7 @@
         HtmlUtil.addEventListenerToElement(this.ControlAliveButton, "click", this._onControlAlive.bind(this));
         HtmlUtil.addEventListenerToElement(this.ControlPositionButton, "click", this._onControlPositionButton.bind(this));
         HtmlUtil.addEventListenerToElement(this.ControlSaveStatsButton, "click", this._onSaveStats.bind(this));
+        HtmlUtil.addEventListenerToElement(this.ControlLoadStatsButton, "click", this._onLoadStats.bind(this));
         HtmlUtil.addEventListenerToElement(this.NickInput, "change", this.onInputNick.bind(this));
 
         this.setActiveButton(this.ControlAliveButton);
@@ -249,6 +251,40 @@
     cProbePlayerView.prototype._onSaveStats = function(argEvent)
     {
         ns.saveStatsAsJsonFile(this.Model.Nick, this.Model.getStats());
+    }
+
+    /// <summary>
+    /// 統計情報の JSON ファイル読み込み
+    /// </summary>
+    cProbePlayerView.prototype._onLoadStats = function(argEvent)
+    {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".json";
+        input.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try
+                {
+                    const json = JSON.parse(evt.target.result);
+                    if (!ns.validatePlayerStatsJson(json))
+                    {
+                        console.warn("[_onLoadStats] Invalid player stats JSON: missing or invalid required fields (playerName, PlayerStats counts).", json);
+                        return;
+                    }
+                    this.Model.applyStatsFromJson(json);
+                }
+                catch (err)
+                {
+                    console.warn("[_onLoadStats] JSON parse error:", err);
+                }
+            };
+            reader.readAsText(file);
+        });
+        input.click();
     }
 
     /// <summary>

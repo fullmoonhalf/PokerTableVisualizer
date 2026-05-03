@@ -78,23 +78,39 @@
         const threeBet = stats.getThreeBet();
         return {
             "savedAt": now.toISOString(),
-            "type": "player_stats_snapshot",
-            "players": [
-                {
-                    "playerName": playerName,
-                    "PlayerStats": {
-                        "handCount":            stats.handCount,
-                        "vpipHands":            stats.vpipHands,
-                        "pfrHands":             stats.pfrHands,
-                        "threeBetHands":        stats.threeBetHands,
-                        "threeBetOpportunities":stats.threeBetOpportunities,
-                        "vpipRate":             stats.getVpip(),
-                        "pfrRate":              stats.getPfr(),
-                        "threeBetRate":         threeBet.Rate,
-                    }
-                }
-            ]
+            "format": {
+                "type": "player_stats_snapshot",
+                "version": 1,
+            },
+            "playerName": playerName,
+            "PlayerStats": {
+                "handCount":             stats.handCount,
+                "vpipHands":             stats.vpipHands,
+                "pfrHands":              stats.pfrHands,
+                "threeBetHands":         stats.threeBetHands,
+                "threeBetOpportunities": stats.threeBetOpportunities,
+                "vpipRate":              stats.getVpip(),
+                "pfrRate":               stats.getPfr(),
+                "threeBetRate":          threeBet.Rate,
+            },
         };
+    }
+
+    /// <summary>
+    /// プレイヤー統計 JSON のバリデーション
+    /// </summary>
+    ns.validatePlayerStatsJson = function(json)
+    {
+        if (!json || typeof json !== "object") return false;
+        if (typeof json.playerName !== "string") return false;
+        if (!json.PlayerStats || typeof json.PlayerStats !== "object") return false;
+        const s = json.PlayerStats;
+        if (typeof s.handCount !== "number" || s.handCount < 0) return false;
+        if (typeof s.vpipHands !== "number" || s.vpipHands < 0) return false;
+        if (typeof s.pfrHands !== "number" || s.pfrHands < 0) return false;
+        if (typeof s.threeBetHands !== "number" || s.threeBetHands < 0) return false;
+        if (typeof s.threeBetOpportunities !== "number" || s.threeBetOpportunities < 0) return false;
+        return true;
     }
 
     /// <summary>
