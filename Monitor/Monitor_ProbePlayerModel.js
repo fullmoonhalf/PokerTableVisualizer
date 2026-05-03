@@ -296,27 +296,11 @@
     }
 
     /// <summary>
-    /// VPIP 値の取得（整数 % で四捨五入、ハンド数 0 の場合は 0）
-    /// </summary>
-    cProbePlayerModel.prototype.getVpip = function()
-    {
-        return this.Stats.getVpip();
-    }
-
-    /// <summary>
     /// PFR カウントの加算（同一ハンド内での重複加算を防ぐ）
     /// </summary>
     cProbePlayerModel.prototype.incrementPfrCount = function()
     {
         this.HandFlags.hasPreflopRaisedThisHand = true;
-    }
-
-    /// <summary>
-    /// PFR 値の取得（整数 % で四捨五入、ハンド数 0 の場合は 0）
-    /// </summary>
-    cProbePlayerModel.prototype.getPfr = function()
-    {
-        return this.Stats.getPfr();
     }
 
     /// <summary>
@@ -336,11 +320,11 @@
     }
 
     /// <summary>
-    /// 3bet 統計の取得
+    /// 統計情報の取得
     /// </summary>
-    cProbePlayerModel.prototype.getThreeBet = function()
+    cProbePlayerModel.prototype.getStats = function()
     {
-        return this.Stats.getThreeBet();
+        return this.Stats;
     }
 
     /// <summary>
