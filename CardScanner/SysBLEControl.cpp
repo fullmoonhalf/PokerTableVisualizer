@@ -54,6 +54,7 @@ void SysBLEControl::notify(const char *source)
 /// @param argCallbackRX 
 void SysBLEControl::bind(SysBLECallbackRX *argCallbackRX)
 {
+    SysLog::printf(__NAMEOF__(SysBLEControl), "bind %p.", argCallbackRX);
     _CallbackRX = argCallbackRX;
 }
 
@@ -80,10 +81,11 @@ void SysBLEControl::onDisconnect(BLEServer *pServer)
 /// @param pChar 
 void SysBLEControl::onWrite(BLECharacteristic* pChar)
 {
-    std::string v = pChar->getValue();         // 受け取った生データ
     if(_CallbackRX != nullptr)
     {
-        _CallbackRX->onBLEWrite(v.c_str(), v.size());
+        String value = pChar->getValue();
+        SysLog::printf(__NAMEOF__(SysBLEControl), "Received '%s' (%d bytes).", value.c_str(), value.length());
+        _CallbackRX->onBLEWrite(value.c_str(), value.length());
     }
 }
 
