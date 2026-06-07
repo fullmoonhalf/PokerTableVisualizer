@@ -27,6 +27,8 @@
         this.MonitorManager = new ns.cMonitorManager();
         this.GuideManager = new ns.cGuideManager();
         this.LevelStructureManager = new ns.cLevelStructureManager();
+        this.SpeechRecognizer = new SpeechRecognizer.cSpeechRecognizer();
+        this.SpeechRecognizerManager = new ns.cSpeechRecognizerManager();
 
         // 初期化
         this.ProbeDeviceManager.init();
@@ -35,6 +37,8 @@
         this.MonitorManager.setup();
         this.GuideManager.setup();
         this.LevelStructureManager.setup();
+        this.SpeechRecognizer.init();
+        this.SpeechRecognizerManager.setup(this.SpeechRecognizer);
     }
 
     ns.cEngine = cEngine;
