@@ -25,6 +25,7 @@
         this.ThreeBetValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_STATS_3BET_VALUE, "");
         this.HandCountValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_STATS_HANDCOUNT_VALUE, "");
         this.HandRangeCanvas = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_STATS_HANDRANGE_CANVAS);
+        this.SpeechStatus = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_SPEECH_STATUS, "");
     }
     cProbePlayerMonitor.prototype = Object.create(ns.cHtmlBase.prototype);
     cProbePlayerMonitor.prototype.constructor = cProbePlayerMonitor;
@@ -171,6 +172,12 @@
     {
         this.NormalGroup.style.display = "";
         this.StatsGroup.style.display = "none";
+    }
+
+    cProbePlayerMonitor.prototype.showSpeechStatus = function(argText)
+    {
+        if (!this.SpeechStatus) return;
+        this.SpeechStatus.innerHTML = argText || "音声: -";
     }
 
     ns.cProbePlayerMonitor = cProbePlayerMonitor;

@@ -7,6 +7,28 @@
         this._statusValue = null;
         this._startButton = null;
         this._stopButton = null;
+        this._seatWordMap = {
+            "一番": "Seat01", "1番": "Seat01", "いちばん": "Seat01",
+            "二番": "Seat02", "2番": "Seat02", "にばん": "Seat02",
+            "三番": "Seat03", "3番": "Seat03", "さんばん": "Seat03",
+            "四番": "Seat04", "4番": "Seat04", "よんばん": "Seat04",
+            "五番": "Seat05", "5番": "Seat05", "ごばん": "Seat05",
+            "六番": "Seat06", "6番": "Seat06", "ろくばん": "Seat06",
+            "七番": "Seat07", "7番": "Seat07", "ななばん": "Seat07",
+            "八番": "Seat08", "8番": "Seat08", "はちばん": "Seat08",
+            "九番": "Seat09", "9番": "Seat09", "きゅうばん": "Seat09",
+            "十番": "Seat10", "10番": "Seat10", "じゅうばん": "Seat10"
+        };
+        this._actionWordMap = {
+            "フォールド": { label: "Fold", playerAction: PokerConst.PlayerAction.Fold },
+            "チェック": { label: "Check", playerAction: PokerConst.PlayerAction.Check },
+            "コール": { label: "Call", playerAction: PokerConst.PlayerAction.Call },
+            "ベット": { label: "Bet", playerAction: PokerConst.PlayerAction.Bet },
+            "レイズ": { label: "Raise", playerAction: PokerConst.PlayerAction.Raise },
+            "オールイン": { label: "AllIn", playerAction: PokerConst.PlayerAction.AllIn },
+            "全部": { label: "AllIn", playerAction: PokerConst.PlayerAction.AllIn }
+        };
+        this._seatWords = Object.keys(this._seatWordMap).sort(function (a, b) { return b.length - a.length; });
     }
 
     cSpeechRecognizerManager.prototype.setup = function (speechRecognizer) {
@@ -17,6 +39,9 @@
             this._speechRecognizer.setOnStateChanged(this._onStateChanged.bind(this));
         } else {
             this._updateView();
+        }
+        if (this._speechRecognizer && this._speechRecognizer.setOnResult) {
+            this._speechRecognizer.setOnResult(this._onSpeechResult.bind(this));
         }
     };
 
@@ -112,6 +137,122 @@
 
     cSpeechRecognizerManager.prototype._onStateChanged = function () {
         this._updateView();
+    };
+
+    cSpeechRecognizerManager.prototype._onSpeechResult = function (recognizedText) {
+        var normalizedText = this._normalizeText(recognizedText);
+        var parsedCommand = this._parseVoiceCommand(normalizedText);
+        var executed = false;
+        if (parsedCommand) {
+            executed = this._executeVoiceCommand(parsedCommand);
+        }
+
+        console.log("[SpeechCommand]", {
+            recognizedText: recognizedText,
+            normalizedText: normalizedText,
+            parsedCommand: parsedCommand,
+            executed: executed
+        });
+
+        this._showSpeechStatus(this._buildSpeechStatusMessage(recognizedText, parsedCommand, executed));
+    };
+
+    cSpeechRecognizerManager.prototype._normalizeText = function (text) {
+        var normalized = (text || "")
+            .trim()
+            .replace(/[０-９]/g, function (value) {
+                return String.fromCharCode(value.charCodeAt(0) - 0xFEE0);
+            })
+            .replace(/[ 　\t\r\n]/g, "")
+            .replace(/[、。,.]/g, "");
+        return normalized;
+    };
+
+    cSpeechRecognizerManager.prototype._parseVoiceCommand = function (normalizedText) {
+        if (!normalizedText) return null;
+
+        var seatWord = null;
+        var seatName = null;
+        for (var i = 0; i < this._seatWords.length; i++) {
+            var current = this._seatWords[i];
+            if (normalizedText.indexOf(current) !== 0) continue;
+            seatWord = current;
+            seatName = this._seatWordMap[current];
+            break;
+        }
+        if (!seatWord || !seatName) return null;
+
+        var actionWord = normalizedText.substring(seatWord.length);
+        if (!actionWord) return null;
+        var actionInfo = this._actionWordMap[actionWord];
+        if (!actionInfo) return null;
+
+        return {
+            seatWord: seatWord,
+            seatName: seatName,
+            actionWord: actionWord,
+            actionLabel: actionInfo.label,
+            playerAction: actionInfo.playerAction
+        };
+    };
+
+    cSpeechRecognizerManager.prototype._executeVoiceCommand = function (parsedCommand) {
+        if (!parsedCommand || !ns.Engine || !ns.Engine.ProbeManager) return false;
+        var probe = ns.Engine.ProbeManager.PlayerProbeCollection.find(function (model) {
+            return model.Name === parsedCommand.seatName;
+        });
+        if (!probe || !probe.View) return false;
+
+        if (parsedCommand.playerAction === PokerConst.PlayerAction.Bet ||
+            parsedCommand.playerAction === PokerConst.PlayerAction.Raise)
+        {
+            if (ns.Engine.ProbeManager.getAggressivePlayerAction() !== parsedCommand.playerAction) {
+                return false;
+            }
+            if (!probe.View.ActoinAggressiveButton) return false;
+            probe.View.ActoinAggressiveButton.click();
+            return true;
+        }
+
+        switch (parsedCommand.playerAction) {
+            case PokerConst.PlayerAction.Fold:
+                if (!probe.View.ActoinFoldButton) return false;
+                probe.View.ActoinFoldButton.click();
+                return true;
+            case PokerConst.PlayerAction.Check:
+                if (!probe.View.ActoinCheckButton) return false;
+                probe.View.ActoinCheckButton.click();
+                return true;
+            case PokerConst.PlayerAction.Call:
+                if (!probe.View.ActoinCallButton) return false;
+                probe.View.ActoinCallButton.click();
+                return true;
+            case PokerConst.PlayerAction.AllIn:
+                if (!probe.View.ActoinAllinButton) return false;
+                probe.View.ActoinAllinButton.click();
+                return true;
+            default:
+                return false;
+        }
+    };
+
+    cSpeechRecognizerManager.prototype._showSpeechStatus = function (statusText) {
+        if (!ns.Engine || !ns.Engine.ProbeManager || !ns.Engine.ProbeManager.PlayerProbeCollection) return;
+        for (var i = 0; i < ns.Engine.ProbeManager.PlayerProbeCollection.length; i++) {
+            var probe = ns.Engine.ProbeManager.PlayerProbeCollection[i];
+            if (!probe || !probe.Monitor || !probe.Monitor.showSpeechStatus) continue;
+            probe.Monitor.showSpeechStatus(statusText);
+        }
+    };
+
+    cSpeechRecognizerManager.prototype._buildSpeechStatusMessage = function (recognizedText, parsedCommand, executed) {
+        if (!parsedCommand) {
+            return "音声: " + (recognizedText || "-") + " | 解析: NG | 実行: NG";
+        }
+        return "音声: " + (recognizedText || "-") +
+            " | 席: " + parsedCommand.seatWord + " -> " + parsedCommand.seatName +
+            " | アクション: " + parsedCommand.actionWord + " -> " + parsedCommand.actionLabel +
+            " | 実行: " + (executed ? "OK" : "NG");
     };
 
     cSpeechRecognizerManager.prototype._updateView = function () {

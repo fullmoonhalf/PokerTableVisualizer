@@ -10,6 +10,7 @@ var SpeechRecognizer = SpeechRecognizer || {};
         this._IsAvailable = false;
         this._IsRunning = false;
         this._OnStateChanged = null;
+        this._OnResult = null;
     }
 
     /// <summary>
@@ -93,6 +94,11 @@ var SpeechRecognizer = SpeechRecognizer || {};
         this._notifyStateChanged();
     }
 
+    cSpeechRecognizer.prototype.setOnResult = function(callback)
+    {
+        this._OnResult = callback;
+    }
+
     cSpeechRecognizer.prototype._notifyStateChanged = function()
     {
         if (typeof this._OnStateChanged !== "function") {
@@ -112,6 +118,9 @@ var SpeechRecognizer = SpeechRecognizer || {};
     {
         const text = event.results[event.results.length - 1][0].transcript.trim();
         console.log("認識:", text);        
+        if (typeof this._OnResult === "function") {
+            this._OnResult(text, event);
+        }
     }
 
     /// <summary>
