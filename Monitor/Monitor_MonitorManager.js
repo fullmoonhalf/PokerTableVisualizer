@@ -68,8 +68,10 @@
     {
         this.ContainerMonitorPlayer = document.getElementById(ns.Defines.CONTAINER_MONITORPLAYER_PANEL);
         this.ContainerMonitorDealer = document.getElementById(ns.Defines.CONTAINER_MONITORDEALER_PANEL);
+        this.ContainerMonitorSpeech = document.getElementById(ns.Defines.CONTAINER_MONITORSPEECH_PANEL);
         this.TemplateMonitorPlayer = HtmlUtil.searchNodeByClassNameFromDocument(ns.Defines.TEMPLATE_MONITORPLAYER_PANEL);
         this.TemplateMonitorDealer = HtmlUtil.searchNodeByClassNameFromDocument(ns.Defines.TEMPLATE_MONITORDEALER_PANEL);
+        this.TemplateMonitorSpeech = HtmlUtil.searchNodeByClassNameFromDocument(ns.Defines.TEMPLATE_MONITORSPEECH_PANEL);
     }
 
     /// <summary>
@@ -77,6 +79,7 @@
     /// </summary>
     cMonitorManager.prototype.setup = function()
     {
+        this.createMonitorSpeech(ns.Defines.MONITOR_SPEECH_PANEL);
     }
 
     /// <summary>
@@ -113,6 +116,36 @@
             restoreMonitorPosition(monitor.DragableControl, monitorId);
         }
         return monitor;
+    }
+
+    /// <summary>
+    /// 音声パネルの生成
+    /// </summary>
+    cMonitorManager.prototype.createMonitorSpeech = function(monitorId)
+    {
+        if (!this.TemplateMonitorSpeech || !this.ContainerMonitorSpeech) return null;
+
+        const node = this.TemplateMonitorSpeech.cloneNode(true);
+        this.ContainerMonitorSpeech.appendChild(node);
+
+        const dragableRoot = HtmlUtil.searchNodeByClassNameFromChildren(node, ns.Defines.TEMPLATE_MONITORSPEECH_PANEL_DRAGABLE_ROOT);
+        const valueNode = HtmlUtil.searchNodeByClassNameFromChildren(node, ns.Defines.TEMPLATE_MONITORSPEECH_PANEL_VALUE, "音声: -");
+        if (!dragableRoot || !valueNode) return null;
+
+        valueNode.id = ns.Defines.MONITOR_SPEECH_PANEL;
+        const dragableObject = new HtmlUtil.cDragableElement(dragableRoot);
+        if (monitorId) {
+            dragableObject.onDragEndCallback = function(x, y) {
+                saveMonitorPosition(monitorId, x, y);
+            };
+            restoreMonitorPosition(dragableObject, monitorId);
+        }
+
+        return {
+            HtmlRoot: node,
+            DragableObject: dragableObject,
+            ValueNode: valueNode
+        };
     }
 
     /// 公開
