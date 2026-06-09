@@ -4,6 +4,7 @@
 
     function cSpeechRecognizerManager() {
         this._speechRecognizer = null;
+        this._speechStatusPanel = null;
         this._statusValue = null;
         this._startButton = null;
         this._stopButton = null;
@@ -21,6 +22,7 @@
         };
         this._actionWordMap = {
             "フォールド": { label: "Fold", playerAction: PokerConst.PlayerAction.Fold },
+            "ダウン": { label: "Fold", playerAction: PokerConst.PlayerAction.Fold },
             "チェック": { label: "Check", playerAction: PokerConst.PlayerAction.Check },
             "コール": { label: "Call", playerAction: PokerConst.PlayerAction.Call },
             "ベット": { label: "Bet", playerAction: PokerConst.PlayerAction.Bet },
@@ -33,6 +35,7 @@
 
     cSpeechRecognizerManager.prototype.setup = function (speechRecognizer) {
         this._speechRecognizer = speechRecognizer;
+        this._speechStatusPanel = document.getElementById(ns.Defines.MONITOR_SPEECH_PANEL);
         this._buildSettingsUI();
 
         if (this._speechRecognizer && this._speechRecognizer.setOnStateChanged) {
@@ -237,12 +240,8 @@
     };
 
     cSpeechRecognizerManager.prototype._showSpeechStatus = function (statusText) {
-        if (!ns.Engine || !ns.Engine.ProbeManager || !ns.Engine.ProbeManager.PlayerProbeCollection) return;
-        for (var i = 0; i < ns.Engine.ProbeManager.PlayerProbeCollection.length; i++) {
-            var probe = ns.Engine.ProbeManager.PlayerProbeCollection[i];
-            if (!probe || !probe.Monitor || !probe.Monitor.showSpeechStatus) continue;
-            probe.Monitor.showSpeechStatus(statusText);
-        }
+        if (!this._speechStatusPanel) return;
+        this._speechStatusPanel.innerHTML = statusText || "音声: -";
     };
 
     cSpeechRecognizerManager.prototype._buildSpeechStatusMessage = function (recognizedText, parsedCommand, executed) {
