@@ -34,11 +34,10 @@
         this.ProbeDeviceManager.init();
         this.ProbeManager.init();
         this.ViewManager.setup();
-        this.MonitorManager.setup();
         this.GuideManager.setup();
         this.LevelStructureManager.setup();
         this.SpeechRecognizer.init();
-        this.SpeechRecognizerManager.setup(this.SpeechRecognizer);
+        this.SpeechRecognizerManager.setup(this.SpeechRecognizer, this.MonitorManager.createMonitorSpeech(ns.Defines.MONITOR_SPEECH_PANEL));
     }
 
     ns.cEngine = cEngine;

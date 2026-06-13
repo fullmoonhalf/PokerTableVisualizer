@@ -68,15 +68,10 @@
     {
         this.ContainerMonitorPlayer = document.getElementById(ns.Defines.CONTAINER_MONITORPLAYER_PANEL);
         this.ContainerMonitorDealer = document.getElementById(ns.Defines.CONTAINER_MONITORDEALER_PANEL);
+        this.ContainerMonitorSpeech = document.getElementById(ns.Defines.CONTAINER_MONITORSPEECH_PANEL);
         this.TemplateMonitorPlayer = HtmlUtil.searchNodeByClassNameFromDocument(ns.Defines.TEMPLATE_MONITORPLAYER_PANEL);
         this.TemplateMonitorDealer = HtmlUtil.searchNodeByClassNameFromDocument(ns.Defines.TEMPLATE_MONITORDEALER_PANEL);
-    }
-
-    /// <summary>
-    /// 画面のセットアップ
-    /// </summary>
-    cMonitorManager.prototype.setup = function()
-    {
+        this.TemplateMonitorSpeech = HtmlUtil.searchNodeByClassNameFromDocument(ns.Defines.TEMPLATE_MONITORSPEECH_PANEL);
     }
 
     /// <summary>
@@ -113,6 +108,35 @@
             restoreMonitorPosition(monitor.DragableControl, monitorId);
         }
         return monitor;
+    }
+
+    /// <summary>
+    /// 音声パネルの生成
+    /// </summary>
+    cMonitorManager.prototype.createMonitorSpeech = function(monitorId)
+    {
+        if (!this.TemplateMonitorSpeech || !this.ContainerMonitorSpeech) return null;
+
+        const node = this.TemplateMonitorSpeech.cloneNode(true);
+        this.ContainerMonitorSpeech.appendChild(node);
+
+        const dragableRoot = HtmlUtil.searchNodeByClassNameFromChildren(node, ns.Defines.TEMPLATE_MONITORSPEECH_PANEL_DRAGABLE_ROOT);
+        const recognizedTextNode = HtmlUtil.searchNodeByClassNameFromChildren(node, ns.Defines.TEMPLATE_MONITORSPEECH_PANEL_RECOGNIZED_TEXT_VALUE);
+        const parsedCommandNode = HtmlUtil.searchNodeByClassNameFromChildren(node, ns.Defines.TEMPLATE_MONITORSPEECH_PANEL_PARSED_COMMAND_VALUE);
+        if (!dragableRoot || !recognizedTextNode || !parsedCommandNode) return null;
+
+        recognizedTextNode.id = ns.Defines.MONITOR_SPEECH_RECOGNIZED_TEXT;
+        parsedCommandNode.id = ns.Defines.MONITOR_SPEECH_PARSED_COMMAND;
+        const dragableObject = new HtmlUtil.cDragableElement(dragableRoot);
+        if (monitorId) {
+            dragableObject.onDragEndCallback = function(x, y) {
+                saveMonitorPosition(monitorId, x, y);
+            };
+            restoreMonitorPosition(dragableObject, monitorId);
+        }
+
+        const view = new ns.cSpeechRecognizerView(recognizedTextNode, parsedCommandNode);
+        return view;
     }
 
     /// 公開

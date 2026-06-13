@@ -4,19 +4,25 @@
 
     function cSpeechRecognizerManager() {
         this._speechRecognizer = null;
+        this._view = null;
         this._statusValue = null;
         this._startButton = null;
         this._stopButton = null;
+        this._parser = new ns.cVoiceCommandParser();
     }
 
-    cSpeechRecognizerManager.prototype.setup = function (speechRecognizer) {
+    cSpeechRecognizerManager.prototype.setup = function (speechRecognizer, view) {
         this._speechRecognizer = speechRecognizer;
+        this._view = view || null;
         this._buildSettingsUI();
 
         if (this._speechRecognizer && this._speechRecognizer.setOnStateChanged) {
             this._speechRecognizer.setOnStateChanged(this._onStateChanged.bind(this));
         } else {
             this._updateView();
+        }
+        if (this._speechRecognizer && this._speechRecognizer.setOnResult) {
+            this._speechRecognizer.setOnResult(this._onSpeechResult.bind(this));
         }
     };
 
@@ -112,6 +118,70 @@
 
     cSpeechRecognizerManager.prototype._onStateChanged = function () {
         this._updateView();
+    };
+
+    cSpeechRecognizerManager.prototype._onSpeechResult = function (recognizedText) {
+        var result = this._parser.processText(recognizedText);
+        var executedResults = [];
+
+        for (var i = 0; i < result.commands.length; i++) {
+            var cmd = result.commands[i];
+            var executed = this._executeVoiceCommand(cmd);
+            executedResults.push({ command: cmd, executed: executed });
+        }
+
+        console.log("[SpeechCommand]", {
+            recognizedText: recognizedText,
+            normalizedText: result.normalizedText,
+            tokens: result.tokens,
+            commands: result.commands,
+            executedResults: executedResults
+        });
+
+        if (this._view) {
+            this._view.showRecognizedText(recognizedText);
+            this._view.showParsedCommands(executedResults);
+        }
+    };
+
+    cSpeechRecognizerManager.prototype._executeVoiceCommand = function (command) {
+        if (!command || !ns.Engine || !ns.Engine.ProbeManager) return false;
+        var probe = ns.Engine.ProbeManager.PlayerProbeCollection.find(function (model) {
+            return model.Name === command.seatId;
+        });
+        if (!probe || !probe.View) return false;
+
+        if (command.playerAction === PokerConst.PlayerAction.Bet ||
+            command.playerAction === PokerConst.PlayerAction.Raise)
+        {
+            if (ns.Engine.ProbeManager.getAggressivePlayerAction() !== command.playerAction) {
+                return false;
+            }
+            if (!probe.View.ActoinAggressiveButton) return false;
+            probe.View.ActoinAggressiveButton.click();
+            return true;
+        }
+
+        switch (command.playerAction) {
+            case PokerConst.PlayerAction.Fold:
+                if (!probe.View.ActoinFoldButton) return false;
+                probe.View.ActoinFoldButton.click();
+                return true;
+            case PokerConst.PlayerAction.Check:
+                if (!probe.View.ActoinCheckButton) return false;
+                probe.View.ActoinCheckButton.click();
+                return true;
+            case PokerConst.PlayerAction.Call:
+                if (!probe.View.ActoinCallButton) return false;
+                probe.View.ActoinCallButton.click();
+                return true;
+            case PokerConst.PlayerAction.AllIn:
+                if (!probe.View.ActoinAllinButton) return false;
+                probe.View.ActoinAllinButton.click();
+                return true;
+            default:
+                return false;
+        }
     };
 
     cSpeechRecognizerManager.prototype._updateView = function () {
