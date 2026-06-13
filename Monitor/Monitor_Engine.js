@@ -38,7 +38,7 @@
         this.GuideManager.setup();
         this.LevelStructureManager.setup();
         this.SpeechRecognizer.init();
-        this.SpeechRecognizerManager.setup(this.SpeechRecognizer);
+        this.SpeechRecognizerManager.setup(this.SpeechRecognizer, this.MonitorManager.SpeechPanel ? this.MonitorManager.SpeechPanel.View : null);
     }
 
     ns.cEngine = cEngine;

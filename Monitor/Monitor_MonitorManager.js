@@ -79,7 +79,7 @@
     /// </summary>
     cMonitorManager.prototype.setup = function()
     {
-        this.createMonitorSpeech(ns.Defines.MONITOR_SPEECH_PANEL);
+        this.SpeechPanel = this.createMonitorSpeech(ns.Defines.MONITOR_SPEECH_PANEL);
     }
 
     /// <summary>
@@ -143,11 +143,14 @@
             restoreMonitorPosition(dragableObject, monitorId);
         }
 
+        const view = new ns.cSpeechRecognizerView(recognizedTextNode, parsedCommandNode);
+
         return {
             HtmlRoot: node,
             DragableObject: dragableObject,
             RecognizedTextNode: recognizedTextNode,
-            ParsedCommandNode: parsedCommandNode
+            ParsedCommandNode: parsedCommandNode,
+            View: view
         };
     }
 

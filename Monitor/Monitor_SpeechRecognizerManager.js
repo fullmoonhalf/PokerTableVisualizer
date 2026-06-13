@@ -33,11 +33,9 @@
         this._parser = new ns.cVoiceCommandParser(this._seatWordMap, this._actionWordMap);
     }
 
-    cSpeechRecognizerManager.prototype.setup = function (speechRecognizer) {
+    cSpeechRecognizerManager.prototype.setup = function (speechRecognizer, view) {
         this._speechRecognizer = speechRecognizer;
-        var recognizedTextNode = document.getElementById(ns.Defines.MONITOR_SPEECH_RECOGNIZED_TEXT);
-        var parsedCommandNode = document.getElementById(ns.Defines.MONITOR_SPEECH_PARSED_COMMAND);
-        this._view = new ns.cSpeechRecognizerView(recognizedTextNode, parsedCommandNode);
+        this._view = view || null;
         this._buildSettingsUI();
 
         if (this._speechRecognizer && this._speechRecognizer.setOnStateChanged) {
@@ -162,8 +160,10 @@
             executedResults: executedResults
         });
 
-        this._view.showRecognizedText(recognizedText);
-        this._view.showParsedCommands(executedResults);
+        if (this._view) {
+            this._view.showRecognizedText(recognizedText);
+            this._view.showParsedCommands(executedResults);
+        }
     };
 
     cSpeechRecognizerManager.prototype._executeVoiceCommand = function (command) {
