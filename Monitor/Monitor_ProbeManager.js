@@ -518,7 +518,7 @@
                 continue;
             }
 
-            const holeCards = seat.Cardslot.Cards ?? seat.Cardslot.estimate();
+            const holeCards = (seat.Cardslot.Cards && seat.Cardslot.Cards.length > 0) ? seat.Cardslot.Cards : seat.Cardslot.estimate();
             if (!holeCards || holeCards.length < 2)
             {
                 seat.Monitor.showHandName(null);

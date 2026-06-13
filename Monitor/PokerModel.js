@@ -259,7 +259,7 @@ var PokerModel = PokerModel || {};
             straightHigh = ranks[0];
         }
         // A-low ストレート: A-2-3-4-5 → 5 High
-        if (!isStraight && ranks[0] === 14 && ranks[1] === 5 && ranks[2] === 4 && ranks[3] === 3 && ranks[4] === 2)
+        if (!isStraight && Object.keys(rankCounts).length === 5 && ranks[0] === 14 && ranks[1] === 5 && ranks[2] === 4 && ranks[3] === 3 && ranks[4] === 2)
         {
             isStraight   = true;
             straightHigh = 5;
@@ -298,8 +298,8 @@ var PokerModel = PokerModel || {};
             primaryRank   = countGroups[4][0];
             secondaryRank = null;
             kickers       = countGroups[1] ? countGroups[1].slice() : [];
-            const kn      = kickers.length > 0 ? RN[kickers[0]] : "";
-            displayName   = `${HN.FourOfAKind}(${RN[primaryRank]}) キッカー(${kn})`;
+            const kn4     = kickers.length > 0 ? ` キッカー(${RN[kickers[0]]})` : "";
+            displayName   = `${HN.FourOfAKind}(${RN[primaryRank]})${kn4}`;
         }
         else if (countGroups[3] && countGroups[2])
         {
@@ -335,8 +335,8 @@ var PokerModel = PokerModel || {};
             primaryRank   = countGroups[3][0];
             secondaryRank = null;
             kickers       = countGroups[1] ? countGroups[1].slice() : [];
-            const kn      = kickers.length > 0 ? RN[kickers[0]] : "";
-            displayName   = `${HN.ThreeOfAKind}(${RN[primaryRank]}) キッカー(${kn})`;
+            const kn3     = kickers.length > 0 ? ` キッカー(${RN[kickers[0]]})` : "";
+            displayName   = `${HN.ThreeOfAKind}(${RN[primaryRank]})${kn3}`;
         }
         else if (countGroups[2] && countGroups[2].length >= 2)
         {
@@ -345,8 +345,8 @@ var PokerModel = PokerModel || {};
             primaryRank   = countGroups[2][0];
             secondaryRank = countGroups[2][1];
             kickers       = countGroups[1] ? countGroups[1].slice() : [];
-            const kn      = kickers.length > 0 ? RN[kickers[0]] : "";
-            displayName   = `${HN.TwoPair}(${RN[primaryRank]}-${RN[secondaryRank]}) キッカー(${kn})`;
+            const kn2p    = kickers.length > 0 ? ` キッカー(${RN[kickers[0]]})` : "";
+            displayName   = `${HN.TwoPair}(${RN[primaryRank]}-${RN[secondaryRank]})${kn2p}`;
         }
         else if (countGroups[2])
         {
@@ -355,8 +355,8 @@ var PokerModel = PokerModel || {};
             primaryRank   = countGroups[2][0];
             secondaryRank = null;
             kickers       = countGroups[1] ? countGroups[1].slice() : [];
-            const kn      = kickers.length > 0 ? RN[kickers[0]] : "";
-            displayName   = `${HN.OnePair}(${RN[primaryRank]}) キッカー(${kn})`;
+            const kn1p    = kickers.length > 0 ? ` キッカー(${RN[kickers[0]]})` : "";
+            displayName   = `${HN.OnePair}(${RN[primaryRank]})${kn1p}`;
         }
         else
         {
