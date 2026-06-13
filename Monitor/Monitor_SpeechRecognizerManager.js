@@ -8,29 +8,7 @@
         this._statusValue = null;
         this._startButton = null;
         this._stopButton = null;
-        this._seatWordMap = {
-            "一番": "Seat01", "1番": "Seat01", "いちばん": "Seat01",
-            "二番": "Seat02", "2番": "Seat02", "にばん": "Seat02",
-            "三番": "Seat03", "3番": "Seat03", "さんばん": "Seat03",
-            "四番": "Seat04", "4番": "Seat04", "よんばん": "Seat04",
-            "五番": "Seat05", "5番": "Seat05", "ごばん": "Seat05",
-            "六番": "Seat06", "6番": "Seat06", "ろくばん": "Seat06",
-            "七番": "Seat07", "7番": "Seat07", "ななばん": "Seat07",
-            "八番": "Seat08", "8番": "Seat08", "はちばん": "Seat08",
-            "九番": "Seat09", "9番": "Seat09", "きゅうばん": "Seat09",
-            "十番": "Seat10", "10番": "Seat10", "じゅうばん": "Seat10"
-        };
-        this._actionWordMap = {
-            "フォールド": { label: "Fold", playerAction: PokerConst.PlayerAction.Fold },
-            "ダウン": { label: "Fold", playerAction: PokerConst.PlayerAction.Fold },
-            "チェック": { label: "Check", playerAction: PokerConst.PlayerAction.Check },
-            "コール": { label: "Call", playerAction: PokerConst.PlayerAction.Call },
-            "ベット": { label: "Bet", playerAction: PokerConst.PlayerAction.Bet },
-            "レイズ": { label: "Raise", playerAction: PokerConst.PlayerAction.Raise },
-            "オールイン": { label: "AllIn", playerAction: PokerConst.PlayerAction.AllIn },
-            "全部": { label: "AllIn", playerAction: PokerConst.PlayerAction.AllIn }
-        };
-        this._parser = new ns.cVoiceCommandParser(this._seatWordMap, this._actionWordMap);
+        this._parser = new ns.cVoiceCommandParser();
     }
 
     cSpeechRecognizerManager.prototype.setup = function (speechRecognizer, view) {

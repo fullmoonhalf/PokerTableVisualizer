@@ -5,15 +5,40 @@
     var STATE_WAITING_SEAT = "WaitingSeat";
     var STATE_WAITING_ACTION = "WaitingAction";
 
+    var DEFAULT_SEAT_WORD_MAP = {
+        "一番": "Seat01", "1番": "Seat01", "いちばん": "Seat01",
+        "二番": "Seat02", "2番": "Seat02", "にばん": "Seat02",
+        "三番": "Seat03", "3番": "Seat03", "さんばん": "Seat03",
+        "四番": "Seat04", "4番": "Seat04", "よんばん": "Seat04",
+        "五番": "Seat05", "5番": "Seat05", "ごばん": "Seat05",
+        "六番": "Seat06", "6番": "Seat06", "ろくばん": "Seat06",
+        "七番": "Seat07", "7番": "Seat07", "ななばん": "Seat07",
+        "八番": "Seat08", "8番": "Seat08", "はちばん": "Seat08",
+        "九番": "Seat09", "9番": "Seat09", "きゅうばん": "Seat09",
+        "十番": "Seat10", "10番": "Seat10", "じゅうばん": "Seat10"
+    };
+
+    var DEFAULT_ACTION_WORD_MAP = {
+        "フォールド": { label: "Fold", playerAction: PokerConst.PlayerAction.Fold },
+        "ダウン": { label: "Fold", playerAction: PokerConst.PlayerAction.Fold },
+        "チェック": { label: "Check", playerAction: PokerConst.PlayerAction.Check },
+        "コール": { label: "Call", playerAction: PokerConst.PlayerAction.Call },
+        "ベット": { label: "Bet", playerAction: PokerConst.PlayerAction.Bet },
+        "レイズ": { label: "Raise", playerAction: PokerConst.PlayerAction.Raise },
+        "オールイン": { label: "AllIn", playerAction: PokerConst.PlayerAction.AllIn },
+        "全部": { label: "AllIn", playerAction: PokerConst.PlayerAction.AllIn }
+    };
+
     /// <summary>
     /// 音声コマンドパーサー
     /// 認識文字列の正規化・トークン化・状態機械による文法解析・Command配列生成を担う。
+    /// seatWordMap・actionWordMap を省略した場合はデフォルトのマップが使用される。
     /// </summary>
     function cVoiceCommandParser(seatWordMap, actionWordMap) {
-        this._seatWordMap = seatWordMap;
-        this._actionWordMap = actionWordMap;
-        this._seatWords = Object.keys(seatWordMap).sort(function (a, b) { return b.length - a.length; });
-        this._actionWords = Object.keys(actionWordMap).sort(function (a, b) { return b.length - a.length; });
+        this._seatWordMap = seatWordMap || DEFAULT_SEAT_WORD_MAP;
+        this._actionWordMap = actionWordMap || DEFAULT_ACTION_WORD_MAP;
+        this._seatWords = Object.keys(this._seatWordMap).sort(function (a, b) { return b.length - a.length; });
+        this._actionWords = Object.keys(this._actionWordMap).sort(function (a, b) { return b.length - a.length; });
     }
 
     /// <summary>
