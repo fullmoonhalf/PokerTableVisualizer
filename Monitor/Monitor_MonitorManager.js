@@ -129,10 +129,12 @@
         this.ContainerMonitorSpeech.appendChild(node);
 
         const dragableRoot = HtmlUtil.searchNodeByClassNameFromChildren(node, ns.Defines.TEMPLATE_MONITORSPEECH_PANEL_DRAGABLE_ROOT);
-        const valueNode = HtmlUtil.searchNodeByClassNameFromChildren(node, ns.Defines.TEMPLATE_MONITORSPEECH_PANEL_VALUE, "音声: -");
-        if (!dragableRoot || !valueNode) return null;
+        const recognizedTextNode = HtmlUtil.searchNodeByClassNameFromChildren(node, ns.Defines.TEMPLATE_MONITORSPEECH_PANEL_RECOGNIZED_TEXT_VALUE);
+        const parsedCommandNode = HtmlUtil.searchNodeByClassNameFromChildren(node, ns.Defines.TEMPLATE_MONITORSPEECH_PANEL_PARSED_COMMAND_VALUE);
+        if (!dragableRoot || !recognizedTextNode || !parsedCommandNode) return null;
 
-        valueNode.id = ns.Defines.MONITOR_SPEECH_PANEL;
+        recognizedTextNode.id = ns.Defines.MONITOR_SPEECH_RECOGNIZED_TEXT;
+        parsedCommandNode.id = ns.Defines.MONITOR_SPEECH_PARSED_COMMAND;
         const dragableObject = new HtmlUtil.cDragableElement(dragableRoot);
         if (monitorId) {
             dragableObject.onDragEndCallback = function(x, y) {
@@ -144,7 +146,8 @@
         return {
             HtmlRoot: node,
             DragableObject: dragableObject,
-            ValueNode: valueNode
+            RecognizedTextNode: recognizedTextNode,
+            ParsedCommandNode: parsedCommandNode
         };
     }
 

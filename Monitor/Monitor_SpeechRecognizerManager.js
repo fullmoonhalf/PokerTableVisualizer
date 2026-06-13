@@ -4,7 +4,8 @@
 
     function cSpeechRecognizerManager() {
         this._speechRecognizer = null;
-        this._speechStatusPanel = null;
+        this._recognizedTextNode = null;
+        this._parsedCommandNode = null;
         this._statusValue = null;
         this._startButton = null;
         this._stopButton = null;
@@ -35,7 +36,8 @@
 
     cSpeechRecognizerManager.prototype.setup = function (speechRecognizer) {
         this._speechRecognizer = speechRecognizer;
-        this._speechStatusPanel = document.getElementById(ns.Defines.MONITOR_SPEECH_PANEL);
+        this._recognizedTextNode = document.getElementById(ns.Defines.MONITOR_SPEECH_RECOGNIZED_TEXT);
+        this._parsedCommandNode = document.getElementById(ns.Defines.MONITOR_SPEECH_PARSED_COMMAND);
         this._buildSettingsUI();
 
         if (this._speechRecognizer && this._speechRecognizer.setOnStateChanged) {
@@ -160,25 +162,32 @@
             executedResults: executedResults
         });
 
-        this._showSpeechStatus(this._buildSpeechStatusMessage(recognizedText, executedResults));
+        this._showRecognizedText(recognizedText);
+        this._showParsedCommands(executedResults);
     };
 
-    cSpeechRecognizerManager.prototype._buildSpeechStatusMessage = function (recognizedText, executedResults) {
-        var base = "音声: " + (recognizedText || "-");
+    cSpeechRecognizerManager.prototype._showRecognizedText = function (recognizedText) {
+        if (!this._recognizedTextNode) return;
+        this._recognizedTextNode.textContent = "音声: " + (recognizedText || "-");
+    };
+
+    cSpeechRecognizerManager.prototype._showParsedCommands = function (executedResults) {
+        if (!this._parsedCommandNode) return;
         if (!executedResults || executedResults.length === 0) {
-            return base + " | 解析: NG";
+            this._parsedCommandNode.textContent = "認識失敗";
+            return;
         }
-        var parts = [base];
+        var lines = [];
         for (var i = 0; i < executedResults.length; i++) {
             var r = executedResults[i];
             var cmd = r.command;
-            parts.push(
-                "席: " + cmd.seatWord + " -> " + cmd.seatId +
-                " | アクション: " + cmd.actionWord + " -> " + cmd.actionLabel +
-                " | 実行: " + (r.executed ? "OK" : "NG")
+            lines.push(
+                cmd.seatWord + " -> " + cmd.seatId +
+                " | " + cmd.actionWord + " -> " + cmd.actionLabel +
+                " | " + (r.executed ? "OK" : "NG")
             );
         }
-        return parts.join(" / ");
+        this._parsedCommandNode.textContent = lines.join("\n");
     };
 
     cSpeechRecognizerManager.prototype._executeVoiceCommand = function (command) {
@@ -219,11 +228,6 @@
             default:
                 return false;
         }
-    };
-
-    cSpeechRecognizerManager.prototype._showSpeechStatus = function (statusText) {
-        if (!this._speechStatusPanel) return;
-        this._speechStatusPanel.innerHTML = statusText || "音声: -";
     };
 
     cSpeechRecognizerManager.prototype._updateView = function () {

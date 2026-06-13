@@ -148,12 +148,18 @@
     box-sizing: border-box;
 }
 
-.TEMPLATE_MONITORSPEECH_PANEL_VALUE
+.TEMPLATE_MONITORSPEECH_PANEL_RECOGNIZED_TEXT_VALUE
 {
     color: #fff;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.TEMPLATE_MONITORSPEECH_PANEL_PARSED_COMMAND_VALUE
+{
+    color: #cfc;
+    white-space: pre-wrap;
 }
 
 /* 設定エリア区切り */
