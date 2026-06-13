@@ -20,13 +20,14 @@
 
     var DEFAULT_ACTION_WORD_MAP = {
         "フォールド": { label: "Fold", playerAction: PokerConst.PlayerAction.Fold },
+        "ホールド": { label: "Fold", playerAction: PokerConst.PlayerAction.Fold }, // 誤認識対策
         "ダウン": { label: "Fold", playerAction: PokerConst.PlayerAction.Fold },
         "チェック": { label: "Check", playerAction: PokerConst.PlayerAction.Check },
         "コール": { label: "Call", playerAction: PokerConst.PlayerAction.Call },
         "ベット": { label: "Bet", playerAction: PokerConst.PlayerAction.Bet },
+        "ベッド": { label: "Bet", playerAction: PokerConst.PlayerAction.Bet }, // 誤認識対策
         "レイズ": { label: "Raise", playerAction: PokerConst.PlayerAction.Raise },
         "オールイン": { label: "AllIn", playerAction: PokerConst.PlayerAction.AllIn },
-        "全部": { label: "AllIn", playerAction: PokerConst.PlayerAction.AllIn }
     };
 
     /// <summary>
