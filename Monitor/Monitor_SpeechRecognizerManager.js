@@ -30,7 +30,7 @@
             "オールイン": { label: "AllIn", playerAction: PokerConst.PlayerAction.AllIn },
             "全部": { label: "AllIn", playerAction: PokerConst.PlayerAction.AllIn }
         };
-        this._seatWords = Object.keys(this._seatWordMap).sort(function (a, b) { return b.length - a.length; });
+        this._parser = new ns.cVoiceCommandParser(this._seatWordMap, this._actionWordMap);
     }
 
     cSpeechRecognizerManager.prototype.setup = function (speechRecognizer) {
@@ -143,73 +143,55 @@
     };
 
     cSpeechRecognizerManager.prototype._onSpeechResult = function (recognizedText) {
-        var normalizedText = this._normalizeText(recognizedText);
-        var parsedCommand = this._parseVoiceCommand(normalizedText);
-        var executed = false;
-        if (parsedCommand) {
-            executed = this._executeVoiceCommand(parsedCommand);
+        var result = this._parser.processText(recognizedText);
+        var executedResults = [];
+
+        for (var i = 0; i < result.commands.length; i++) {
+            var cmd = result.commands[i];
+            var executed = this._executeVoiceCommand(cmd);
+            executedResults.push({ command: cmd, executed: executed });
         }
 
         console.log("[SpeechCommand]", {
             recognizedText: recognizedText,
-            normalizedText: normalizedText,
-            parsedCommand: parsedCommand,
-            executed: executed
+            normalizedText: result.normalizedText,
+            tokens: result.tokens,
+            commands: result.commands,
+            executedResults: executedResults
         });
 
-        this._showSpeechStatus(this._buildSpeechStatusMessage(recognizedText, parsedCommand, executed));
+        this._showSpeechStatus(this._buildSpeechStatusMessage(recognizedText, executedResults));
     };
 
-    cSpeechRecognizerManager.prototype._normalizeText = function (text) {
-        var normalized = (text || "")
-            .trim()
-            .replace(/[０-９]/g, function (value) {
-                return String.fromCharCode(value.charCodeAt(0) - 0xFEE0);
-            })
-            .replace(/[ 　\t\r\n]/g, "")
-            .replace(/[、。,.]/g, "");
-        return normalized;
-    };
-
-    cSpeechRecognizerManager.prototype._parseVoiceCommand = function (normalizedText) {
-        if (!normalizedText) return null;
-
-        var seatWord = null;
-        var seatName = null;
-        for (var i = 0; i < this._seatWords.length; i++) {
-            var current = this._seatWords[i];
-            if (normalizedText.indexOf(current) !== 0) continue;
-            seatWord = current;
-            seatName = this._seatWordMap[current];
-            break;
+    cSpeechRecognizerManager.prototype._buildSpeechStatusMessage = function (recognizedText, executedResults) {
+        var base = "音声: " + (recognizedText || "-");
+        if (!executedResults || executedResults.length === 0) {
+            return base + " | 解析: NG";
         }
-        if (!seatWord || !seatName) return null;
-
-        var actionWord = normalizedText.substring(seatWord.length);
-        if (!actionWord) return null;
-        var actionInfo = this._actionWordMap[actionWord];
-        if (!actionInfo) return null;
-
-        return {
-            seatWord: seatWord,
-            seatName: seatName,
-            actionWord: actionWord,
-            actionLabel: actionInfo.label,
-            playerAction: actionInfo.playerAction
-        };
+        var parts = [base];
+        for (var i = 0; i < executedResults.length; i++) {
+            var r = executedResults[i];
+            var cmd = r.command;
+            parts.push(
+                "席: " + cmd.seatWord + " -> " + cmd.seatId +
+                " | アクション: " + cmd.actionWord + " -> " + cmd.actionLabel +
+                " | 実行: " + (r.executed ? "OK" : "NG")
+            );
+        }
+        return parts.join(" / ");
     };
 
-    cSpeechRecognizerManager.prototype._executeVoiceCommand = function (parsedCommand) {
-        if (!parsedCommand || !ns.Engine || !ns.Engine.ProbeManager) return false;
+    cSpeechRecognizerManager.prototype._executeVoiceCommand = function (command) {
+        if (!command || !ns.Engine || !ns.Engine.ProbeManager) return false;
         var probe = ns.Engine.ProbeManager.PlayerProbeCollection.find(function (model) {
-            return model.Name === parsedCommand.seatName;
+            return model.Name === command.seatId;
         });
         if (!probe || !probe.View) return false;
 
-        if (parsedCommand.playerAction === PokerConst.PlayerAction.Bet ||
-            parsedCommand.playerAction === PokerConst.PlayerAction.Raise)
+        if (command.playerAction === PokerConst.PlayerAction.Bet ||
+            command.playerAction === PokerConst.PlayerAction.Raise)
         {
-            if (ns.Engine.ProbeManager.getAggressivePlayerAction() !== parsedCommand.playerAction) {
+            if (ns.Engine.ProbeManager.getAggressivePlayerAction() !== command.playerAction) {
                 return false;
             }
             if (!probe.View.ActoinAggressiveButton) return false;
@@ -217,7 +199,7 @@
             return true;
         }
 
-        switch (parsedCommand.playerAction) {
+        switch (command.playerAction) {
             case PokerConst.PlayerAction.Fold:
                 if (!probe.View.ActoinFoldButton) return false;
                 probe.View.ActoinFoldButton.click();
@@ -242,16 +224,6 @@
     cSpeechRecognizerManager.prototype._showSpeechStatus = function (statusText) {
         if (!this._speechStatusPanel) return;
         this._speechStatusPanel.innerHTML = statusText || "音声: -";
-    };
-
-    cSpeechRecognizerManager.prototype._buildSpeechStatusMessage = function (recognizedText, parsedCommand, executed) {
-        if (!parsedCommand) {
-            return "音声: " + (recognizedText || "-") + " | 解析: NG | 実行: NG";
-        }
-        return "音声: " + (recognizedText || "-") +
-            " | 席: " + parsedCommand.seatWord + " -> " + parsedCommand.seatName +
-            " | アクション: " + parsedCommand.actionWord + " -> " + parsedCommand.actionLabel +
-            " | 実行: " + (executed ? "OK" : "NG");
     };
 
     cSpeechRecognizerManager.prototype._updateView = function () {
