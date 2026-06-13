@@ -19,6 +19,7 @@
         this.PositionValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_POSITION_VALUE, "");
         this.HolecardValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_HOLECARD_VALUE);
         this.NormalGroup = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_GROUP_NORMAL);
+        this.HandNameValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_HANDNAME_VALUE, "");
         this.StatsGroup = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_GROUP_STATS);
         this.VpipValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_STATS_VPIP_VALUE, "");
         this.PfrValue = HtmlUtil.searchNodeByClassNameFromChildren(this.HtmlRoot, ns.Defines.TEMPLATE_MONITORPLAYER_PANEL_STATS_PFR_VALUE, "");
@@ -119,6 +120,14 @@
     cProbePlayerMonitor.prototype.showCard = function(argCard)
     {
         this.HolecardValue.innerHTML = this.createHoleCardsHTML(argCard, ns.Defines.TEMPLATE_GLOBAL_CARD_SMALL, 2);
+    }
+
+    /// <summary>
+    /// 役名の表示
+    /// </summary>
+    cProbePlayerMonitor.prototype.showHandName = function(argHandName)
+    {
+        this.HandNameValue.innerHTML = argHandName || "";
     }
 
     /// <summary>

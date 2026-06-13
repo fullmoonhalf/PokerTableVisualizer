@@ -17,7 +17,7 @@
     position: relative;   /* 基準にする */
     background: #cff;
     width: 140px;
-    height: 60px;
+    height: 78px;
     margin: 1px;
     font-size: 8px;
     border-width: 2px;
@@ -103,6 +103,18 @@
 
 .TEMPLATE_MONITORPLAYER_PANEL_GROUP_NORMAL
 {
+}
+
+.TEMPLATE_MONITORPLAYER_PANEL_HANDNAME_VALUE
+{
+    position: absolute;
+    top: 62px;
+    left: 4px;
+    width: 132px;
+    font-size: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .TEMPLATE_MONITORPLAYER_PANEL_GROUP_STATS
