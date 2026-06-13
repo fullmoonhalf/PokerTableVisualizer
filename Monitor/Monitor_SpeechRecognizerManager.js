@@ -4,8 +4,7 @@
 
     function cSpeechRecognizerManager() {
         this._speechRecognizer = null;
-        this._recognizedTextNode = null;
-        this._parsedCommandNode = null;
+        this._view = null;
         this._statusValue = null;
         this._startButton = null;
         this._stopButton = null;
@@ -36,8 +35,9 @@
 
     cSpeechRecognizerManager.prototype.setup = function (speechRecognizer) {
         this._speechRecognizer = speechRecognizer;
-        this._recognizedTextNode = document.getElementById(ns.Defines.MONITOR_SPEECH_RECOGNIZED_TEXT);
-        this._parsedCommandNode = document.getElementById(ns.Defines.MONITOR_SPEECH_PARSED_COMMAND);
+        var recognizedTextNode = document.getElementById(ns.Defines.MONITOR_SPEECH_RECOGNIZED_TEXT);
+        var parsedCommandNode = document.getElementById(ns.Defines.MONITOR_SPEECH_PARSED_COMMAND);
+        this._view = new ns.cSpeechRecognizerView(recognizedTextNode, parsedCommandNode);
         this._buildSettingsUI();
 
         if (this._speechRecognizer && this._speechRecognizer.setOnStateChanged) {
@@ -162,32 +162,8 @@
             executedResults: executedResults
         });
 
-        this._showRecognizedText(recognizedText);
-        this._showParsedCommands(executedResults);
-    };
-
-    cSpeechRecognizerManager.prototype._showRecognizedText = function (recognizedText) {
-        if (!this._recognizedTextNode) return;
-        this._recognizedTextNode.textContent = "音声: " + (recognizedText || "-");
-    };
-
-    cSpeechRecognizerManager.prototype._showParsedCommands = function (executedResults) {
-        if (!this._parsedCommandNode) return;
-        if (!executedResults || executedResults.length === 0) {
-            this._parsedCommandNode.textContent = "認識失敗";
-            return;
-        }
-        var lines = [];
-        for (var i = 0; i < executedResults.length; i++) {
-            var r = executedResults[i];
-            var cmd = r.command;
-            lines.push(
-                cmd.seatWord + " -> " + cmd.seatId +
-                " | " + cmd.actionWord + " -> " + cmd.actionLabel +
-                " | " + (r.executed ? "OK" : "NG")
-            );
-        }
-        this._parsedCommandNode.textContent = lines.join("\n");
+        this._view.showRecognizedText(recognizedText);
+        this._view.showParsedCommands(executedResults);
     };
 
     cSpeechRecognizerManager.prototype._executeVoiceCommand = function (command) {
