@@ -75,14 +75,6 @@
     }
 
     /// <summary>
-    /// 画面のセットアップ
-    /// </summary>
-    cMonitorManager.prototype.setup = function()
-    {
-        this.SpeechPanel = this.createMonitorSpeech(ns.Defines.MONITOR_SPEECH_PANEL);
-    }
-
-    /// <summary>
     /// プレイヤーパネルの生成
     /// </summary>
     cMonitorManager.prototype.createMonitorPlayer = function(monitorId)
@@ -144,14 +136,7 @@
         }
 
         const view = new ns.cSpeechRecognizerView(recognizedTextNode, parsedCommandNode);
-
-        return {
-            HtmlRoot: node,
-            DragableObject: dragableObject,
-            RecognizedTextNode: recognizedTextNode,
-            ParsedCommandNode: parsedCommandNode,
-            View: view
-        };
+        return view;
     }
 
     /// 公開
