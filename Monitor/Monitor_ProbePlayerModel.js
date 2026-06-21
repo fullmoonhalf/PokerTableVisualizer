@@ -54,7 +54,7 @@
         this.Cardslot.reset();
         this.View.showCard(null);
         this.Monitor.showCard(null);
-        this.Monitor.showHandName(null);
+        this.Monitor.showHandName(null, null);
         this.setWinRate(null);
         this.ActedInRound = false;
         this.Reactionable = false;

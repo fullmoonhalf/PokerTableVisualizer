@@ -108,7 +108,20 @@
 .TEMPLATE_MONITORPLAYER_PANEL_HANDNAME_VALUE
 {
     position: absolute;
-    top: 62px;
+    top: 42px;
+    left: 4px;
+    width: 132px;
+    font-weight: bold;
+    font-size: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.TEMPLATE_MONITORPLAYER_PANEL_KICKERNAME_VALUE
+{
+    position: absolute;
+    top: 53px;
     left: 4px;
     width: 132px;
     font-size: 8px;

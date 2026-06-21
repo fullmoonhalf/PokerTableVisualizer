@@ -514,33 +514,35 @@
         {
             if (!seat.isActive())
             {
-                seat.Monitor.showHandName(null);
+                seat.Monitor.showHandName(null, null);
                 continue;
             }
 
             const holeCards = (seat.Cardslot.Cards && seat.Cardslot.Cards.length > 0) ? seat.Cardslot.Cards : seat.Cardslot.estimate();
             if (!holeCards || holeCards.length < 2)
             {
-                seat.Monitor.showHandName(null);
+                seat.Monitor.showHandName(null, null);
                 continue;
             }
 
             // コミュニティカードが3枚以上で合計5〜7枚の場合に役判定を行う
             if (communityCards.length < 3)
             {
-                seat.Monitor.showHandName(null);
+                seat.Monitor.showHandName(null, null);
                 continue;
             }
 
             const allCards = holeCards.concat(communityCards);
             if (allCards.length < 5 || allCards.length > 7)
             {
-                seat.Monitor.showHandName(null);
+                seat.Monitor.showHandName(null, null);
                 continue;
             }
 
             const handResult = PokerModel.evaluateHand(allCards);
-            seat.Monitor.showHandName(handResult ? handResult.displayName : null);
+            const handText = handResult ? handResult.displayHandText : null;
+            const kickerText = handResult ? handResult.displayKickerText : null;
+            seat.Monitor.showHandName(handText, kickerText);
         }
     }
 

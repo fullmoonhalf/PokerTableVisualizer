@@ -296,7 +296,7 @@ var PokerModel = PokerModel || {};
             countGroups[k].sort((a, b) => b - a);
         }
 
-        let handType, handRank, primaryRank, secondaryRank, kickers, displayName;
+        let handType, handRank, primaryRank, secondaryRank, kickers, displayHandText, displayKickerText;
         const HN = PokerConst.HandNames;
         const HR = PokerConst.HandRanks;
         const RN = PokerConst.RankNames;
@@ -308,7 +308,8 @@ var PokerModel = PokerModel || {};
             primaryRank   = straightHigh;
             secondaryRank = null;
             kickers       = [];
-            displayName   = `${HN.StraightFlush}(${RN[primaryRank]} High)`;
+            displayHandText   = `${HN.StraightFlush}(${RN[primaryRank]} High)`;
+            displayKickerText = '';
         }
         else if (countGroups[4])
         {
@@ -317,7 +318,8 @@ var PokerModel = PokerModel || {};
             primaryRank   = countGroups[4][0];
             secondaryRank = null;
             kickers       = countGroups[1] ? countGroups[1].slice() : [];
-            displayName   = `${HN.FourOfAKind}(${RN[primaryRank]})${_kickerSuffix(kickers, RN)}`;
+            displayHandText   = `${HN.FourOfAKind}(${RN[primaryRank]})`;
+            displayKickerText = _kickerSuffix(kickers, RN);
         }
         else if (countGroups[3] && countGroups[2])
         {
@@ -326,7 +328,8 @@ var PokerModel = PokerModel || {};
             primaryRank   = countGroups[3][0];
             secondaryRank = countGroups[2][0];
             kickers       = [];
-            displayName   = `${HN.FullHouse}(${RN[primaryRank]}-${RN[secondaryRank]})`;
+            displayHandText   = `${HN.FullHouse}(${RN[primaryRank]}-${RN[secondaryRank]})`;
+            displayKickerText = '';
         }
         else if (isFlush)
         {
@@ -335,7 +338,8 @@ var PokerModel = PokerModel || {};
             primaryRank   = ranks[0];
             secondaryRank = null;
             kickers       = ranks.slice(1);
-            displayName   = `${HN.Flush}(${RN[primaryRank]} High)`;
+            displayHandText   = `${HN.Flush}(${RN[primaryRank]} High)`;
+            displayKickerText = _kickerSuffix(kickers, RN);
         }
         else if (isStraight)
         {
@@ -344,7 +348,8 @@ var PokerModel = PokerModel || {};
             primaryRank   = straightHigh;
             secondaryRank = null;
             kickers       = [];
-            displayName   = `${HN.Straight}(${RN[primaryRank]} High)`;
+            displayHandText   = `${HN.Straight}(${RN[primaryRank]} High)`;
+            displayKickerText = '';
         }
         else if (countGroups[3])
         {
@@ -353,7 +358,8 @@ var PokerModel = PokerModel || {};
             primaryRank   = countGroups[3][0];
             secondaryRank = null;
             kickers       = countGroups[1] ? countGroups[1].slice() : [];
-            displayName   = `${HN.ThreeOfAKind}(${RN[primaryRank]})${_kickerSuffix(kickers, RN)}`;
+            displayHandText   = `${HN.ThreeOfAKind}(${RN[primaryRank]})`;
+            displayKickerText = _kickerSuffix(kickers, RN);
         }
         else if (countGroups[2] && countGroups[2].length >= 2)
         {
@@ -362,7 +368,8 @@ var PokerModel = PokerModel || {};
             primaryRank   = countGroups[2][0];
             secondaryRank = countGroups[2][1];
             kickers       = countGroups[1] ? countGroups[1].slice() : [];
-            displayName   = `${HN.TwoPair}(${RN[primaryRank]}-${RN[secondaryRank]})${_kickerSuffix(kickers, RN)}`;
+            displayHandText   = `${HN.TwoPair}(${RN[primaryRank]}-${RN[secondaryRank]})`;
+            displayKickerText = _kickerSuffix(kickers, RN);
         }
         else if (countGroups[2])
         {
@@ -371,7 +378,8 @@ var PokerModel = PokerModel || {};
             primaryRank   = countGroups[2][0];
             secondaryRank = null;
             kickers       = countGroups[1] ? countGroups[1].slice() : [];
-            displayName   = `${HN.OnePair}(${RN[primaryRank]})${_kickerSuffix(kickers, RN)}`;
+            displayHandText   = `${HN.OnePair}(${RN[primaryRank]})`;
+            displayKickerText = _kickerSuffix(kickers, RN);
         }
         else
         {
@@ -380,7 +388,8 @@ var PokerModel = PokerModel || {};
             primaryRank   = ranks[0];
             secondaryRank = null;
             kickers       = ranks.slice(1);
-            displayName   = `${HN.HighCard}(${RN[primaryRank]})`;
+            displayHandText   = `${HN.HighCard}(${RN[primaryRank]})`;
+            displayKickerText = _kickerSuffix(kickers, RN);
         }
 
         return {
@@ -390,7 +399,8 @@ var PokerModel = PokerModel || {};
             primaryRank   : primaryRank,
             secondaryRank : secondaryRank,
             kickers       : kickers,
-            displayName   : displayName,
+            displayHandText   : displayHandText,
+            displayKickerText : displayKickerText,
         };
     }
 
