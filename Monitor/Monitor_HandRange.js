@@ -17,18 +17,6 @@
     const MATRIX_SIZE = 13;
 
     /// <summary>
-    /// カードインデックス(1-52)をランクとスートに変換する
-    /// </summary>
-    function _cardToRankSuit(cardIndex)
-    {
-        const i1 = cardIndex - 1;
-        const suit = Math.floor(i1 / 13);
-        let rank = i1 % 13 + 1;
-        if (rank === 1) rank = 14; // Ace
-        return { rank: rank, suit: suit };
-    }
-
-    /// <summary>
     /// ランクを行/列インデックスに変換する
     /// </summary>
     function _rankToIndex(rank)
@@ -65,8 +53,8 @@
     /// </summary>
     ns.HandRange.getHandCell = function(card1, card2)
     {
-        const c1 = _cardToRankSuit(card1);
-        const c2 = _cardToRankSuit(card2);
+        const c1 = PokerModel.cardIndexToRankSuit(card1);
+        const c2 = PokerModel.cardIndexToRankSuit(card2);
 
         const highCard = c1.rank >= c2.rank ? c1 : c2;
         const lowCard  = c1.rank >= c2.rank ? c2 : c1;
