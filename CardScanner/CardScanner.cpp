@@ -8,7 +8,7 @@
 // アプリまわり
 #include "AppMode.h"
 #include "AppSetting.h"
-#include "AppModeDevelop.h"
+#include "AppModeCenterMonitor.h"
 #include "AppModeReader.h"
 #include "AppModeWriter.h"
 #include "AppModeDeckcheck.h"
@@ -22,7 +22,7 @@
 #define BUTTON_MARGIN (16)
 #define BUTTON_LABEL_READER ("Reader")
 #define BUTTON_LABEL_WRITER ("Writer")
-#define BUTTON_LABEL_DEVELOP ("Develop")
+#define BUTTON_LABEL_CENTER_MONITOR ("Monitor")
 #define BUTTON_LABEL_DECKCHECK ("DeckCheck")
 
 
@@ -48,7 +48,7 @@ void CardScanner::start()
 {
     _ButtonReader = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_LABEL_READER, this);
     _ButtonWriter = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_LABEL_WRITER, this);
-    _ButtonDevelop = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_LABEL_DEVELOP, this);
+    _ButtonCenterMonitor = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_LABEL_CENTER_MONITOR, this);
     _ButtonDeckcheck = SysSpriteManager::getInstance().createButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_LABEL_DECKCHECK, this);
     {
         _BatteryGauge = new AppBatteryGauge();
@@ -73,7 +73,7 @@ void CardScanner::end()
     SysSpriteManager::getInstance().destroySprite(_LabelSeat);
     delete _BatteryGauge;
     SysSpriteManager::getInstance().destroyDrawable(_ButtonDeckcheck);
-    SysSpriteManager::getInstance().destroyDrawable(_ButtonDevelop);
+    SysSpriteManager::getInstance().destroyDrawable(_ButtonCenterMonitor);
     SysSpriteManager::getInstance().destroyDrawable(_ButtonWriter);
     SysSpriteManager::getInstance().destroyDrawable(_ButtonReader);
 }
@@ -92,7 +92,7 @@ void CardScanner::update()
 
     _ButtonReader->update();
     _ButtonWriter->update();
-    _ButtonDevelop->update();
+    _ButtonCenterMonitor->update();
     _ButtonDeckcheck->update();
     _BatteryGauge->update();
 }
@@ -103,7 +103,7 @@ void CardScanner::draw()
     _ButtonReader->draw(BUTTON_ANCHOR_X, BUTTON_ANCHOR_Y);
     _ButtonWriter->draw(BUTTON_ANCHOR_X+BUTTON_WIDTH+BUTTON_MARGIN, BUTTON_ANCHOR_Y);
     _ButtonDeckcheck->draw(BUTTON_ANCHOR_X, BUTTON_ANCHOR_Y+BUTTON_HEIGHT+BUTTON_MARGIN);
-    _ButtonDevelop->draw(BUTTON_ANCHOR_X+BUTTON_WIDTH+BUTTON_MARGIN, BUTTON_ANCHOR_Y+BUTTON_HEIGHT+BUTTON_MARGIN);
+    _ButtonCenterMonitor->draw(BUTTON_ANCHOR_X+BUTTON_WIDTH+BUTTON_MARGIN, BUTTON_ANCHOR_Y+BUTTON_HEIGHT+BUTTON_MARGIN);
     _LabelSeat->draw(8, 8);
     _LabelVersion->draw(8, SysDisplay::getInstance().getHeight()-16);
     _BatteryGauge->draw(_GaugeBatteryPosX, _GaugeBatteryPosY);
@@ -115,9 +115,9 @@ void CardScanner::onGUiButtonReleased(const char *label)
 {
     SysLog::printf(__NAMEOF__(CardScanner), "onGUiButtonReleased(%s)", label);
 
-    if(strcmp(label, BUTTON_LABEL_DEVELOP) == 0)
+    if(strcmp(label, BUTTON_LABEL_CENTER_MONITOR) == 0)
     {
-        SysModeManager::getInstance().transit(new AppModeDevelop(), true);
+        SysModeManager::getInstance().transit(new AppModeCenterMonitor(), true);
     }
     else if(strcmp(label, BUTTON_LABEL_READER) == 0)
     {
