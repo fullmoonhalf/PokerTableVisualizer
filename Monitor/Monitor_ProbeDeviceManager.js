@@ -59,6 +59,18 @@
     }
 
     /// <summary>
+    /// ブラウザ → センターモニターへの通知
+    /// </summary>
+    cProbeDeviceManager.prototype.writeDealerDisplayState = function(argValue)
+    {
+        const devices = this.Devices.filter(x => x.IsCenterMonitor);
+        for(const device of devices)
+        {
+            device.write(argValue);
+        }
+    }
+
+    /// <summary>
     /// ブラウザ → 指定デバイスへの通知: スキャン開始
     /// </summary>
     cProbeDeviceManager.prototype.writeStartScan = function(argTarget)
@@ -194,6 +206,7 @@
                 probe.Cardslot.fix();
             }
         }
+        ns.Engine.ProbeManager.updateDealerDisplayState();
         
         console.log("[cProbeDeviceManager] debugDealCard - End");
     }
@@ -224,6 +237,7 @@
             dealerProbe.View.showFlopCard(flopCards);
             dealerProbe.Monitor.showFlopCard(flopCards);
             ns.Engine.ProbeManager.updateWinRate();
+            ns.Engine.ProbeManager.updateDealerDisplayState();
         }
 
         console.log("[cProbeDeviceManager] debugFlop - End");
@@ -255,6 +269,7 @@
             dealerProbe.View.showTurnCard(turnCards);
             dealerProbe.Monitor.showTurnCard(turnCards);
             ns.Engine.ProbeManager.updateWinRate();
+            ns.Engine.ProbeManager.updateDealerDisplayState();
         }
 
         console.log("[cProbeDeviceManager] debugTurn - End");
@@ -286,6 +301,7 @@
             dealerProbe.View.showRiverCard(riverCards);
             dealerProbe.Monitor.showRiverCard(riverCards);
             ns.Engine.ProbeManager.updateWinRate();
+            ns.Engine.ProbeManager.updateDealerDisplayState();
         }
 
         console.log("[cProbeDeviceManager] debugRiver - End");

@@ -10,6 +10,7 @@
 		this.Owner = argOwner;
 		this.Name = argName;
 		this.ProbeName = argName;
+		this.IsCenterMonitor = false;
 		this.BLECharacteristicRX = argBLECharacteristicRX;
 		this.BLECharacteristicTX = argBLECharacteristicTX;
 
@@ -42,7 +43,12 @@
 			const str = HtmlUtil.TextDecoder.decode(characteristic.value);
 			const json = JSON.parse(str);
 			this.ProbeName = json.probe;
+			this.IsCenterMonitor = this.IsCenterMonitor || json.mode === "change_monitor";
 			this.Owner.onNofitied(json);
+			if(this.IsCenterMonitor && ns.Engine && ns.Engine.ProbeManager)
+			{
+				ns.Engine.ProbeManager.updateDealerDisplayState();
+			}
 		}
 		catch(e)
 		{
