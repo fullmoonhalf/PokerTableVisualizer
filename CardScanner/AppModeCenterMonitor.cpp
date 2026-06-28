@@ -248,16 +248,40 @@ void AppModeCenterMonitor::redrawDealerDisplay()
     _LabelBoardHeader->clear();
     _LabelBoardHeader->drawText(0, 0, "Board");
 
-    char *seek = board_buffer;
-    seek[0] = '\0';
+    size_t write_offset = 0;
+    board_buffer[0] = '\0';
     for(int index=0; index<5; ++index)
     {
+        if(write_offset >= sizeof(board_buffer))
+        {
+            break;
+        }
         if(index > 0)
         {
-            seek += snprintf(seek, sizeof(board_buffer) - (seek - board_buffer), " ");
+            int written = snprintf(board_buffer + write_offset, sizeof(board_buffer) - write_offset, " ");
+            if(written < 0)
+            {
+                break;
+            }
+            write_offset += (size_t)written;
+            if(write_offset >= sizeof(board_buffer))
+            {
+                board_buffer[sizeof(board_buffer) - 1] = '\0';
+                break;
+            }
         }
         formatCardLabel(_BoardCards[index], card_buffer, sizeof(card_buffer));
-        seek += snprintf(seek, sizeof(board_buffer) - (seek - board_buffer), "%s", card_buffer);
+        int written = snprintf(board_buffer + write_offset, sizeof(board_buffer) - write_offset, "%s", card_buffer);
+        if(written < 0)
+        {
+            break;
+        }
+        write_offset += (size_t)written;
+        if(write_offset >= sizeof(board_buffer))
+        {
+            board_buffer[sizeof(board_buffer) - 1] = '\0';
+            break;
+        }
     }
     _LabelBoard->clear();
     _LabelBoard->drawText(0, 0, board_buffer);
