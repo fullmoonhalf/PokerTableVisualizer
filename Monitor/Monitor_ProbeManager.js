@@ -695,6 +695,7 @@
         for(let index = 0; index < this.PlayerProbeCollection.length; ++index)
         {
             const probe = this.PlayerProbeCollection[index];
+            const seatNumber = index + 1;
             let status = "NO";
             if(!probe.Alive)
             {
@@ -704,7 +705,7 @@
             {
                 status = "OK";
             }
-            lines.push(`SEAT${String(index + 1).padStart(2, "0")}=${status}`);
+            lines.push(`SEAT${String(seatNumber).padStart(2, "0")}=${status}`);
         }
 
         for(let index = 0; index < 5; ++index)

@@ -39,8 +39,8 @@ static void formatCardLabel(int card_index, char *buffer, int buffer_size)
         return;
     }
 
-    static const char rank_letter[] = {'A','2','3','4','5','6','7','8','9','T','J','Q','K',};
-    static const char suit_letter[] = {'s','h','d','c',};
+    static const char rank_letter[] = {'A','2','3','4','5','6','7','8','9','T','J','Q','K'};
+    static const char suit_letter[] = {'s','h','d','c'};
     int rank_index = (card_index - 1) % 13;
     int suit_index = (card_index - 1) / 13;
     snprintf(buffer, buffer_size, "[%c%c]", rank_letter[rank_index], suit_letter[suit_index]);
@@ -252,10 +252,6 @@ void AppModeCenterMonitor::redrawDealerDisplay()
     board_buffer[0] = '\0';
     for(int index=0; index<5; ++index)
     {
-        if(write_offset >= sizeof(board_buffer))
-        {
-            break;
-        }
         if(index > 0)
         {
             if(write_offset + 1 >= sizeof(board_buffer))
@@ -267,17 +263,19 @@ void AppModeCenterMonitor::redrawDealerDisplay()
             board_buffer[write_offset] = '\0';
         }
         formatCardLabel(_BoardCards[index], card_buffer, sizeof(card_buffer));
-        int written = snprintf(board_buffer + write_offset, sizeof(board_buffer) - write_offset, "%s", card_buffer);
+        size_t remaining = sizeof(board_buffer) - write_offset;
+        int written = snprintf(board_buffer + write_offset, remaining, "%s", card_buffer);
         if(written < 0)
         {
             break;
         }
-        write_offset += (size_t)written;
-        if(write_offset >= sizeof(board_buffer))
+        if((size_t)written >= remaining)
         {
+            write_offset = sizeof(board_buffer) - 1;
             board_buffer[sizeof(board_buffer) - 1] = '\0';
             break;
         }
+        write_offset += (size_t)written;
     }
     _LabelBoard->clear();
     _LabelBoard->drawText(0, 0, board_buffer);
@@ -287,7 +285,7 @@ void AppModeCenterMonitor::redrawDealerDisplay()
         buffer,
         sizeof(buffer),
         "Last RX: %02lu:%02lu:%02lu",
-        (_LastRxMillis / 3600000UL) % 24UL,
+        _LastRxMillis / 3600000UL,
         (_LastRxMillis / 60000UL) % 60UL,
         (_LastRxMillis / 1000UL) % 60UL);
     _LabelLastRx->drawText(0, 0, buffer);

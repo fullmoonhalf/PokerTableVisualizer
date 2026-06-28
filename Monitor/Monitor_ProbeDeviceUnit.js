@@ -43,7 +43,7 @@
 			const str = HtmlUtil.TextDecoder.decode(characteristic.value);
 			const json = JSON.parse(str);
 			this.ProbeName = json.probe;
-			this.IsCenterMonitor = this.IsCenterMonitor || json.mode === "change_monitor";
+			this.IsCenterMonitor = json.mode === "change_monitor";
 			this.Owner.onNofitied(json);
 			if(this.IsCenterMonitor && ns.Engine && ns.Engine.ProbeManager)
 			{
