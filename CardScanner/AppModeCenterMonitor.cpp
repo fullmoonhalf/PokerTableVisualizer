@@ -233,15 +233,15 @@ void AppModeCenterMonitor::redrawDealerDisplay()
 
     for(int row=0; row<3; ++row)
     {
-        const int seat_index = row * 3;
+        const int first_index = row * 3;
         _LabelSeatStatus[row]->clear();
         snprintf(
             buffer,
             sizeof(buffer),
             "%02d %-2s   %02d %-2s   %02d %-2s",
-            seat_index + 1, getSeatDisplayStatus(_SeatStatus[seat_index + 0]),
-            seat_index + 2, getSeatDisplayStatus(_SeatStatus[seat_index + 1]),
-            seat_index + 3, getSeatDisplayStatus(_SeatStatus[seat_index + 2]));
+            first_index + 1, getSeatDisplayStatus(_SeatStatus[first_index + 0]),
+            first_index + 2, getSeatDisplayStatus(_SeatStatus[first_index + 1]),
+            first_index + 3, getSeatDisplayStatus(_SeatStatus[first_index + 2]));
         _LabelSeatStatus[row]->drawText(0, 0, buffer);
     }
 
@@ -258,17 +258,13 @@ void AppModeCenterMonitor::redrawDealerDisplay()
         }
         if(index > 0)
         {
-            int written = snprintf(board_buffer + write_offset, sizeof(board_buffer) - write_offset, " ");
-            if(written < 0)
-            {
-                break;
-            }
-            write_offset += (size_t)written;
-            if(write_offset >= sizeof(board_buffer))
+            if(write_offset + 1 >= sizeof(board_buffer))
             {
                 board_buffer[sizeof(board_buffer) - 1] = '\0';
                 break;
             }
+            board_buffer[write_offset++] = ' ';
+            board_buffer[write_offset] = '\0';
         }
         formatCardLabel(_BoardCards[index], card_buffer, sizeof(card_buffer));
         int written = snprintf(board_buffer + write_offset, sizeof(board_buffer) - write_offset, "%s", card_buffer);

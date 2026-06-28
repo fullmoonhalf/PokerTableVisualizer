@@ -52,10 +52,7 @@
     /// </summary>
     cProbeDeviceManager.prototype.writeAll = function(argValue)
     {
-        for(const device of this.Devices)
-        {
-            device.write(argValue);
-        }
+        this._writeToDevices(this.Devices, argValue);
     }
 
     /// <summary>
@@ -63,8 +60,12 @@
     /// </summary>
     cProbeDeviceManager.prototype.writeDealerDisplayState = function(argValue)
     {
-        const devices = this.Devices.filter(x => x.IsCenterMonitor);
-        for(const device of devices)
+        this._writeToDevices(this.Devices.filter(x => x.IsCenterMonitor), argValue);
+    }
+
+    cProbeDeviceManager.prototype._writeToDevices = function(argDevices, argValue)
+    {
+        for(const device of argDevices)
         {
             device.write(argValue);
         }
