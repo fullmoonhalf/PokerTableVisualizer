@@ -1,4 +1,5 @@
 #include "SysDisplay.h"
+#include "SysLog.h"
 
 
 /// @brief コンストラクタ
@@ -7,6 +8,7 @@ SysDisplay::SysDisplay()
     , _Height(-1)
     , _Brightness(-1)
     , _Enable(true)
+    , _Display(nullptr)
 {
 }
 
@@ -14,10 +16,17 @@ SysDisplay::SysDisplay()
 /// @brief 初期化
 void SysDisplay::init()
 {
-    Display.begin();
-    Display.fillScreen(TFT_BLACK);
-    _Width = M5.Lcd.width();   // 横幅（ピクセル）
-    _Height = M5.Lcd.height();  // 高さ（ピクセル）
+    SysLog::printf(__NAMEOF__(SysDisplay), "init() - start");
+    {
+        _Display = &M5.Display;
+        _Display->wakeup();
+        _Display->setBrightness(255);
+        _Display->fillScreen(TFT_BLACK);
+        _Width = _Display->width();   // 横幅（ピクセル）
+        _Height = _Display->height();  // 高さ（ピクセル）
+        SysLog::printf(__NAMEOF__(SysDisplay), "init() - display initialized. width=%d, height=%d", _Width, _Height);
+   }
+    SysLog::printf(__NAMEOF__(SysDisplay), "init() - end");
 }
 
 
@@ -43,10 +52,10 @@ int SysDisplay::getHeight()
 /// @return 
 SysSprite *SysDisplay::createSprite(int width, int height)
 {
-    auto device_sprite = new LGFX_Sprite( &Display );
+    auto device_sprite = new LGFX_Sprite( _Display );
     device_sprite->setPsram(true);
     device_sprite->createSprite(width, height);
-    device_sprite->setColorDepth( Display.getColorDepth() );
+    device_sprite->setColorDepth( _Display->getColorDepth() );
     auto sprite = new SysSprite(device_sprite);
     return sprite;
 }
@@ -64,7 +73,7 @@ void SysDisplay::destroySprite(SysSprite *sprite)
 /// @brief 画面クリア
 void SysDisplay::clear()
 {
-    Display.fillScreen(TFT_BLACK);
+    _Display->fillScreen(TFT_BLACK);
 }
 
 
@@ -74,7 +83,7 @@ void SysDisplay::setBrightness(int brightness)
 {
     if(_Brightness != brightness)
     {
-        M5.Lcd.setBrightness(brightness);
+        _Display->setBrightness(brightness);
         _Brightness = brightness;
     }
 }
@@ -92,10 +101,10 @@ void SysDisplay::setEnable(bool enable)
     _Enable = enable;
     if(_Enable)
     {
-        M5.Lcd.wakeup(); // ON
+        _Display->wakeup(); // ON
     }
     else
     {
-        M5.Lcd.sleep();   // 画面OFF
+        _Display->sleep();   // 画面OFF
     }
 }

@@ -3,6 +3,8 @@
 #include "AppSetting.h"
 #include "SysUtils.h"
 #include "SysLog.h"
+#include "SysHardwareSpecification.h"
+
 
 
 AppSetting::AppSetting()
@@ -20,15 +22,16 @@ void AppSetting::init()
     _Setting.set(SETTING_KEY_BLE_CHARACTERISTICS_TX_UUID, "45f116ee-b087-4271-888d-a15eebebd2eb");
     _Setting.set(SETTING_KEY_BLE_CHARACTERISTICS_RX_UUID, "45f116ee-b087-4271-888d-a15eebebd2ee");
 
-    if(SD.begin(GPIO_NUM_4, SPI, 15000000))
+    auto sd_pin_id = SysHardwareSpecification::getInstance().getGpioPinIdForSdCardCs();
+    if(SD.begin(sd_pin_id, SPI, 15000000))
     {
-        SysLog::printf(__NAMEOF__(AppSetting), "SD initialize success.");
+        SysLog::printf(__NAMEOF__(AppSetting), "SD initialize success. (CS pin: %d)", sd_pin_id);
         _Setting.load();
         _Setting.dump();
     }
     else
     {
-        SysLog::printf(__NAMEOF__(AppSetting), "SD initialize failure.");
+        SysLog::printf(__NAMEOF__(AppSetting), "SD initialize failure. (CS pin: %d)", sd_pin_id);
     }
 }
 

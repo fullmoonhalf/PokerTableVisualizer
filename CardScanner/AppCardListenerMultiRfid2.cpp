@@ -43,7 +43,7 @@ bool AppCardListenerMultiRfid2::init()
         }
 
         // 初期化
-        SysLog::printf(__NAMEOF__(AppCardListenerMultiRfid2), "Init device: %d", t);
+        SysLog::printf(__NAMEOF__(AppCardListenerMultiRfid2), "Init device: %d success", t);
         _ValidSlot[t] = _init(_MFRC522);
     }
 

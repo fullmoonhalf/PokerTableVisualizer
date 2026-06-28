@@ -23,7 +23,7 @@ public:
 private:
     SysDisplay();
 
-    M5GFX Display;
+    M5GFX* _Display;
     int _Width;
     int _Height;
     int _Brightness;

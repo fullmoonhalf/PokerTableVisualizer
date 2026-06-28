@@ -61,9 +61,7 @@ void CardScanner::start()
         _LabelSeat = SysSpriteManager::getInstance().createSprite(64, 8);
         _LabelSeat->drawText(0, 0, _buffer);
 
-        _LabelVersion = SysSpriteManager::getInstance().createSprite(128, 8);
-        sprintf(_buffer, "ver %s %s", __DATE__, __TIME__);
-        _LabelVersion->drawText(0, 0, _buffer);
+        _LabelVersion = SysSpriteManager::getInstance().createSprite(192, 8);
     }
 }
 
@@ -84,6 +82,14 @@ void CardScanner::end()
 void CardScanner::update()
 {
     _FrameCount++;
+
+    {
+        char _buffer[128];
+        sprintf(_buffer, "[%s %s][%3d]", __DATE__, __TIME__, _FrameCount % 1000);
+        _LabelVersion->clear();
+        _LabelVersion->drawText(0, 0, _buffer);
+    }
+
     _ButtonReader->update();
     _ButtonWriter->update();
     _ButtonDevelop->update();
