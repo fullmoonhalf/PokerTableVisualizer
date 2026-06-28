@@ -2,9 +2,10 @@
 #define _INCLUDED_APP_BATTERY_GAUGE
 #include "SysSprite.h"
 #include "SysGuiGauge.h"
+#include "AppBLEProtocolBatteryInfo.h"
 
 
-class AppBatteryGauge : public SysDrawable
+class AppBatteryGauge : public SysDrawable, public IAppBLEProtocolBatteryInfo
 {
 public:
     AppBatteryGauge();
@@ -14,8 +15,8 @@ public:
     void update();
     int getWidth();
     int getHeight();
-    int getBatteryLevel();
-    bool isCharging();
+    virtual int getBatteryLevel();
+    virtual bool isCharging();
 
 private:
     SysGuiGauge *_Gauge;

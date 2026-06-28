@@ -22,7 +22,7 @@ private:
     AppBatteryGauge *_BatteryGauge;
     SysGuiButton *_ButtonReader;
     SysGuiButton *_ButtonWriter;
-    SysGuiButton *_ButtonDevelop;
+    SysGuiButton *_ButtonCenterMonitor;
     SysGuiButton *_ButtonDeckcheck;
     SysSprite *_LabelSeat;
     SysSprite *_LabelVersion;

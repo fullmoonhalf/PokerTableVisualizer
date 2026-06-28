@@ -57,6 +57,14 @@ void AppModeReader::start()
 
     // 表示まわりの初期化
     start_indicator();
+
+    // BLE プロトコルパーサー初期化
+    {
+        _BLEProtocolParser = new AppBLEProtocolParser();
+        _BLEProtocolParser->setProbeName(_ProbeName);
+        _BLEProtocolParser->bindBatteryInfo(_BatteryGauge);
+        _BLEProtocolParser->bindBLEController(_BLEController);
+    }
 }
 
 
@@ -107,6 +115,7 @@ void AppModeReader::start_indicator()
 /// @brief モード終了処理
 void AppModeReader::end()
 {
+    delete _BLEProtocolParser;
     for(int index=0; index<_SensorCount; ++index)
     {
         SysSpriteManager::getInstance().destroySprite(_LabelSensorStatus[index]);
@@ -173,20 +182,22 @@ void AppModeReader::update()
 /// @param send_scan_data 
 void AppModeReader::send(bool send_scan_data)
 {
-    char *seek = _SendInfoBuffer;
-    seek += sprintf(seek, "{\"probe\":\"%s\",\"battery\":\"%d\",\"charging\":%s", _ProbeName, _BatteryGauge->getBatteryLevel(), _BatteryGauge->isCharging() ? "true" : "false");
+    _BLEProtocolParser->beginConstruction();
     if(send_scan_data)
     {
-        seek += sprintf(seek, ",\"mode\":\"scan\",");
-        seek += _CardReader->encode(seek);
+        char buffer[256];
+        _CardReader->encode(buffer);
+
+        _BLEProtocolParser->addKeyValue("mode", "scan");
+        _BLEProtocolParser->addKeyObject("cards", buffer);
     }
     else
     {
-        seek += sprintf(seek, ",\"mode\":\"heartbeat\"");
+        _BLEProtocolParser->addKeyValue("mode", "heartbeat");
     }
 
-    seek += sprintf(seek, "}");
-    _BLEController->notify(_SendInfoBuffer);
+
+    _BLEProtocolParser->endConstruction();
     _HeartbeatCounter = 0;
 }
 
