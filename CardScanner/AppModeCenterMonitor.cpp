@@ -36,11 +36,25 @@ void AppModeCenterMonitor::start()
         _GaugeBatteryPosX = SysDisplay::getInstance().getWidth() - _BatteryGauge->getWidth() - LAYOUT_BATTERY_GAUGE_ANCHOR_X;
         _GaugeBatteryPosY = LAYOUT_BATTERY_GAUGE_ANCHOR_Y;
     }
+
+    // BLE プロトコルパーサー初期化
+    {
+        _BLEProtocolParser = new AppBLEProtocolParser();
+        _BLEProtocolParser->setProbeName(_ProbeName);
+        _BLEProtocolParser->bindBatteryInfo(_BatteryGauge);
+        _BLEProtocolParser->bindBLEController(_BLEController);
+
+        // 自身がモニターである事をブラウザ側に通知
+        _BLEProtocolParser->beginConstruction();
+        _BLEProtocolParser->addKeyValue("mode", "change_monitor");
+        _BLEProtocolParser->endConstruction();
+    }
 }
 
 
 void AppModeCenterMonitor::end()
 {
+    delete _BLEProtocolParser;
     delete _BatteryGauge;
     delete _BLEController;
     delete _CardReader;

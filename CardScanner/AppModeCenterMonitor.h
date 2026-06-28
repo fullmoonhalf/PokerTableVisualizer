@@ -5,6 +5,7 @@
 #include "SysBLEControl.h"
 #include "AppCardListenerUnitRfid2.h"
 #include "AppBatteryGauge.h"
+#include "AppBLEProtocolParser.h"
 
 
 class AppModeCenterMonitor : public SysMode, public SysBLECallbackRX
@@ -22,7 +23,8 @@ private: // センサーまわり
 
 private: // BLE まわり
     SysBLEControl *_BLEController;
-    char _SendInfoBuffer[480];
+    AppBLEProtocolParser *_BLEProtocolParser;
+
     char _ProbeName[64];
     char _BLE_identifier[64];
     char _BLE_service_uuid[64];
