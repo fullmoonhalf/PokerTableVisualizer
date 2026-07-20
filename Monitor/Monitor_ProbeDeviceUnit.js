@@ -43,7 +43,11 @@
 			const str = HtmlUtil.TextDecoder.decode(characteristic.value);
 			const json = JSON.parse(str);
 			this.ProbeName = json.probe;
-			this.IsCenterMonitor = json.mode === "change_monitor";
+			if(!this.IsCenterMonitor)
+			{
+				console.log("[cProbeDeviceUnit] onCharacteristicValueChanged - IsCenterMonitor", this.ProbeName, json);
+				this.IsCenterMonitor = json.mode === "change_monitor";
+			}
 			this.Owner.onNofitied(json);
 			if(this.IsCenterMonitor && ns.Engine && ns.Engine.ProbeManager)
 			{
