@@ -99,6 +99,9 @@
     cLevelStructureManager.prototype.setSelectedLevel = function (levelNumber) {
         this._levelStructure.selectedLevel = levelNumber;
         this._scheduleSave();
+        if (ns.Engine && ns.Engine.ProbeManager) {
+            ns.Engine.ProbeManager.updateDealerDisplayState();
+        }
     };
 
     /// <summary>
