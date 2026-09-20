@@ -81,7 +81,7 @@
 .overlay-seat .bet-chip{min-width:40px;height:40px;top:calc(100% + 8px);font-size:11px}
 
 /* Player panel hierarchy: action at top-right, equity directly below cards. */
-.overlay-seat .last-action{position:absolute;left:8px;right:auto;top:-27px;margin:0;z-index:2}
+.overlay-seat .last-action{position:absolute;left:8px;right:auto;top:-27px;margin:0;z-index:2;background:#000;box-shadow:0 2px 7px #000b}
 .overlay-seat .player-hand{position:absolute;right:9px;bottom:7px;display:flex;flex-direction:column;align-items:center;gap:3px}
 .overlay-seat .player-hand .hole-cards{position:static}
 .overlay-seat .player-hand .seat-metrics{max-width:none;margin:0;justify-content:center}
