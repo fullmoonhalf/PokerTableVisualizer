@@ -131,11 +131,13 @@
                         this.BoardCurrentMonitor(cards);
                     }
                     ns.Engine.ProbeManager.updateWinRate();
+                    ns.Engine.ProbeManager.updateDealerDisplayState();
                     if(well_read)
                     {
                         this.BoardCurrentSlot.fix();
                         ns.Engine.ProbeDeviceManager.writeStopScan(ns.Defines.DEALER_PROBE_PREFIX);
                         ns.Engine.ProbeManager.updateWinRate();
+                        ns.Engine.ProbeManager.updateDealerDisplayState();
                     }
                 }
                 break;
@@ -164,6 +166,7 @@
             {
                 this.BoardCurrentMonitor(null);
             }
+            ns.Engine.ProbeManager.updateDealerDisplayState();
             ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.DEALER_PROBE_PREFIX);
         }
     }
@@ -179,6 +182,7 @@
         this.SB = argSB;
         this.BB = argBB;
         this.Monitor.showBlind(this.SB, this.BB);
+        ns.Engine.ProbeManager.updateDealerDisplayState();
     }
 
     /// <summary>

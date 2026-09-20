@@ -2,7 +2,9 @@
 #define _INCLUDED_APP_MODE_CENTER_MONITOR
 #include "SysMode.h"
 #include "SysGuiGauge.h"
+#include "SysSprite.h"
 #include "SysBLEControl.h"
+#include "SysSetting.h"
 #include "AppCardListenerUnitRfid2.h"
 #include "AppBatteryGauge.h"
 #include "AppBLEProtocolParser.h"
@@ -37,6 +39,26 @@ private: // 表示まわり
     AppBatteryGauge *_BatteryGauge;
     int _GaugeBatteryPosX;
     int _GaugeBatteryPosY;
+    SysSprite *_LabelTitle;
+    SysSprite *_LabelLevel;
+    SysSprite *_LabelBlind;
+    SysSprite *_LabelSeatHeader;
+    SysSprite *_LabelSeatStatus[3];
+    SysSprite *_LabelBoardHeader;
+    SysSprite *_LabelBoard;
+    SysSprite *_LabelLastRx;
+
+    int _DisplayLevel;
+    int _DisplaySB;
+    int _DisplayBB;
+    char _SeatStatus[9][8];
+    int _BoardCards[5];
+    uint32_t _LastRxMillis;
+
+    void resetDealerDisplayState();
+    void redrawDealerDisplay();
+    void updateSeatStatusFromSetting(SysSetting *setting, int seat_index);
+    void updateBoardCardFromSetting(SysSetting *setting, int board_index);
 
 };
 

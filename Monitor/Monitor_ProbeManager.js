@@ -76,6 +76,7 @@
                     probe.onStartDeal();
                 }
                 this.DealerProbe.onStartDeal();
+                this.updateDealerDisplayState();
                 ns.Engine.ProbeDeviceManager.writeStartScan(ns.Defines.PLAYER_PROBE_PREFIX);
                 this.updateDeckList();
                 break;
@@ -672,6 +673,60 @@
         }
 
         return this.DealerProbe;
+    }
+
+    /// <summary>
+    /// ディーラー表示用メッセージ文字列の生成
+    /// </summary>
+    cProbeManager.prototype.buildDealerDisplayStateMessage = function()
+    {
+        const lines = [];
+        const levelManager = ns.Engine ? ns.Engine.LevelStructureManager : null;
+        const level = levelManager && typeof levelManager.getSelectedLevel === "function"
+            ? levelManager.getSelectedLevel()
+            : 0;
+        const boardCards = this.DealerProbe.getCurrentCommunityCards();
+
+        lines.push("TYPE=DEALER_DISPLAY_STATE");
+        lines.push(`LEVEL=${level}`);
+        lines.push(`SB=${this.DealerProbe.SB}`);
+        lines.push(`BB=${this.DealerProbe.BB}`);
+
+        for(let index = 0; index < this.PlayerProbeCollection.length; ++index)
+        {
+            const probe = this.PlayerProbeCollection[index];
+            const seatNumber = index + 1;
+            let status = "NO";
+            if(!probe.Alive)
+            {
+                status = "DEAD";
+            }
+            else if(probe.Cardslot.estimate().length >= probe.Cardslot.Capacity)
+            {
+                status = "OK";
+            }
+            lines.push(`SEAT${String(seatNumber).padStart(2, "0")}=${status}`);
+        }
+
+        for(let index = 0; index < 5; ++index)
+        {
+            const card = boardCards[index] || 0;
+            lines.push(`BOARD${String(index + 1).padStart(2, "0")}=${card}`);
+        }
+
+        return `${lines.join("\n")}\n`;
+    }
+
+    /// <summary>
+    /// センターモニターへディーラー表示状態を送信
+    /// </summary>
+    cProbeManager.prototype.updateDealerDisplayState = function()
+    {
+        if(!ns.Engine || !ns.Engine.ProbeDeviceManager || !this.DealerProbe)
+        {
+            return;
+        }
+        ns.Engine.ProbeDeviceManager.writeDealerDisplayState(this.buildDealerDisplayStateMessage());
     }
 
     /// <summary>

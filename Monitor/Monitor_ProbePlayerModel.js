@@ -145,6 +145,7 @@
     /// </summary>
     cProbePlayerModel.prototype.setAlive = function(argAlive)
     {
+        const oldAlive = this.Alive;
         if(argAlive)
         {
             this.Alive = argAlive;
@@ -160,6 +161,10 @@
             {
                 ns.Engine.ProbeManager.resetActionPlayer();
             }
+        }
+        if(oldAlive !== this.Alive)
+        {
+            ns.Engine.ProbeManager.updateDealerDisplayState();
         }
     }
 
@@ -249,10 +254,12 @@
                     this.View.showCard(cards);
                     this.Monitor.showCard(cards);
                     ns.Engine.ProbeManager.updateWinRate();
+                    ns.Engine.ProbeManager.updateDealerDisplayState();
                     if(well_read)
                     {
                         this.Cardslot.fix();
                         ns.Engine.ProbeManager.updateWinRate();
+                        ns.Engine.ProbeManager.updateDealerDisplayState();
                         ns.Engine.ProbeDeviceManager.writeStopScan(this.Name);
                     }
                 }
@@ -268,6 +275,7 @@
         this.Cardslot.reset();
         this.View.showCard(null);
         this.Monitor.showCard(null);
+        ns.Engine.ProbeManager.updateDealerDisplayState();
         ns.Engine.ProbeDeviceManager.writeStartScan(this.Name);
     }
 
