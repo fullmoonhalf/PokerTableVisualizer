@@ -74,7 +74,7 @@ export default function PokerConsole(){
     window.addEventListener("storage",sync);
     return()=>window.removeEventListener("storage",sync);
   },[]);
-  useEffect(()=>{if(layoutReady)window.localStorage.setItem(LAYOUT_KEY,JSON.stringify(layout));},[layout,layoutReady]);
+  useEffect(()=>{if(layoutReady&&!overlay)window.localStorage.setItem(LAYOUT_KEY,JSON.stringify(layout));},[layout,layoutReady,overlay]);
   useEffect(()=>{
     const stage=stageRef.current;if(!stage)return;
     const updateScale=()=>setEditorScale(stage.clientWidth/1920);
@@ -84,16 +84,41 @@ export default function PokerConsole(){
   },[]);
   const dragItem=(target:number|"game",event:React.PointerEvent)=>{
     event.preventDefault();
-    const move=(pointer:PointerEvent)=>{
-      const rect=stageRef.current?.getBoundingClientRect();if(!rect)return;
-      const stageX=((pointer.clientX-rect.left)/rect.width)*100;
-      const stageY=((pointer.clientY-rect.top)/rect.height)*100;
-      const x=Math.max(3,Math.min(97,((stageX-layout.area.x)/layout.area.width)*100));
-      const y=Math.max(5,Math.min(95,((stageY-layout.area.y)/layout.area.height)*100));
-      setLayout(current=>target==="game"?{...current,gamePanel:{x,y}}:{...current,seats:{...current.seats,[target]:{x,y}}});
+    const stageRect=stageRef.current?.getBoundingClientRect();if(!stageRect)return;
+    const draggedElement=event.currentTarget as HTMLElement;
+    const startPoint=target==="game"?layout.gamePanel:(layout.seats[target]??{x:50,y:50});
+    const startPointerX=event.clientX;
+    const startPointerY=event.clientY;
+    const dragArea={...layout.area};
+    let pointerX=event.clientX;
+    let pointerY=event.clientY;
+    let currentX=startPoint.x;
+    let currentY=startPoint.y;
+    let animationFrame=0;
+    const updatePosition=()=>{
+      animationFrame=0;
+      const deltaX=((pointerX-startPointerX)/stageRect.width)*(10000/dragArea.width);
+      const deltaY=((pointerY-startPointerY)/stageRect.height)*(10000/dragArea.height);
+      currentX=Math.max(3,Math.min(97,startPoint.x+deltaX));
+      currentY=Math.max(5,Math.min(95,startPoint.y+deltaY));
+      draggedElement.style.left=`${dragArea.x+(currentX*dragArea.width)/100}%`;
+      draggedElement.style.top=`${dragArea.y+(currentY*dragArea.height)/100}%`;
     };
-    const stop=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",stop);};
+    const move=(pointer:PointerEvent)=>{
+      pointer.preventDefault();
+      pointerX=pointer.clientX;
+      pointerY=pointer.clientY;
+      if(!animationFrame)animationFrame=window.requestAnimationFrame(updatePosition);
+    };
+    const stop=()=>{
+      if(animationFrame){window.cancelAnimationFrame(animationFrame);updatePosition();}
+      setLayout(current=>target==="game"?{...current,gamePanel:{x:currentX,y:currentY}}:{...current,seats:{...current.seats,[target]:{x:currentX,y:currentY}}});
+      window.removeEventListener("pointermove",move);
+      window.removeEventListener("pointerup",stop);
+      window.removeEventListener("pointercancel",stop);
+    };
     window.addEventListener("pointermove",move);window.addEventListener("pointerup",stop);
+    window.addEventListener("pointercancel",stop);
   };
   const setArea=(key:keyof OverlayLayout["area"],value:number)=>setLayout(current=>({...current,area:{...current.area,[key]:Math.max(key==="width"||key==="height"?10:0,Math.min(100,value))}}));
   const seatPosition=(seat:number)=>{
