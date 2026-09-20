@@ -95,3 +95,13 @@
 .level-structure{min-height:600px}.level-list{overflow:hidden;border:1px solid var(--line);border-radius:11px;background:#101816}.level-list-head,.level-row{display:grid;grid-template-columns:100px 1fr 1fr 1.4fr 1fr 130px;align-items:center;gap:10px;padding:10px 12px}.level-list-head{background:#17221f;color:var(--soft);font-size:11px;font-weight:900;letter-spacing:.08em}.level-row{border-top:1px solid var(--line)}.level-row.is-selected{background:#2a2415;box-shadow:inset 3px 0 var(--primary)}.level-row>b{color:var(--primary);font-size:13px}.level-row>div{display:flex;justify-content:flex-end;gap:5px}.level-row input,.level-row select{font-weight:700;font-variant-numeric:tabular-nums}
 @media(max-width:1100px){.level-list-head,.level-row{grid-template-columns:80px 1fr 1fr 1.25fr 1fr 112px;gap:7px}.table-settings{grid-template-columns:1fr 90px 90px 145px 115px}}
 @media(max-width:900px){.player-settings-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Four-color deck: spades black, hearts red, diamonds blue, clubs green. */
+.card-face.suit-spade{color:#111816;background:#f0f3f2;border-color:#aab4b0}
+.card-face.suit-heart{color:#d52e45;background:#fff0f3;border-color:#e99aa7}
+.card-face.suit-diamond{color:#2467d4;background:#edf4ff;border-color:#91b3ea}
+.card-face.suit-club{color:#16824c;background:#edf9f2;border-color:#8ac7a6}
+.card-face.suit-unknown{color:#69756f;background:#e7eee9;border-color:#aebbb5}
+.card-face{align-content:center;justify-items:center;line-height:1;row-gap:.08em}
+.card-face .card-suit{font-size:.72em;line-height:1}
+.card-face .card-rank{font-size:1em;line-height:1}

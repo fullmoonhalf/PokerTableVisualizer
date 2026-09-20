@@ -197,6 +197,8 @@ export default function PokerConsole(){
   const setPlayerProfile=(seat:number,changes:Partial<Pick<HandState["players"][number],"name"|"stack">>)=>{
     setState(previous=>({...previous,players:previous.players.map(player=>player.seat===seat?{...player,...changes}:player)}));
   };
+  const cardSuitClass=(card:string)=>card.endsWith("♠")?"suit-spade":card.endsWith("♥")?"suit-heart":card.endsWith("♦")?"suit-diamond":card.endsWith("♣")?"suit-club":"suit-unknown";
+  const renderCardFace=(card:string,fallback:string,key?:React.Key)=><b className={`card-face ${cardSuitClass(card)}`} key={key}>{card?<><span className="card-suit">{card.slice(-1)}</span><span className="card-rank">{card.slice(0,-1)}</span></>:<span className="card-rank">{fallback}</span>}</b>;
   const updateLevel=(id:number,changes:Partial<BlindLevel>)=>{setLevels(current=>current.map(level=>level.id===id?{...level,...changes}:level));if(selectedLevelId===id)setSelectedLevelId(null);};
   const applyLevel=(level:BlindLevel)=>{
     const blinds={smallBlind:Math.max(1,level.smallBlind),bigBlind:Math.max(Math.max(1,level.smallBlind),level.bigBlind)};
@@ -215,13 +217,13 @@ export default function PokerConsole(){
     <div className="seat-name">{player.name}</div>
     <div className="seat-stack">{player.stack.toLocaleString()}</div>
     <div className="last-action">{lastAction(player.seat)||"Active"}</div>
-    <div className="player-hand"><div className="hole-cards">{player.cards?player.cards.map((card,index)=><b key={index}>{card||"-"}</b>):<><b>-</b><b>-</b></>}</div><div className="seat-metrics"><span>EQ <b>{equity?.percentages[player.seat]!==undefined?`${equity.percentages[player.seat].toFixed(1)}%`:"—"}</b></span></div></div>
+    <div className="player-hand"><div className="hole-cards">{player.cards?player.cards.map((card,index)=>renderCardFace(card,"-",index)):[0,1].map(index=>renderCardFace("","-",index))}</div><div className="seat-metrics"><span>EQ <b>{equity?.percentages[player.seat]!==undefined?`${equity.percentages[player.seat].toFixed(1)}%`:"—"}</b></span></div></div>
     {player.streetBet>0&&<span className="bet-chip">{player.streetBet.toLocaleString()}</span>}
   </>;
   const renderBoard=()=> <div className="community-board">
-    <div className="card-group"><span>FLOP</span><div>{[0,1,2].map(index=><b key={index}>{state.board[index]??"—"}</b>)}</div></div>
-    <div className="card-group"><span>TURN</span><div><b>{state.board[3]??"—"}</b></div></div>
-    <div className="card-group"><span>RIVER</span><div><b>{state.board[4]??"—"}</b></div></div>
+    <div className="card-group"><span>FLOP</span><div>{[0,1,2].map(index=>renderCardFace(state.board[index]??"","—",index))}</div></div>
+    <div className="card-group"><span>TURN</span><div>{renderCardFace(state.board[3]??"","—")}</div></div>
+    <div className="card-group"><span>RIVER</span><div>{renderCardFace(state.board[4]??"","—")}</div></div>
   </div>;
   const renderGamePanel=(draggable=false)=> <section className={`game-panel${draggable?" editor-draggable":""}`} style={gamePanelPosition} onPointerDown={draggable?event=>dragItem("game",event):undefined}>
     <div className="game-panel-top"><span>HAND <strong>{state.handId}</strong></span><b>{state.street.toUpperCase()}</b></div>
