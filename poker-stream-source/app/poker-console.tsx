@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { NativeSelect,NativeSelectOption } from "@/components/ui/native-select";
 import { Tabs,TabsContent,TabsList,TabsTrigger } from "@/components/ui/tabs";
-import { amountToCall,createDemoHand,executeCommand,type HandState,type PokerCommand } from "@/lib/poker-core";
+import { amountToCall,createDemoHand,DEFAULT_ANTE,DEFAULT_BLINDS,executeCommand,type AnteConfig,type BlindConfig,type HandState,type PokerCommand } from "@/lib/poker-core";
 import { calculateEquity,deck } from "@/lib/equity";
 
 declare global{interface Document{modelContext?:{registerTool:(tool:Record<string,unknown>,options?:{signal?:AbortSignal})=>void|Promise<void>}}}
@@ -23,6 +23,8 @@ const DEFAULT_LAYOUT:OverlayLayout={
 export default function PokerConsole(){
   const [hydrated,setHydrated]=useState(false);
   const [state,setState]=useState<HandState>(()=>createDemoHand());
+  const [nextAnte,setNextAnte]=useState<AnteConfig>(DEFAULT_ANTE);
+  const [nextBlinds,setNextBlinds]=useState<BlindConfig>(DEFAULT_BLINDS);
   const [history,setHistory]=useState<HandState[]>([]);
   const [amount,setAmount]=useState("600");
   const [notice,setNotice]=useState("Ready");
@@ -59,9 +61,9 @@ export default function PokerConsole(){
   },[state]);
   useEffect(()=>{
     const saved=window.localStorage.getItem(STORAGE_KEY);
-    if(saved){try{const restored=JSON.parse(saved) as HandState;setState(restored.players.length===9?restored:createDemoHand());}catch{}}
+    if(saved){try{const restored=JSON.parse(saved) as HandState;const normalized={...restored,ante:restored.ante??{mode:"none",amount:0}};if(normalized.players.length===9){setState(normalized);setNextAnte(normalized.ante);setNextBlinds({smallBlind:normalized.smallBlind,bigBlind:normalized.bigBlind});}}catch{}}
     setStorageReady(true);
-    const sync=(event:StorageEvent)=>{if(event.key===STORAGE_KEY&&event.newValue){try{const restored=JSON.parse(event.newValue) as HandState;if(restored.players.length===9)setState(restored);}catch{}}};
+    const sync=(event:StorageEvent)=>{if(event.key===STORAGE_KEY&&event.newValue){try{const restored=JSON.parse(event.newValue) as HandState;if(restored.players.length===9)setState({...restored,ante:restored.ante??{mode:"none",amount:0}});}catch{}}};
     window.addEventListener("storage",sync);
     return()=>window.removeEventListener("storage",sync);
   },[]);
@@ -174,6 +176,7 @@ export default function PokerConsole(){
   const setPlayerProfile=(seat:number,changes:Partial<Pick<HandState["players"][number],"name"|"stack">>)=>{
     setState(previous=>({...previous,players:previous.players.map(player=>player.seat===seat?{...player,...changes}:player)}));
   };
+  const anteLabel=(ante:AnteConfig)=>ante.mode==="big-blind"?`BB ANTE ${ante.amount.toLocaleString()}`:ante.mode==="all-players"?`ANTE ${ante.amount.toLocaleString()}`:"NO ANTE";
   const cardSelect=(value:string,onChange:(value:string)=>void,label:string)=><NativeSelect size="sm" aria-label={label} value={value} onChange={event=>onChange(event.target.value)}><NativeSelectOption value="">—</NativeSelectOption>{deck.map(card=><NativeSelectOption value={card} key={card}>{card}</NativeSelectOption>)}</NativeSelect>;
   const renderPlayerContent=(player:HandState["players"][number])=><>
     <div className="seat-top"><span>{positionName(player.seat)}</span></div>
@@ -191,7 +194,7 @@ export default function PokerConsole(){
   const renderGamePanel=(draggable=false)=> <section className={`game-panel${draggable?" editor-draggable":""}`} style={gamePanelPosition} onPointerDown={draggable?event=>dragItem("game",event):undefined}>
     <div className="game-panel-top"><span>HAND <strong>{state.handId}</strong></span><b>{state.street.toUpperCase()}</b></div>
     {renderBoard()}
-    <div className="game-panel-bottom"><span>POT <strong>{state.pot.toLocaleString()}</strong></span><span>BLINDS <strong>{state.smallBlind} / {state.bigBlind}</strong></span></div>
+    <div className="game-panel-bottom"><span>POT <strong>{state.pot.toLocaleString()}</strong></span><span>BLINDS <strong>{state.smallBlind} / {state.bigBlind}</strong></span><span>{anteLabel(state.ante)}</span></div>
   </section>;
   const exportJson=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download=`${state.handId}.json`;link.click();URL.revokeObjectURL(url);};
   if(!hydrated)return <main className="hydration-shell" aria-hidden="true"/>;
@@ -204,7 +207,7 @@ export default function PokerConsole(){
   return <main className="app-shell">
     <header className="topbar">
       <div className="brand"><span className="brand-mark">P</span><div><strong>POKER STREAM</strong><small>OPERATOR CONSOLE</small></div></div>
-      <div className="hand-meta"><span>{state.handId}</span><b>{state.smallBlind} / {state.bigBlind}</b><Badge className="street-badge">{state.street.toUpperCase()}</Badge></div>
+      <div className="hand-meta"><span>{state.handId}</span><b>{state.smallBlind} / {state.bigBlind} · {anteLabel(state.ante)}</b><Badge className="street-badge">{state.street.toUpperCase()}</Badge></div>
       <div className="system-state"><Button variant="outline" size="sm" onClick={()=>window.open("?view=overlay&key=00ff00","poker-overlay")}><ExternalLink size={15}/> OBS Overlay</Button><span className="live-dot"/> LOCAL <Radio size={17}/></div>
     </header>
     <section className="workspace">
@@ -227,6 +230,13 @@ export default function PokerConsole(){
           </TabsContent>
           <TabsContent value="players" className="player-settings">
             <div className="layout-heading"><div><span className="eyebrow">PLAYER SETTINGS</span><h1>プレイヤー設定</h1><p>名前と現在のスタックを編集します。変更はOBS表示へ即時反映されます。</p></div></div>
+            <section className="table-settings">
+              <div><span className="eyebrow">NEXT HAND</span><b>テーブル設定</b><small>次に「New hand」を押したときに適用されます。</small></div>
+              <label>SB<Input type="number" min="1" step="50" value={nextBlinds.smallBlind} onChange={event=>setNextBlinds(current=>({...current,smallBlind:Math.max(1,Number(event.target.value)||1)}))}/></label>
+              <label>BB<Input type="number" min="1" step="50" value={nextBlinds.bigBlind} onChange={event=>setNextBlinds(current=>({...current,bigBlind:Math.max(1,Number(event.target.value)||1)}))}/></label>
+              <label>方式<NativeSelect value={nextAnte.mode} onChange={event=>setNextAnte(current=>({...current,mode:event.target.value as AnteConfig["mode"]}))}><NativeSelectOption value="none">Anteなし</NativeSelectOption><NativeSelectOption value="big-blind">BB Ante</NativeSelectOption><NativeSelectOption value="all-players">全員Ante</NativeSelectOption></NativeSelect></label>
+              <label>金額<Input type="number" min="0" step="100" disabled={nextAnte.mode==="none"} value={nextAnte.amount} onChange={event=>setNextAnte(current=>({...current,amount:Math.max(0,Number(event.target.value)||0)}))}/></label>
+            </section>
             <div className="player-settings-grid">{state.players.map(player=><section key={player.seat} className="player-setting-card">
               <div><span>SEAT {player.seat}</span><b>{positionName(player.seat)}</b></div>
               <label>NAME<Input value={player.name} maxLength={24} onChange={event=>setPlayerProfile(player.seat,{name:event.target.value})}/></label>
@@ -260,7 +270,7 @@ export default function PokerConsole(){
         <section className="history-panel"><div className="section-title"><span><History size={17}/> ACTION LOG</span><b>{state.events.length}</b></div><ol>{[...state.events].reverse().slice(0,7).map(event=><li key={event.id}><span>{event.street}</span><p>{event.label}</p></li>)}</ol></section>
         <footer className="panel-footer">
           <Button variant="ghost" disabled={!history.length} onClick={()=>{const previous=history.at(-1);if(previous){setState(previous);setHistory(items=>items.slice(0,-1));setNotice("Last action undone");}}}><RotateCcw size={16}/> Undo</Button>
-          <Button variant="ghost" onClick={()=>{setState(createDemoHand());setHistory([]);setNotice("New demo hand");}}>New hand</Button>
+          <Button variant="ghost" onClick={()=>{const next=createDemoHand(nextAnte,nextBlinds);setState(next);setNextBlinds({smallBlind:next.smallBlind,bigBlind:next.bigBlind});setHistory([]);setNotice(`New hand · ${next.smallBlind}/${next.bigBlind} · ${anteLabel(next.ante)}`);}}>New hand</Button>
           <Button variant="ghost" onClick={exportJson}><Download size={16}/> JSON</Button>
         </footer>
       </aside>
