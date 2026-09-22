@@ -15,21 +15,21 @@ const LAYOUT_KEY="poker-stream.layout.v1";
 const LEVELS_KEY="poker-stream.levels.v1";
 type Point={x:number;y:number};
 type OverlayLayout={seats:Record<number,Point>;gamePanel:Point;area:{x:number;y:number;width:number;height:number}};
-type BlindLevel={id:number;smallBlind:number;bigBlind:number;ante:AnteConfig};
+type BlindLevel={id:number;smallBlind:number;bigBlind:number;chipUnit:number;ante:AnteConfig};
 const DEFAULT_LAYOUT:OverlayLayout={
   seats:{1:{x:50,y:8},2:{x:75,y:13},3:{x:88,y:38},4:{x:82,y:75},5:{x:62,y:88},6:{x:38,y:88},7:{x:18,y:75},8:{x:12,y:38},9:{x:25,y:13}},
   gamePanel:{x:50,y:50},
   area:{x:8,y:6,width:84,height:88}
 };
 const DEFAULT_LEVELS:BlindLevel[]=[
-  {id:1,smallBlind:100,bigBlind:200,ante:{mode:"big-blind",amount:200,priority:"ante"}},
-  {id:2,smallBlind:200,bigBlind:400,ante:{mode:"big-blind",amount:400,priority:"ante"}},
-  {id:3,smallBlind:300,bigBlind:600,ante:{mode:"big-blind",amount:600,priority:"ante"}},
-  {id:4,smallBlind:400,bigBlind:800,ante:{mode:"big-blind",amount:800,priority:"ante"}},
-  {id:5,smallBlind:500,bigBlind:1000,ante:{mode:"big-blind",amount:1000,priority:"ante"}},
-  {id:6,smallBlind:600,bigBlind:1200,ante:{mode:"big-blind",amount:1200,priority:"ante"}},
-  {id:7,smallBlind:800,bigBlind:1600,ante:{mode:"big-blind",amount:1600,priority:"ante"}},
-  {id:8,smallBlind:1000,bigBlind:2000,ante:{mode:"big-blind",amount:2000,priority:"ante"}},
+  {id:1,smallBlind:100,bigBlind:200,chipUnit:100,ante:{mode:"big-blind",amount:200,priority:"ante"}},
+  {id:2,smallBlind:200,bigBlind:400,chipUnit:100,ante:{mode:"big-blind",amount:400,priority:"ante"}},
+  {id:3,smallBlind:300,bigBlind:600,chipUnit:100,ante:{mode:"big-blind",amount:600,priority:"ante"}},
+  {id:4,smallBlind:400,bigBlind:800,chipUnit:100,ante:{mode:"big-blind",amount:800,priority:"ante"}},
+  {id:5,smallBlind:500,bigBlind:1000,chipUnit:100,ante:{mode:"big-blind",amount:1000,priority:"ante"}},
+  {id:6,smallBlind:600,bigBlind:1200,chipUnit:100,ante:{mode:"big-blind",amount:1200,priority:"ante"}},
+  {id:7,smallBlind:800,bigBlind:1600,chipUnit:100,ante:{mode:"big-blind",amount:1600,priority:"ante"}},
+  {id:8,smallBlind:1000,bigBlind:2000,chipUnit:100,ante:{mode:"big-blind",amount:2000,priority:"ante"}},
 ];
 const normalizeHandState=(restored:HandState&{handId?:string}):HandState=>{
   const {handId,...current}=restored;
@@ -37,6 +37,7 @@ const normalizeHandState=(restored:HandState&{handId?:string}):HandState=>{
   return {
     ...current,
     handNumber:Number.isFinite(restored.handNumber)&&restored.handNumber>0?restored.handNumber:legacyNumber,
+    chipUnit:Math.max(1,restored.chipUnit??100),
     ante:{...(restored.ante??{mode:"none",amount:0}),priority:restored.ante?.priority??"ante"} as AnteConfig,
     handStartStacks:restored.handStartStacks??Object.fromEntries(restored.players.map(player=>[player.seat,player.stack+player.totalInvested]))
   };
@@ -56,7 +57,7 @@ export default function PokerConsole(){
   const [amount,setAmount]=useState("600");
   const [shortcutAmountEditing,setShortcutAmountEditing]=useState(false);
   const [shortcutAmountDraft,setShortcutAmountDraft]=useState("");
-  const [winnerSeat,setWinnerSeat]=useState(1);
+  const [winnerSeats,setWinnerSeats]=useState<number[]>([1]);
   const [notice,setNotice]=useState("Ready");
   const [storageReady,setStorageReady]=useState(false);
   const [layout,setLayout]=useState<OverlayLayout>(DEFAULT_LAYOUT);
@@ -68,6 +69,7 @@ export default function PokerConsole(){
   const shortcutAmountActive=useRef(false);
   const shortcutAmountBuffer=useRef("");
   const winnerShortcutActive=useRef(false);
+  const winnerSeatsRef=useRef<number[]>([1]);
   const actor=state.players.find(p=>p.seat===state.actorSeat);
   const callAmount=actor?amountToCall(state,actor.seat):0;
   const equity=useMemo(()=>calculateEquity(state.players,state.board),[state.players,state.board]);
@@ -91,10 +93,12 @@ export default function PokerConsole(){
     if(!Number.isFinite(target))return false;
     return dispatch({type:state.currentBet===0?"BET_TO":"RAISE_TO",seat:actor.seat,amount:target});
   };
-  const awardWinner=(seat:number)=>{
+  const setWinners=(seats:number[])=>{winnerSeatsRef.current=seats;setWinnerSeats(seats);};
+  const toggleWinner=(seat:number)=>setWinners(winnerSeatsRef.current.includes(seat)?winnerSeatsRef.current.filter(item=>item!==seat):[...winnerSeatsRef.current,seat]);
+  const awardWinners=(seats=winnerSeatsRef.current)=>{
     try{
-      const next=awardPot(state,seat);
-      setHistory(items=>[...items,state]);setState(next);setWinnerSeat(seat);
+      const next=awardPot(state,seats);
+      setHistory(items=>[...items,state]);setState(next);setWinners(seats);
       winnerShortcutActive.current=false;setNotice(next.events.at(-1)?.label??"Pot awarded");
       return true;
     }
@@ -121,7 +125,7 @@ export default function PokerConsole(){
       if(winnerShortcutActive.current&&digit!==undefined){
         event.preventDefault();
         const seat=Number(digit);
-        if(seat>=1&&seat<=state.players.length)awardWinner(seat);
+        if(seat>=1&&seat<=state.players.length){toggleWinner(seat);setNotice(`WINNER: Seat ${seat} を${winnerSeatsRef.current.includes(seat)?"選択":"解除"} · Enterで確定`);}
         else setNotice("勝者はSeat 1〜9で指定してください");
         return;
       }
@@ -136,9 +140,10 @@ export default function PokerConsole(){
       if(event.code==="Escape"&&(shortcutAmountActive.current||winnerShortcutActive.current)){
         event.preventDefault();shortcutAmountActive.current=false;shortcutAmountBuffer.current="";winnerShortcutActive.current=false;setShortcutAmountEditing(false);setShortcutAmountDraft("");setNotice("Shortcut cancelled");return;
       }
+      if((event.code==="Enter"||event.code==="NumpadEnter")&&winnerShortcutActive.current){event.preventDefault();awardWinners();return;}
       if((event.code==="Enter"||event.code==="NumpadEnter")&&shortcutAmountActive.current){event.preventDefault();submitBetOrRaise(shortcutAmountBuffer.current);return;}
       if(event.code==="KeyW"&&!event.repeat){
-        event.preventDefault();winnerShortcutActive.current=true;shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setNotice("WINNER: Seat番号のキー 1〜9 を押してください");return;
+        event.preventDefault();winnerShortcutActive.current=true;setWinners([]);shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setNotice("WINNER: Seat番号を選択し、Enterで確定してください");return;
       }
       if(event.repeat||!actor)return;
       if(event.code==="KeyF"){event.preventDefault();dispatch({type:"FOLD",seat:actor.seat});}
@@ -162,7 +167,7 @@ export default function PokerConsole(){
   },[state]);
   useEffect(()=>{
     const saved=window.localStorage.getItem(STORAGE_KEY);
-    if(saved){try{const restored=normalizeHandState(JSON.parse(saved) as HandState);if(restored.players.length===9){setState(restored);setNextAnte(restored.ante);setNextBlinds({smallBlind:restored.smallBlind,bigBlind:restored.bigBlind});setNextButton(restored.button);setButtonSeatInput(restored.button);setSelectedLevelId(null);}}catch{}}
+    if(saved){try{const restored=normalizeHandState(JSON.parse(saved) as HandState);if(restored.players.length===9){setState(restored);setNextAnte(restored.ante);setNextBlinds({smallBlind:restored.smallBlind,bigBlind:restored.bigBlind,chipUnit:restored.chipUnit});setNextButton(restored.button);setButtonSeatInput(restored.button);setSelectedLevelId(null);}}catch{}}
     setStorageReady(true);
     const sync=(event:StorageEvent)=>{if(event.key===STORAGE_KEY&&event.newValue){try{const restored=normalizeHandState(JSON.parse(event.newValue) as HandState);if(restored.players.length===9)setState(restored);}catch{}}};
     window.addEventListener("storage",sync);
@@ -171,7 +176,7 @@ export default function PokerConsole(){
   useEffect(()=>{if(storageReady)window.localStorage.setItem(STORAGE_KEY,JSON.stringify(state));},[state,storageReady]);
   useEffect(()=>{
     const saved=window.localStorage.getItem(LEVELS_KEY);
-    if(saved){try{const restored=JSON.parse(saved) as BlindLevel[];if(restored.length)setLevels(restored.map(level=>({...level,ante:{...level.ante,priority:level.ante.priority??"ante"}})));}catch{}}
+    if(saved){try{const restored=JSON.parse(saved) as BlindLevel[];if(restored.length)setLevels(restored.map(level=>({...level,chipUnit:Math.max(1,level.chipUnit??100),ante:{...level.ante,priority:level.ante.priority??"ante"}})));}catch{}}
     setLevelsReady(true);
   },[]);
   useEffect(()=>{if(levelsReady&&!overlay)window.localStorage.setItem(LEVELS_KEY,JSON.stringify(levels));},[levels,levelsReady,overlay]);
@@ -291,9 +296,9 @@ export default function PokerConsole(){
   const renderCardFace=(card:string,fallback:string,key?:React.Key)=><b className={`card-face ${cardSuitClass(card)}`} key={key}>{card?<><span className="card-suit">{card.slice(-1)}</span><span className="card-rank">{card.slice(0,-1)}</span></>:<span className="card-rank">{fallback}</span>}</b>;
   const updateLevel=(id:number,changes:Partial<BlindLevel>)=>{setLevels(current=>current.map(level=>level.id===id?{...level,...changes}:level));if(selectedLevelId===id)setSelectedLevelId(null);};
   const applyLevel=(level:BlindLevel)=>{
-    const blinds={smallBlind:Math.max(1,level.smallBlind),bigBlind:Math.max(Math.max(1,level.smallBlind),level.bigBlind)};
+    const blinds={smallBlind:Math.max(1,level.smallBlind),bigBlind:Math.max(Math.max(1,level.smallBlind),level.bigBlind),chipUnit:Math.max(1,level.chipUnit)};
     setNextBlinds(blinds);setNextAnte(level.ante);setSelectedLevelId(level.id);
-    setNotice(`Level ${levels.findIndex(item=>item.id===level.id)+1} selected · ${blinds.smallBlind}/${blinds.bigBlind} · ${anteLabel(level.ante)}`);
+    setNotice(`Level ${levels.findIndex(item=>item.id===level.id)+1} selected · ${blinds.smallBlind}/${blinds.bigBlind} · Chip ${blinds.chipUnit} · ${anteLabel(level.ante)}`);
   };
   const addLevel=()=>setLevels(current=>{
     const last=current.at(-1)??DEFAULT_LEVELS[0];
@@ -307,7 +312,7 @@ export default function PokerConsole(){
     setState(next);
     setNextButton(next.button);
     setButtonSeatInput(next.button);
-    setNextBlinds({smallBlind:next.smallBlind,bigBlind:next.bigBlind});
+    setNextBlinds({smallBlind:next.smallBlind,bigBlind:next.bigBlind,chipUnit:next.chipUnit});
     shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setAmount(String(next.bigBlind*3));
     setHistory([]);
     setNotice(`${advance?"New hand":"Reset"} · BTN Seat ${next.button} · ${next.smallBlind}/${next.bigBlind} · ${anteLabel(next.ante)}`);
@@ -375,6 +380,7 @@ export default function PokerConsole(){
               <div><span className="eyebrow">NEXT HAND</span><b>テーブル設定</b><small>次に「NewHand」または「Reset」を押したときに適用されます。</small></div>
               <label>SB<Input type="number" min="1" step="50" value={nextBlinds.smallBlind} onChange={event=>{setSelectedLevelId(null);setNextBlinds(current=>({...current,smallBlind:Math.max(1,Number(event.target.value)||1)}));}}/></label>
               <label>BB<Input type="number" min="1" step="50" value={nextBlinds.bigBlind} onChange={event=>{setSelectedLevelId(null);setNextBlinds(current=>({...current,bigBlind:Math.max(1,Number(event.target.value)||1)}));}}/></label>
+              <label>最低チップ<Input type="number" min="1" step="25" value={nextBlinds.chipUnit} onChange={event=>{setSelectedLevelId(null);setNextBlinds(current=>({...current,chipUnit:Math.max(1,Number(event.target.value)||1)}));}}/></label>
               <label>方式<NativeSelect value={nextAnte.mode} onChange={event=>{setSelectedLevelId(null);setNextAnte(current=>({...current,mode:event.target.value as AnteConfig["mode"]}));}}><NativeSelectOption value="none">Anteなし</NativeSelectOption><NativeSelectOption value="big-blind">BB Ante</NativeSelectOption><NativeSelectOption value="all-players">全員Ante</NativeSelectOption></NativeSelect></label>
               <label>金額<Input type="number" min="0" step="100" disabled={nextAnte.mode==="none"} value={nextAnte.amount} onChange={event=>{setSelectedLevelId(null);setNextAnte(current=>({...current,amount:Math.max(0,Number(event.target.value)||0)}));}}/></label>
               <label>BB不足時<NativeSelect disabled={nextAnte.mode!=="big-blind"} value={nextAnte.priority} onChange={event=>{setSelectedLevelId(null);setNextAnte(current=>({...current,priority:event.target.value as AnteConfig["priority"]}));}}><NativeSelectOption value="blind">BB優先</NativeSelectOption><NativeSelectOption value="ante">Ante優先</NativeSelectOption></NativeSelect></label>
@@ -388,11 +394,12 @@ export default function PokerConsole(){
           <TabsContent value="levels" className="level-structure">
             <div className="layout-heading"><div><span className="eyebrow">BLIND LEVELS</span><h1>レベルストラクチャ</h1><p>各レベルを編集し、「選択」で次ハンドのブラインドとAnteへ反映します。</p></div><Button variant="outline" onClick={addLevel}><Plus size={16}/> レベル追加</Button></div>
             <div className="level-list">
-              <div className="level-list-head"><span>LEVEL</span><span>SB</span><span>BB</span><span>ANTE方式</span><span>ANTE額</span><span>BB不足時</span><span>操作</span></div>
+              <div className="level-list-head"><span>LEVEL</span><span>SB</span><span>BB</span><span>最低チップ</span><span>ANTE方式</span><span>ANTE額</span><span>BB不足時</span><span>操作</span></div>
               {levels.map((level,index)=><section key={level.id} className={`level-row${selectedLevelId===level.id?" is-selected":""}`}>
                 <b>LEVEL {index+1}</b>
                 <Input aria-label={`Level ${index+1} SB`} type="number" min="1" step="50" value={level.smallBlind} onChange={event=>updateLevel(level.id,{smallBlind:Math.max(1,Number(event.target.value)||1)})}/>
                 <Input aria-label={`Level ${index+1} BB`} type="number" min="1" step="50" value={level.bigBlind} onChange={event=>updateLevel(level.id,{bigBlind:Math.max(1,Number(event.target.value)||1)})}/>
+                <Input aria-label={`Level ${index+1} minimum chip`} type="number" min="1" step="25" value={level.chipUnit} onChange={event=>updateLevel(level.id,{chipUnit:Math.max(1,Number(event.target.value)||1)})}/>
                 <NativeSelect aria-label={`Level ${index+1} Ante mode`} value={level.ante.mode} onChange={event=>updateLevel(level.id,{ante:{...level.ante,mode:event.target.value as AnteConfig["mode"]}})}><NativeSelectOption value="none">なし</NativeSelectOption><NativeSelectOption value="big-blind">BB Ante</NativeSelectOption><NativeSelectOption value="all-players">全員Ante</NativeSelectOption></NativeSelect>
                 <Input aria-label={`Level ${index+1} Ante`} type="number" min="0" step="100" disabled={level.ante.mode==="none"} value={level.ante.amount} onChange={event=>updateLevel(level.id,{ante:{...level.ante,amount:Math.max(0,Number(event.target.value)||0)}})}/>
                 <NativeSelect aria-label={`Level ${index+1} BB Ante priority`} disabled={level.ante.mode!=="big-blind"} value={level.ante.priority} onChange={event=>updateLevel(level.id,{ante:{...level.ante,priority:event.target.value as AnteConfig["priority"]}})}><NativeSelectOption value="blind">BB優先</NativeSelectOption><NativeSelectOption value="ante">Ante優先</NativeSelectOption></NativeSelect>
@@ -424,8 +431,9 @@ export default function PokerConsole(){
           <Button className="allin" disabled={!actor} variant="outline" onClick={()=>actor&&dispatch({type:"ALL_IN",seat:actor.seat})}>All-in</Button>
         </section>
         <section className="winner-control">
-          <div><span className="eyebrow">WINNER / POT</span><small>Shortcut: W → Seat 1–9</small></div>
-          <div className="winner-row"><NativeSelect aria-label="Winner seat" value={String(winnerSeat)} onChange={event=>setWinnerSeat(Number(event.target.value))}>{state.players.map(player=><NativeSelectOption value={String(player.seat)} key={player.seat}>Seat {player.seat} · {player.name}{player.folded?" (Folded)":""}</NativeSelectOption>)}</NativeSelect><Button disabled={state.pot<=0} onClick={()=>awardWinner(winnerSeat)}>Award Pot</Button></div>
+          <div><span className="eyebrow">WINNER / CHOP</span><small>W → Seat番号 → Enter</small></div>
+          <div className="winner-seats">{state.players.map(player=><button type="button" key={player.seat} disabled={player.folded||state.pot<=0} className={winnerSeats.includes(player.seat)?"is-selected":""} aria-pressed={winnerSeats.includes(player.seat)} onClick={()=>toggleWinner(player.seat)}>{player.seat}</button>)}</div>
+          <div className="winner-row"><span>{winnerSeats.length>1?`${winnerSeats.length}人でチョップ`:winnerSeats.length===1?`Seat ${winnerSeats[0]} が獲得`:"勝者を選択"}</span><Button disabled={state.pot<=0||winnerSeats.length===0} onClick={()=>awardWinners()}>{winnerSeats.length>1?"Chop Pot":"Award Pot"}</Button></div>
         </section>
         <section className="card-editor">
           <div className="section-title"><span>COMMUNITY CARDS</span></div>
