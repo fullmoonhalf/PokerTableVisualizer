@@ -22,14 +22,14 @@ const DEFAULT_LAYOUT:OverlayLayout={
   area:{x:8,y:6,width:84,height:88}
 };
 const DEFAULT_LEVELS:BlindLevel[]=[
-  {id:1,smallBlind:100,bigBlind:200,ante:{mode:"big-blind",amount:200}},
-  {id:2,smallBlind:200,bigBlind:400,ante:{mode:"big-blind",amount:400}},
-  {id:3,smallBlind:300,bigBlind:600,ante:{mode:"big-blind",amount:600}},
-  {id:4,smallBlind:400,bigBlind:800,ante:{mode:"big-blind",amount:800}},
-  {id:5,smallBlind:500,bigBlind:1000,ante:{mode:"big-blind",amount:1000}},
-  {id:6,smallBlind:600,bigBlind:1200,ante:{mode:"big-blind",amount:1200}},
-  {id:7,smallBlind:800,bigBlind:1600,ante:{mode:"big-blind",amount:1600}},
-  {id:8,smallBlind:1000,bigBlind:2000,ante:{mode:"big-blind",amount:2000}},
+  {id:1,smallBlind:100,bigBlind:200,ante:{mode:"big-blind",amount:200,priority:"ante"}},
+  {id:2,smallBlind:200,bigBlind:400,ante:{mode:"big-blind",amount:400,priority:"ante"}},
+  {id:3,smallBlind:300,bigBlind:600,ante:{mode:"big-blind",amount:600,priority:"ante"}},
+  {id:4,smallBlind:400,bigBlind:800,ante:{mode:"big-blind",amount:800,priority:"ante"}},
+  {id:5,smallBlind:500,bigBlind:1000,ante:{mode:"big-blind",amount:1000,priority:"ante"}},
+  {id:6,smallBlind:600,bigBlind:1200,ante:{mode:"big-blind",amount:1200,priority:"ante"}},
+  {id:7,smallBlind:800,bigBlind:1600,ante:{mode:"big-blind",amount:1600,priority:"ante"}},
+  {id:8,smallBlind:1000,bigBlind:2000,ante:{mode:"big-blind",amount:2000,priority:"ante"}},
 ];
 
 export default function PokerConsole(){
@@ -78,16 +78,16 @@ export default function PokerConsole(){
   },[state]);
   useEffect(()=>{
     const saved=window.localStorage.getItem(STORAGE_KEY);
-    if(saved){try{const restored=JSON.parse(saved) as HandState;const normalized={...restored,ante:restored.ante??{mode:"none",amount:0}};if(normalized.players.length===9){setState(normalized);setNextAnte(normalized.ante);setNextBlinds({smallBlind:normalized.smallBlind,bigBlind:normalized.bigBlind});setNextButton(normalized.button);setButtonSeatInput(normalized.button);setSelectedLevelId(null);}}catch{}}
+    if(saved){try{const restored=JSON.parse(saved) as HandState;const normalized={...restored,ante:{...(restored.ante??{mode:"none",amount:0}),priority:restored.ante?.priority??"ante"} as AnteConfig};if(normalized.players.length===9){setState(normalized);setNextAnte(normalized.ante);setNextBlinds({smallBlind:normalized.smallBlind,bigBlind:normalized.bigBlind});setNextButton(normalized.button);setButtonSeatInput(normalized.button);setSelectedLevelId(null);}}catch{}}
     setStorageReady(true);
-    const sync=(event:StorageEvent)=>{if(event.key===STORAGE_KEY&&event.newValue){try{const restored=JSON.parse(event.newValue) as HandState;if(restored.players.length===9)setState({...restored,ante:restored.ante??{mode:"none",amount:0}});}catch{}}};
+    const sync=(event:StorageEvent)=>{if(event.key===STORAGE_KEY&&event.newValue){try{const restored=JSON.parse(event.newValue) as HandState;if(restored.players.length===9)setState({...restored,ante:{...(restored.ante??{mode:"none",amount:0}),priority:restored.ante?.priority??"ante"} as AnteConfig});}catch{}}};
     window.addEventListener("storage",sync);
     return()=>window.removeEventListener("storage",sync);
   },[]);
   useEffect(()=>{if(storageReady)window.localStorage.setItem(STORAGE_KEY,JSON.stringify(state));},[state,storageReady]);
   useEffect(()=>{
     const saved=window.localStorage.getItem(LEVELS_KEY);
-    if(saved){try{const restored=JSON.parse(saved) as BlindLevel[];if(restored.length)setLevels(restored);}catch{}}
+    if(saved){try{const restored=JSON.parse(saved) as BlindLevel[];if(restored.length)setLevels(restored.map(level=>({...level,ante:{...level.ante,priority:level.ante.priority??"ante"}})));}catch{}}
     setLevelsReady(true);
   },[]);
   useEffect(()=>{if(levelsReady&&!overlay)window.localStorage.setItem(LEVELS_KEY,JSON.stringify(levels));},[levels,levelsReady,overlay]);
@@ -283,6 +283,7 @@ export default function PokerConsole(){
               <label>BB<Input type="number" min="1" step="50" value={nextBlinds.bigBlind} onChange={event=>{setSelectedLevelId(null);setNextBlinds(current=>({...current,bigBlind:Math.max(1,Number(event.target.value)||1)}));}}/></label>
               <label>方式<NativeSelect value={nextAnte.mode} onChange={event=>{setSelectedLevelId(null);setNextAnte(current=>({...current,mode:event.target.value as AnteConfig["mode"]}));}}><NativeSelectOption value="none">Anteなし</NativeSelectOption><NativeSelectOption value="big-blind">BB Ante</NativeSelectOption><NativeSelectOption value="all-players">全員Ante</NativeSelectOption></NativeSelect></label>
               <label>金額<Input type="number" min="0" step="100" disabled={nextAnte.mode==="none"} value={nextAnte.amount} onChange={event=>{setSelectedLevelId(null);setNextAnte(current=>({...current,amount:Math.max(0,Number(event.target.value)||0)}));}}/></label>
+              <label>BB不足時<NativeSelect disabled={nextAnte.mode!=="big-blind"} value={nextAnte.priority} onChange={event=>{setSelectedLevelId(null);setNextAnte(current=>({...current,priority:event.target.value as AnteConfig["priority"]}));}}><NativeSelectOption value="blind">BB優先</NativeSelectOption><NativeSelectOption value="ante">Ante優先</NativeSelectOption></NativeSelect></label>
             </section>
             <div className="player-settings-grid">{state.players.map(player=><section key={player.seat} className="player-setting-card">
               <div><span>SEAT {player.seat}</span><b>{positionName(player.seat)}</b></div>
@@ -293,13 +294,14 @@ export default function PokerConsole(){
           <TabsContent value="levels" className="level-structure">
             <div className="layout-heading"><div><span className="eyebrow">BLIND LEVELS</span><h1>レベルストラクチャ</h1><p>各レベルを編集し、「選択」で次ハンドのブラインドとAnteへ反映します。</p></div><Button variant="outline" onClick={addLevel}><Plus size={16}/> レベル追加</Button></div>
             <div className="level-list">
-              <div className="level-list-head"><span>LEVEL</span><span>SB</span><span>BB</span><span>ANTE方式</span><span>ANTE額</span><span>操作</span></div>
+              <div className="level-list-head"><span>LEVEL</span><span>SB</span><span>BB</span><span>ANTE方式</span><span>ANTE額</span><span>BB不足時</span><span>操作</span></div>
               {levels.map((level,index)=><section key={level.id} className={`level-row${selectedLevelId===level.id?" is-selected":""}`}>
                 <b>LEVEL {index+1}</b>
                 <Input aria-label={`Level ${index+1} SB`} type="number" min="1" step="50" value={level.smallBlind} onChange={event=>updateLevel(level.id,{smallBlind:Math.max(1,Number(event.target.value)||1)})}/>
                 <Input aria-label={`Level ${index+1} BB`} type="number" min="1" step="50" value={level.bigBlind} onChange={event=>updateLevel(level.id,{bigBlind:Math.max(1,Number(event.target.value)||1)})}/>
                 <NativeSelect aria-label={`Level ${index+1} Ante mode`} value={level.ante.mode} onChange={event=>updateLevel(level.id,{ante:{...level.ante,mode:event.target.value as AnteConfig["mode"]}})}><NativeSelectOption value="none">なし</NativeSelectOption><NativeSelectOption value="big-blind">BB Ante</NativeSelectOption><NativeSelectOption value="all-players">全員Ante</NativeSelectOption></NativeSelect>
                 <Input aria-label={`Level ${index+1} Ante`} type="number" min="0" step="100" disabled={level.ante.mode==="none"} value={level.ante.amount} onChange={event=>updateLevel(level.id,{ante:{...level.ante,amount:Math.max(0,Number(event.target.value)||0)}})}/>
+                <NativeSelect aria-label={`Level ${index+1} BB Ante priority`} disabled={level.ante.mode!=="big-blind"} value={level.ante.priority} onChange={event=>updateLevel(level.id,{ante:{...level.ante,priority:event.target.value as AnteConfig["priority"]}})}><NativeSelectOption value="blind">BB優先</NativeSelectOption><NativeSelectOption value="ante">Ante優先</NativeSelectOption></NativeSelect>
                 <div><Button size="sm" onClick={()=>applyLevel(level)}>{selectedLevelId===level.id?"選択中":"選択"}</Button><Button size="icon-sm" variant="ghost" disabled={levels.length===1} aria-label={`Level ${index+1}を削除`} onClick={()=>removeLevel(level.id)}><Trash2 size={15}/></Button></div>
               </section>)}
             </div>

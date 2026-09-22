@@ -1,6 +1,7 @@
 export type Street = "preflop" | "flop" | "turn" | "river" | "showdown" | "finished";
 export type AnteMode = "none" | "big-blind" | "all-players";
-export type AnteConfig = { mode:AnteMode; amount:number };
+export type BigBlindAntePriority = "blind" | "ante";
+export type AnteConfig = { mode:AnteMode; amount:number; priority:BigBlindAntePriority };
 export type BlindConfig = { smallBlind:number; bigBlind:number };
 export type Player = { seat:number; name:string; stack:number; streetBet:number; totalInvested:number; folded:boolean; allIn:boolean; acted:boolean; cards:[string,string] | null };
 export type PokerEvent = { id:number; type:string; seat?:number; amount?:number; street:Street; label:string };
@@ -14,7 +15,7 @@ const roster = [
   [4,"Ren",16400],[5,"Aoi",21000],[6,"Yui",19800],
   [7,"Haru",22400],[8,"Nagi",17600],[9,"Riku",20800],
 ] as const;
-export const DEFAULT_ANTE:AnteConfig={mode:"big-blind",amount:200};
+export const DEFAULT_ANTE:AnteConfig={mode:"big-blind",amount:200,priority:"ante"};
 export const DEFAULT_BLINDS:BlindConfig={smallBlind:100,bigBlind:200};
 type ForcedBet = { seat:number; amount:number; kind:"small-blind"|"big-blind"|"ante"; countsTowardStreetBet:boolean };
 const canAct = (p:Player) => !p.folded && !p.allIn;
@@ -39,15 +40,16 @@ const forcedBets=(playerCount:number,button:number,smallBlind:number,bigBlind:nu
   const seatAfter=(seat:number,offset:number)=>((seat-1+offset)%playerCount)+1;
   const smallBlindSeat=seatAfter(button,1);
   const bigBlindSeat=seatAfter(button,2);
-  const antes:ForcedBet[]=ante.mode==="big-blind"
-    ?[{seat:bigBlindSeat,amount:ante.amount,kind:"ante",countsTowardStreetBet:false}]
-    :ante.mode==="all-players"
-      ?Array.from({length:playerCount},(_,index)=>({seat:index+1,amount:ante.amount,kind:"ante" as const,countsTowardStreetBet:false}))
-      :[];
-  return [...antes,
-    {seat:smallBlindSeat,amount:smallBlind,kind:"small-blind",countsTowardStreetBet:true},
-    {seat:bigBlindSeat,amount:bigBlind,kind:"big-blind",countsTowardStreetBet:true}
-  ];
+  const smallBlindPost:ForcedBet={seat:smallBlindSeat,amount:smallBlind,kind:"small-blind",countsTowardStreetBet:true};
+  const bigBlindPost:ForcedBet={seat:bigBlindSeat,amount:bigBlind,kind:"big-blind",countsTowardStreetBet:true};
+  if(ante.mode==="big-blind"){
+    const antePost:ForcedBet={seat:bigBlindSeat,amount:ante.amount,kind:"ante",countsTowardStreetBet:false};
+    return ante.priority==="blind"?[smallBlindPost,bigBlindPost,antePost]:[antePost,smallBlindPost,bigBlindPost];
+  }
+  const antes:ForcedBet[]=ante.mode==="all-players"
+    ?Array.from({length:playerCount},(_,index)=>({seat:index+1,amount:ante.amount,kind:"ante" as const,countsTowardStreetBet:false}))
+    :[];
+  return [...antes,smallBlindPost,bigBlindPost];
 };
 const postForcedBet=(player:Player,bet:ForcedBet):Player=>{
   const paid=Math.max(0,Math.min(bet.amount,player.stack));
@@ -56,7 +58,7 @@ const postForcedBet=(player:Player,bet:ForcedBet):Player=>{
 };
 
 const startHand=(basePlayers:Player[],handId:string,ante:AnteConfig,blinds:BlindConfig,dealerButton:number):HandState=>{
-  const normalizedAnte={mode:ante.mode,amount:Math.max(0,Math.floor(ante.amount))};
+  const normalizedAnte:AnteConfig={mode:ante.mode,amount:Math.max(0,Math.floor(ante.amount)),priority:ante.priority??"ante"};
   const smallBlind=Math.max(1,Math.floor(blinds.smallBlind));
   const bigBlind=Math.max(smallBlind,Math.floor(blinds.bigBlind));
   const button=Math.max(1,Math.min(basePlayers.length,Math.floor(dealerButton)));
