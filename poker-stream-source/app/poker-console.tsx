@@ -74,6 +74,7 @@ export default function PokerConsole(){
   const [activeTab,setActiveTab]=useState("layout");
   const [showStats,setShowStats]=useState(false);
   const [showRange,setShowRange]=useState(false);
+  const [fullResetConfirmation,setFullResetConfirmation]=useState("");
   const stageRef=useRef<HTMLDivElement>(null);
   const shortcutAmountActive=useRef(false);
   const shortcutAmountBuffer=useRef("");
@@ -135,7 +136,7 @@ export default function PokerConsole(){
     setChroma(params.get("key")||"00ff00");
   },[]);
   useEffect(()=>{
-    const syncDisplay=(value:string|null)=>{setShowStats(value==="stats");setShowRange(value==="range");if(value&&["layout","players","levels","stats","range"].includes(value))setActiveTab(value);};
+    const syncDisplay=(value:string|null)=>{setShowStats(value==="stats");setShowRange(value==="range");if(value&&["layout","players","levels","stats","range","reset"].includes(value))setActiveTab(value);};
     syncDisplay(window.localStorage.getItem(DISPLAY_TAB_KEY));
     const sync=(event:StorageEvent)=>{if(event.key===DISPLAY_TAB_KEY)syncDisplay(event.newValue);};
     window.addEventListener("storage",sync);return()=>window.removeEventListener("storage",sync);
@@ -365,6 +366,26 @@ export default function PokerConsole(){
     setHistory([]);
     setNotice(`${advance?"New hand":"Reset"} · BTN Seat ${next.button} · ${next.smallBlind}/${next.bigBlind} · ${anteLabel(next.ante)}`);
   };
+  const resetGameSession=()=>{
+    if(!window.confirm("ゲームを開始時の状態へ戻します。統計・レンジ履歴・現在のハンド内容は消去されます。続行しますか？"))return;
+    const players=state.players.map(player=>({...player,streetBet:0,totalInvested:0,folded:false,allIn:false,acted:false,cards:null,stats:{...EMPTY_PLAYER_STATS,preflopRange:{}}}));
+    const baseline:HandState={...state,handNumber:0,street:"finished",currentBet:0,minRaise:nextBlinds.bigBlind,actorSeat:null,pot:0,board:[],players,handStartStacks:Object.fromEntries(players.map(player=>[player.seat,player.stack])),events:[],vpipSeats:[],pfrSeats:[],threeBetOpportunitySeats:[],preflopRaiseCount:0,preflopAggressorSeat:null,flopCBetSeat:null,flopCBetResponses:[],rangeSampledSeats:[],rangeParticipationSeats:[],rangeHandLabels:{}};
+    const next=resetHand(baseline,nextAnte,nextBlinds,nextButton,true);
+    setState(next);setHistory([]);setWinners([next.actorSeat??next.button]);setSeatOutSelectionValue([]);setAmount(String(next.bigBlind*3));
+    setShortcutAmountEditing(false);setShortcutAmountDraft("");shortcutAmountActive.current=false;shortcutAmountBuffer.current="";
+    setNotice(`Game reset · Hand 1 · BTN Seat ${next.button}`);
+  };
+  const resetEverything=()=>{
+    if(fullResetConfirmation!=="RESET")return;
+    if(!window.confirm("すべての設定と保存データを初期値へ戻します。この操作は取り消せません。続行しますか？"))return;
+    const next=createDemoHand();
+    window.localStorage.removeItem(STORAGE_KEY);window.localStorage.removeItem(LAYOUT_KEY);window.localStorage.removeItem(LEVELS_KEY);window.localStorage.setItem(DISPLAY_TAB_KEY,"layout");
+    setState(next);setHistory([]);setLayout(DEFAULT_LAYOUT);setLevels(DEFAULT_LEVELS.map(level=>({...level,ante:{...level.ante}})));setSelectedLevelId(1);
+    setNextAnte(DEFAULT_ANTE);setNextBlinds(DEFAULT_BLINDS);setNextButton(1);setButtonSeatInput(1);setAmount(String(DEFAULT_BLINDS.bigBlind*3));
+    setWinners([1]);setSeatOutSelectionValue([]);setFullResetConfirmation("");setShowStats(false);setShowRange(false);setActiveTab("layout");
+    setShortcutAmountEditing(false);setShortcutAmountDraft("");shortcutAmountActive.current=false;shortcutAmountBuffer.current="";
+    setNotice("All settings and game data reset");
+  };
   const cardSelect=(value:string,onChange:(value:string)=>void,label:string)=><NativeSelect size="sm" aria-label={label} value={value} onChange={event=>onChange(event.target.value)}><NativeSelectOption value="">—</NativeSelectOption>{deck.map(card=><NativeSelectOption value={card} key={card}>{card}</NativeSelectOption>)}</NativeSelect>;
   const percent=(value:number,total:number)=>total?`${((value/total)*100).toFixed(1)}%`:"—";
   const statValues=(stats:PlayerStats)=>[
@@ -430,7 +451,7 @@ export default function PokerConsole(){
     <section className="workspace">
       <div className="layout-panel">
         <Tabs value={activeTab} onValueChange={value=>{setActiveTab(value);setShowStats(value==="stats");setShowRange(value==="range");window.localStorage.setItem(DISPLAY_TAB_KEY,value);}} className="layout-tabs">
-          <TabsList className="layout-tabs-list"><TabsTrigger value="layout">OBSレイアウト</TabsTrigger><TabsTrigger value="players">プレイヤー設定</TabsTrigger><TabsTrigger value="levels">レベルストラクチャ</TabsTrigger><TabsTrigger value="stats">統計</TabsTrigger><TabsTrigger value="range">Range</TabsTrigger></TabsList>
+          <TabsList className="layout-tabs-list"><TabsTrigger value="layout">OBSレイアウト</TabsTrigger><TabsTrigger value="players">プレイヤー設定</TabsTrigger><TabsTrigger value="levels">レベルストラクチャ</TabsTrigger><TabsTrigger value="stats">統計</TabsTrigger><TabsTrigger value="range">Range</TabsTrigger><TabsTrigger value="reset">リセット管理</TabsTrigger></TabsList>
           <TabsContent value="layout">
             <div className="layout-heading"><div><span className="eyebrow">OBS LAYOUT</span><h1>Overlay placement</h1><p>Seat panels can be dragged. The dashed rectangle marks the capture area.</p></div><Button variant="outline" onClick={()=>setLayout(DEFAULT_LAYOUT)}>Reset layout</Button></div>
             <div className="layout-editor" ref={activeTab==="layout"?stageRef:undefined}>
@@ -490,6 +511,11 @@ export default function PokerConsole(){
                 {state.players.map(player=>renderSeatRange(player,true))}
               </div>
             </div>
+          </TabsContent>
+          <TabsContent value="reset" className="reset-management">
+            <div className="layout-heading"><div><span className="eyebrow">RESET MANAGEMENT</span><h1>リセット管理</h1><p>通常操作から分離した、ゲームデータと設定の初期化メニューです。</p></div></div>
+            <section className="reset-card"><div><span className="eyebrow">GAME SESSION</span><h2>ゲーム開始状態へ戻す</h2><p>プレイヤー名・現在スタック・Blind設定・レベルストラクチャ・OBSレイアウトは維持します。Hand番号、カード、Pot、アクションログ、統計、レンジ履歴を消去し、設定中の強制ベットを徴収してHand 1を開始します。</p></div><Button variant="outline" onClick={resetGameSession}>ゲームを初期化</Button></section>
+            <section className="reset-card reset-card-danger"><div><span className="eyebrow">FACTORY RESET</span><h2>完全リセット</h2><p>プレイヤー設定、スタック、Blind・Ante、レベルストラクチャ、OBSレイアウト、統計とブラウザ保存データをすべて初期値へ戻します。</p></div><label>確認のため <b>RESET</b> と入力<Input value={fullResetConfirmation} onChange={event=>setFullResetConfirmation(event.target.value)} placeholder="RESET"/></label><Button variant="destructive" disabled={fullResetConfirmation!=="RESET"} onClick={resetEverything}>すべてを初期化</Button></section>
           </TabsContent>
         </Tabs>
       </div>
