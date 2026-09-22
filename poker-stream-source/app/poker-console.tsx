@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { NativeSelect,NativeSelectOption } from "@/components/ui/native-select";
 import { Tabs,TabsContent,TabsList,TabsTrigger } from "@/components/ui/tabs";
-import { amountToCall,awardPot,createDemoHand,DEFAULT_ANTE,DEFAULT_BLINDS,executeCommand,resetHand,type AnteConfig,type BlindConfig,type HandState,type PokerCommand } from "@/lib/poker-core";
+import { amountToCall,awardPot,createDemoHand,DEFAULT_ANTE,DEFAULT_BLINDS,executeCommand,resetHand,setSeatOut as updateSeatOut,type AnteConfig,type BlindConfig,type HandState,type PokerCommand } from "@/lib/poker-core";
 import { calculateEquity,deck } from "@/lib/equity";
 
 declare global{interface Document{modelContext?:{registerTool:(tool:Record<string,unknown>,options?:{signal?:AbortSignal})=>void|Promise<void>}}}
@@ -38,6 +38,7 @@ const normalizeHandState=(restored:HandState&{handId?:string}):HandState=>{
     ...current,
     handNumber:Number.isFinite(restored.handNumber)&&restored.handNumber>0?restored.handNumber:legacyNumber,
     chipUnit:Math.max(1,restored.chipUnit??100),
+    players:restored.players.map(player=>({...player,sittingOut:player.sittingOut??false})),
     ante:{...(restored.ante??{mode:"none",amount:0}),priority:restored.ante?.priority??"ante"} as AnteConfig,
     handStartStacks:restored.handStartStacks??Object.fromEntries(restored.players.map(player=>[player.seat,player.stack+player.totalInvested]))
   };
@@ -69,6 +70,7 @@ export default function PokerConsole(){
   const shortcutAmountActive=useRef(false);
   const shortcutAmountBuffer=useRef("");
   const winnerShortcutActive=useRef(false);
+  const seatOutShortcutActive=useRef(false);
   const winnerSeatsRef=useRef<number[]>([1]);
   const actor=state.players.find(p=>p.seat===state.actorSeat);
   const callAmount=actor?amountToCall(state,actor.seat):0;
@@ -104,6 +106,16 @@ export default function PokerConsole(){
     }
     catch(error){setNotice(error instanceof Error?error.message:"Winner selection failed");return false;}
   };
+  const toggleSeatOut=(seat:number)=>{
+    try{
+      const player=state.players.find(item=>item.seat===seat);if(!player)return false;
+      const next=updateSeatOut(state,seat,!player.sittingOut);
+      if(next===state)return false;
+      setHistory(items=>[...items,state]);setState(next);setNotice(next.events.at(-1)?.label??"Seat updated");
+      seatOutShortcutActive.current=false;return true;
+    }
+    catch(error){setNotice(error instanceof Error?error.message:"Seat Out failed");return false;}
+  };
   useEffect(()=>setHydrated(true),[]);
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
@@ -129,6 +141,13 @@ export default function PokerConsole(){
         else setNotice("勝者はSeat 1〜9で指定してください");
         return;
       }
+      if(seatOutShortcutActive.current&&digit!==undefined){
+        event.preventDefault();
+        const seat=Number(digit);
+        if(seat>=1&&seat<=state.players.length)toggleSeatOut(seat);
+        else setNotice("Seat Outは1〜9で指定してください");
+        return;
+      }
       if(digit!==undefined){
         event.preventDefault();
         shortcutAmountBuffer.current=shortcutAmountActive.current?`${shortcutAmountBuffer.current}${digit}`:digit;
@@ -137,13 +156,16 @@ export default function PokerConsole(){
       if(event.code==="Backspace"&&shortcutAmountActive.current){
         event.preventDefault();shortcutAmountBuffer.current=shortcutAmountBuffer.current.slice(0,-1);setShortcutAmountDraft(shortcutAmountBuffer.current);return;
       }
-      if(event.code==="Escape"&&(shortcutAmountActive.current||winnerShortcutActive.current)){
-        event.preventDefault();shortcutAmountActive.current=false;shortcutAmountBuffer.current="";winnerShortcutActive.current=false;setShortcutAmountEditing(false);setShortcutAmountDraft("");setNotice("Shortcut cancelled");return;
+      if(event.code==="Escape"&&(shortcutAmountActive.current||winnerShortcutActive.current||seatOutShortcutActive.current)){
+        event.preventDefault();shortcutAmountActive.current=false;shortcutAmountBuffer.current="";winnerShortcutActive.current=false;seatOutShortcutActive.current=false;setShortcutAmountEditing(false);setShortcutAmountDraft("");setNotice("Shortcut cancelled");return;
       }
       if((event.code==="Enter"||event.code==="NumpadEnter")&&winnerShortcutActive.current){event.preventDefault();awardWinners();return;}
       if((event.code==="Enter"||event.code==="NumpadEnter")&&shortcutAmountActive.current){event.preventDefault();submitBetOrRaise(shortcutAmountBuffer.current);return;}
       if(event.code==="KeyW"&&!event.repeat){
-        event.preventDefault();winnerShortcutActive.current=true;setWinners([]);shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setNotice("WINNER: Seat番号を選択し、Enterで確定してください");return;
+        event.preventDefault();winnerShortcutActive.current=true;seatOutShortcutActive.current=false;setWinners([]);shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setNotice("WINNER: Seat番号を選択し、Enterで確定してください");return;
+      }
+      if(event.code==="KeyO"&&!event.repeat){
+        event.preventDefault();seatOutShortcutActive.current=true;winnerShortcutActive.current=false;shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setNotice("SEAT OUT / IN: Seat番号 1〜9 を押してください");return;
       }
       if(event.repeat||!actor)return;
       if(event.code==="KeyF"){event.preventDefault();dispatch({type:"FOLD",seat:actor.seat});}
@@ -241,12 +263,17 @@ export default function PokerConsole(){
   };
   const gamePanelPosition={left:`${layout.area.x+(layout.gamePanel.x*layout.area.width)/100}%`,top:`${layout.area.y+(layout.gamePanel.y*layout.area.height)/100}%`};
   const positionName=(seat:number)=>{
-    const count=state.players.length;
-    const offset=(seat-state.button+count)%count;
-    const labels=count===9?["BTN","SB","BB","UTG","UTG+1","MP","LJ","HJ","CO"]:["BTN","SB","BB","UTG","MP","HJ","CO","CO","CO"];
+    const player=state.players.find(item=>item.seat===seat);if(player?.sittingOut)return "OUT";
+    const activeSeats=state.players.filter(item=>!item.sittingOut).map(item=>item.seat).sort((a,b)=>a-b);
+    const count=activeSeats.length;
+    const buttonIndex=activeSeats.indexOf(state.button);
+    const offset=(activeSeats.indexOf(seat)-buttonIndex+count)%count;
+    const labelsByCount:Record<number,string[]>={9:["BTN","SB","BB","UTG","UTG+1","MP","LJ","HJ","CO"],8:["BTN","SB","BB","UTG","UTG+1","LJ","HJ","CO"],7:["BTN","SB","BB","UTG","MP","HJ","CO"],6:["BTN","SB","BB","UTG","HJ","CO"],5:["BTN","SB","BB","UTG","CO"],4:["BTN","SB","BB","CO"],3:["BTN","SB","BB"],2:["BTN/SB","BB"]};
+    const labels=labelsByCount[count]??[];
     return labels[offset]??`S${seat}`;
   };
   const lastAction=(seat:number)=>{
+    if(state.players.find(player=>player.seat===seat)?.sittingOut)return "Seat Out";
     const event=[...state.events].reverse().find(item=>item.seat===seat&&["FOLD","CHECK","CALL","BET_TO","RAISE_TO","ALL_IN"].includes(item.type));
     if(!event)return "";
     if(event.type==="FOLD")return "Fold";
@@ -258,6 +285,7 @@ export default function PokerConsole(){
     return raises<=1?"Raise":`${raises+1}-Bet`;
   };
   const playerStatus=(player:HandState["players"][number])=>{
+    if(player.sittingOut)return "status-seatout";
     if(player.folded)return "status-folded";
     if(player.seat===state.actorSeat)return "status-current";
     if(player.allIn)return "status-allin";
@@ -307,7 +335,8 @@ export default function PokerConsole(){
   const removeLevel=(id:number)=>{setLevels(current=>current.filter(level=>level.id!==id));if(selectedLevelId===id)setSelectedLevelId(null);};
   const anteLabel=(ante:AnteConfig)=>ante.mode==="big-blind"?`BB ANTE ${ante.amount.toLocaleString()}`:ante.mode==="all-players"?`ANTE ${ante.amount.toLocaleString()}`:"NO ANTE";
   const startFreshHand=(advance:boolean)=>{
-    const button=advance?nextButton%state.players.length+1:nextButton;
+    const activeSeats=state.players.filter(player=>!player.sittingOut).map(player=>player.seat).sort((a,b)=>a-b);
+    const button=advance?(activeSeats.find(seat=>seat>nextButton)??activeSeats[0]??nextButton):nextButton;
     const next=resetHand(state,nextAnte,nextBlinds,button,advance);
     setState(next);
     setNextButton(next.button);
@@ -432,8 +461,12 @@ export default function PokerConsole(){
         </section>
         <section className="winner-control">
           <div><span className="eyebrow">WINNER / CHOP</span><small>W → Seat番号 → Enter</small></div>
-          <div className="winner-seats">{state.players.map(player=><button type="button" key={player.seat} disabled={player.folded||state.pot<=0} className={winnerSeats.includes(player.seat)?"is-selected":""} aria-pressed={winnerSeats.includes(player.seat)} onClick={()=>toggleWinner(player.seat)}>{player.seat}</button>)}</div>
+          <div className="winner-seats">{state.players.map(player=><button type="button" key={player.seat} disabled={player.folded||player.sittingOut||state.pot<=0} className={winnerSeats.includes(player.seat)?"is-selected":""} aria-pressed={winnerSeats.includes(player.seat)} onClick={()=>toggleWinner(player.seat)}>{player.seat}</button>)}</div>
           <div className="winner-row"><span>{winnerSeats.length>1?`${winnerSeats.length}人でチョップ`:winnerSeats.length===1?`Seat ${winnerSeats[0]} が獲得`:"勝者を選択"}</span><Button disabled={state.pot<=0||winnerSeats.length===0} onClick={()=>awardWinners()}>{winnerSeats.length>1?"Chop Pot":"Award Pot"}</Button></div>
+        </section>
+        <section className="seatout-control">
+          <div><span className="eyebrow">SEAT OUT / IN</span><small>Shortcut: O → Seat 1–9</small></div>
+          <div className="seatout-seats">{state.players.map(player=><button type="button" key={player.seat} className={player.sittingOut?"is-out":""} aria-pressed={player.sittingOut} onClick={()=>toggleSeatOut(player.seat)}><b>{player.seat}</b><span>{player.sittingOut?"OUT":"IN"}</span></button>)}</div>
         </section>
         <section className="card-editor">
           <div className="section-title"><span>COMMUNITY CARDS</span></div>
