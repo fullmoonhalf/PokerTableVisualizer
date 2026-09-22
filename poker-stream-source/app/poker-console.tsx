@@ -303,7 +303,7 @@ export default function PokerConsole(){
   const renderGamePanel=(draggable=false)=> <section className={`game-panel${draggable?" editor-draggable":""}`} style={gamePanelPosition} onPointerDown={draggable?event=>dragItem("game",event):undefined}>
     <div className="game-panel-top"><span>HAND <strong>{state.handId}</strong></span><b>{state.street.toUpperCase()}</b></div>
     {renderBoard()}
-    <div className="game-panel-bottom"><span>POT <strong>{state.pot.toLocaleString()}</strong></span><span>BLINDS <strong>{state.smallBlind} / {state.bigBlind}</strong></span><span>{anteLabel(state.ante)}</span></div>
+    <div className="game-panel-bottom"><span>POT <strong>{state.pot.toLocaleString()}</strong></span><span className="blind-stat"><small>BLINDS</small><strong>{state.smallBlind} / {state.bigBlind}</strong></span><span>{anteLabel(state.ante)}</span></div>
   </section>;
   const exportJson=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download=`${state.handId}.json`;link.click();URL.revokeObjectURL(url);};
   if(!hydrated)return <main className="hydration-shell" aria-hidden="true"/>;
