@@ -37,6 +37,7 @@
 .game-panel-anchor{pointer-events:auto;cursor:grab;touch-action:none}.game-panel-anchor:active{cursor:grabbing}
 .seat-metrics{display:flex;gap:14px;margin-top:7px;color:#aabbb4;font-size:15px;font-weight:800}.seat-metrics b{color:#fff;margin-left:4px}
 .control-panel{max-height:calc(100vh - 104px);overflow-y:auto}.card-editor{display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--line);padding-top:14px}.board-editor{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}.board-editor label>span{display:block;margin-bottom:3px;color:var(--soft);font-size:.58rem;text-align:center}.board-editor [data-slot=native-select-wrapper],.hole-editor [data-slot=native-select-wrapper]{width:100%}.board-editor select,.hole-editor select{padding-left:7px;padding-right:20px}.hole-editor{display:grid;grid-template-columns:1fr 1fr;gap:5px}.hole-editor>div{display:grid;grid-template-columns:28px 1fr 1fr;align-items:center;gap:4px}.hole-editor>div>b{color:var(--soft);font-size:.62rem}.equity-note{display:flex;align-items:center;gap:10px;margin-top:9px;color:var(--soft);font-size:.7rem}.equity-note b{padding:3px 7px;border-radius:4px;background:#214238;color:#79d9b0;font-size:.62rem;letter-spacing:.08em}
+.button-control{display:grid;grid-template-columns:1fr 145px 88px;align-items:end;gap:8px;padding:11px;border:1px solid var(--line);border-radius:9px;background:#101816}.button-control>div{display:grid;gap:3px}.button-control>div>b{color:var(--primary);font-size:16px}.button-control button{height:36px}
 
 /* Large-format broadcast typography */
 .overlay-seat{width:360px;min-height:180px;padding:20px 22px}.overlay-seat .seat-top{font-size:18px}.overlay-seat .seat-name{font-size:38px}.overlay-seat .seat-stack{font-size:30px}.overlay-seat .last-action{font-size:18px;padding:6px 13px}.overlay-seat .seat-metrics{font-size:20px}.overlay-seat .hole-cards b{width:64px;height:86px;font-size:25px}
@@ -81,7 +82,7 @@
 .overlay-seat .bet-chip{min-width:40px;height:40px;top:calc(100% + 8px);font-size:11px}
 
 /* Player panel hierarchy: action at top-right, equity directly below cards. */
-.overlay-seat .last-action{position:absolute;left:8px;right:auto;top:-27px;margin:0;z-index:2}
+.overlay-seat .last-action{position:absolute;left:8px;right:auto;top:-27px;margin:0;z-index:2;background:#000;box-shadow:0 2px 7px #000b}
 .overlay-seat .player-hand{position:absolute;right:9px;bottom:7px;display:flex;flex-direction:column;align-items:center;gap:3px}
 .overlay-seat .player-hand .hole-cards{position:static}
 .overlay-seat .player-hand .seat-metrics{max-width:none;margin:0;justify-content:center}
@@ -90,5 +91,20 @@
 .overlay-seat .bet-chip{width:auto;min-width:60px;height:34px;padding:0 15px;border-radius:10px;white-space:nowrap;font-size:17px;font-weight:900}
 
 /* Infrequent table setup lives behind a tab beside the layout editor. */
-.layout-tabs{gap:18px}.layout-tabs-list{width:100%;max-width:360px;background:#17221f;border:1px solid var(--line)}.layout-tabs-list [data-slot=tabs-trigger]{min-height:36px}.player-settings{min-height:600px}.player-settings-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.player-setting-card{display:grid;gap:12px;padding:16px;border:1px solid var(--line);border-radius:11px;background:#101816}.player-setting-card>div{display:flex;align-items:center;justify-content:space-between}.player-setting-card>div span{color:var(--soft);font-size:12px;font-weight:900;letter-spacing:.1em}.player-setting-card>div b{color:var(--primary);font-size:14px}.player-setting-card label{color:var(--soft);font-size:11px;font-weight:800;letter-spacing:.08em}.player-setting-card input{margin-top:5px;color:var(--ink);font-size:16px;font-weight:700}
+.layout-tabs{gap:18px}.layout-tabs-list{width:100%;max-width:560px;background:#17221f;border:1px solid var(--line)}.layout-tabs-list [data-slot=tabs-trigger]{min-height:36px}.player-settings{min-height:600px}.player-settings-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.player-setting-card{display:grid;gap:12px;padding:16px;border:1px solid var(--line);border-radius:11px;background:#101816}.player-setting-card>div{display:flex;align-items:center;justify-content:space-between}.player-setting-card>div span{color:var(--soft);font-size:12px;font-weight:900;letter-spacing:.1em}.player-setting-card>div b{color:var(--primary);font-size:14px}.player-setting-card label{color:var(--soft);font-size:11px;font-weight:800;letter-spacing:.08em}.player-setting-card input{margin-top:5px;color:var(--ink);font-size:16px;font-weight:700}
+.table-settings{display:grid;grid-template-columns:minmax(190px,1fr) 95px 95px 150px 115px 130px;align-items:end;gap:10px;margin-bottom:14px;padding:14px 16px;border:1px solid #6a552f;border-radius:11px;background:#171912}.table-settings>div{display:grid;gap:3px}.table-settings>div>b{font-size:18px}.table-settings>div>small{color:var(--soft);font-size:12px}.table-settings label{color:var(--soft);font-size:11px;font-weight:800;letter-spacing:.08em}.table-settings input,.table-settings [data-slot=native-select-wrapper]{margin-top:5px}.table-settings input{font-size:16px;font-weight:700}
+.level-structure{min-height:600px}.level-list{overflow:hidden;border:1px solid var(--line);border-radius:11px;background:#101816}.level-list-head,.level-row{display:grid;grid-template-columns:90px .8fr .8fr 1.25fr .9fr 1.1fr 120px;align-items:center;gap:8px;padding:10px 12px}.level-list-head{background:#17221f;color:var(--soft);font-size:11px;font-weight:900;letter-spacing:.08em}.level-row{border-top:1px solid var(--line)}.level-row.is-selected{background:#2a2415;box-shadow:inset 3px 0 var(--primary)}.level-row>b{color:var(--primary);font-size:13px}.level-row>div{display:flex;justify-content:flex-end;gap:5px}.level-row input,.level-row select{font-weight:700;font-variant-numeric:tabular-nums}
+@media(max-width:1100px){.level-list-head,.level-row{grid-template-columns:72px .8fr .8fr 1.15fr .9fr 1fr 108px;gap:6px}.table-settings{grid-template-columns:1fr 82px 82px 130px 105px 115px}}
 @media(max-width:900px){.player-settings-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Four-color deck: spades black, hearts red, diamonds blue, clubs green. */
+.card-face.suit-spade{color:#111816;background:#f0f3f2;border-color:#aab4b0}
+.card-face.suit-heart{color:#d52e45;background:#fff0f3;border-color:#e99aa7}
+.card-face.suit-diamond{color:#2467d4;background:#edf4ff;border-color:#91b3ea}
+.card-face.suit-club{color:#16824c;background:#edf9f2;border-color:#8ac7a6}
+.card-face.suit-unknown{color:#69756f;background:#e7eee9;border-color:#aebbb5}
+.card-face{align-content:center;justify-items:center;line-height:1;row-gap:.08em}
+.card-face .card-suit{font-size:.72em;line-height:1}
+.card-face .card-rank{font-size:1em;line-height:1}
+.panel-footer{grid-template-columns:repeat(4,1fr)}
+.pending-bet-chip{position:absolute;left:50%;top:calc(100% + 8px);z-index:4;transform:translateX(-50%);min-width:96px;padding:6px 12px;border:2px solid #ffe0a2;border-radius:9px;background:#211709;color:#ffd27d;box-shadow:0 4px 14px #000b;text-align:center;white-space:nowrap;font-size:17px;font-weight:900}.pending-bet-chip.has-current-bet{top:calc(100% + 50px)}
