@@ -14,7 +14,6 @@ const STORAGE_KEY="poker-stream.hand.v1";
 const LAYOUT_KEY="poker-stream.layout.v1";
 const LEVELS_KEY="poker-stream.levels.v1";
 const DISPLAY_TAB_KEY="poker-stream.display-tab.v1";
-const RANGE_PLAYER_KEY="poker-stream.range-player.v1";
 type Point={x:number;y:number};
 type OverlayLayout={seats:Record<number,Point>;gamePanel:Point;area:{x:number;y:number;width:number;height:number}};
 type BlindLevel={id:number;smallBlind:number;bigBlind:number;chipUnit:number;ante:AnteConfig};
@@ -75,7 +74,6 @@ export default function PokerConsole(){
   const [activeTab,setActiveTab]=useState("layout");
   const [showStats,setShowStats]=useState(false);
   const [showRange,setShowRange]=useState(false);
-  const [rangePlayerSeat,setRangePlayerSeat]=useState(1);
   const stageRef=useRef<HTMLDivElement>(null);
   const shortcutAmountActive=useRef(false);
   const shortcutAmountBuffer=useRef("");
@@ -140,12 +138,6 @@ export default function PokerConsole(){
     const syncDisplay=(value:string|null)=>{setShowStats(value==="stats");setShowRange(value==="range");if(value&&["layout","players","levels","stats","range"].includes(value))setActiveTab(value);};
     syncDisplay(window.localStorage.getItem(DISPLAY_TAB_KEY));
     const sync=(event:StorageEvent)=>{if(event.key===DISPLAY_TAB_KEY)syncDisplay(event.newValue);};
-    window.addEventListener("storage",sync);return()=>window.removeEventListener("storage",sync);
-  },[]);
-  useEffect(()=>{
-    const syncSeat=(value:string|null)=>{const seat=Number(value);if(seat>=1&&seat<=9)setRangePlayerSeat(seat);};
-    syncSeat(window.localStorage.getItem(RANGE_PLAYER_KEY));
-    const sync=(event:StorageEvent)=>{if(event.key===RANGE_PLAYER_KEY)syncSeat(event.newValue);};
     window.addEventListener("storage",sync);return()=>window.removeEventListener("storage",sync);
   },[]);
   useEffect(()=>{
@@ -244,7 +236,7 @@ export default function PokerConsole(){
     updateScale();
     const observer=new ResizeObserver(updateScale);observer.observe(stage);
     return()=>observer.disconnect();
-  },[]);
+  },[activeTab]);
   const dragItem=(target:number|"game",event:React.PointerEvent)=>{
     event.preventDefault();
     const stageRect=stageRef.current?.getBoundingClientRect();if(!stageRect)return;
@@ -384,20 +376,19 @@ export default function PokerConsole(){
     <div className="seat-top"><span>{positionName(player.seat)}</span></div><div className="seat-name">{player.name}</div>
     <div className="player-stat-grid">{statValues(player.stats).map(([label,value])=><span key={label}><small>{label}</small><b>{value}</b></span>)}</div>
   </>;
-  const rangePlayer=state.players.find(player=>player.seat===rangePlayerSeat)??state.players[0];
-  const rangeCellStyle=(label:string)=>{
-    const cell={...EMPTY_RANGE_CELL,...rangePlayer.stats.preflopRange[label]};
+  const rangeCellStyle=(player:HandState["players"][number],label:string)=>{
+    const cell={...EMPTY_RANGE_CELL,...player.stats.preflopRange[label]};
     const participation=cell.dealt?cell.participated/cell.dealt:0;
     const actionCount=cell.calls+cell.raises,aggression=actionCount?cell.raises/actionCount:.5;
     const hue=aggression<=.5?215+(125-215)*aggression*2:125+(5-125)*(aggression-.5)*2;
     return {backgroundColor:cell.dealt?`hsl(${hue} 80% ${20+participation*38}%)`:"#17211e",color:participation>.72?"#fff":"#e8f0ed"};
   };
   const rangeLabelAt=(row:number,column:number)=>row===column?`${RANGE_RANKS[row]}${RANGE_RANKS[column]}`:row<column?`${RANGE_RANKS[row]}${RANGE_RANKS[column]}s`:`${RANGE_RANKS[column]}${RANGE_RANKS[row]}o`;
-  const renderRangeHeatmap=(overlayView=false)=><section className={`range-card${overlayView?" range-overlay-card":""}`}>
-    <header><div><span>SEAT {rangePlayer.seat}</span><strong>{rangePlayer.name}</strong></div><small>LIGHTNESS = PARTICIPATION · HUE = AGGRESSION</small></header>
-    <div className="range-grid">{RANGE_RANKS.flatMap((_,row)=>RANGE_RANKS.map((__,column)=>{const label=rangeLabelAt(row,column),cell={...EMPTY_RANGE_CELL,...rangePlayer.stats.preflopRange[label]};return <div key={label} className={`range-cell${row===4?" range-divider-row":""}${column===4?" range-divider-col":""}`} style={rangeCellStyle(label)} title={`${label} · dealt ${cell.dealt} · VPIP ${percent(cell.participated,cell.dealt)} · aggression ${percent(cell.raises,cell.calls+cell.raises)}`}><b>{label}</b><small>{cell.dealt||"—"}</small></div>;}))}</div>
-    <footer><span className="range-legend passive">CALL-HEAVY</span><span>暗い＝低参加　明るい＝高参加</span><span className="range-legend aggressive">RAISE-HEAVY</span></footer>
-  </section>;
+  const renderSeatRange=(player:HandState["players"][number],draggable=false)=><article key={player.seat} onPointerDown={draggable?event=>dragItem(player.seat,event):undefined} style={seatPosition(player.seat)} className={`range-seat${draggable?" editor-draggable":""} ${playerStatus(player)}`}>
+    <header><span>SEAT {player.seat} · {positionName(player.seat)}</span><strong>{player.name}</strong></header>
+    <div className="range-grid">{RANGE_RANKS.flatMap((_,row)=>RANGE_RANKS.map((__,column)=>{const label=rangeLabelAt(row,column),cell={...EMPTY_RANGE_CELL,...player.stats.preflopRange[label]};return <div key={label} className={`range-cell${row===4?" range-divider-row":""}${column===4?" range-divider-col":""}`} style={rangeCellStyle(player,label)} title={`${label} · dealt ${cell.dealt} · VPIP ${percent(cell.participated,cell.dealt)} · aggression ${percent(cell.raises,cell.calls+cell.raises)}`}/>;}))}</div>
+  </article>;
+  const renderRangeLegend=()=> <div className="range-mode-legend"><span className="range-legend passive">CALL-HEAVY</span><small>暗い＝低参加　明るい＝高参加</small><span className="range-legend aggressive">RAISE-HEAVY</span></div>;
   const renderPlayerContent=(player:HandState["players"][number],showShortcutAmount=false,showSeatNumber=false)=>{
     const stackDelta=player.stack-(state.handStartStacks[player.seat]??player.stack);
     return <>
@@ -424,7 +415,7 @@ export default function PokerConsole(){
   </section>;
   const exportJson=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download=`hand-${state.handNumber}.json`;link.click();URL.revokeObjectURL(url);};
   if(!hydrated)return <main className="hydration-shell" aria-hidden="true"/>;
-  if(overlay&&showRange)return <main className="overlay-canvas range-overlay" style={{backgroundColor:`#${chroma.replace("#","")}`}}>{renderRangeHeatmap(true)}</main>;
+  if(overlay&&showRange)return <main className="overlay-canvas range-overlay" style={{backgroundColor:`#${chroma.replace("#","")}`}}>{state.players.map(player=>renderSeatRange(player))}{renderRangeLegend()}</main>;
   if(overlay)return <main className="overlay-canvas" style={{backgroundColor:`#${chroma.replace("#","")}`}}>
     {renderGamePanel()}
     {state.players.map(player=><article key={player.seat} style={seatPosition(player.seat)} className={`overlay-seat ${playerStatus(player)}`}>
@@ -443,7 +434,7 @@ export default function PokerConsole(){
           <TabsList className="layout-tabs-list"><TabsTrigger value="layout">OBSレイアウト</TabsTrigger><TabsTrigger value="players">プレイヤー設定</TabsTrigger><TabsTrigger value="levels">レベルストラクチャ</TabsTrigger><TabsTrigger value="stats">統計</TabsTrigger><TabsTrigger value="range">Range</TabsTrigger></TabsList>
           <TabsContent value="layout">
             <div className="layout-heading"><div><span className="eyebrow">OBS LAYOUT</span><h1>Overlay placement</h1><p>Seat panels can be dragged. The dashed rectangle marks the capture area.</p></div><Button variant="outline" onClick={()=>setLayout(DEFAULT_LAYOUT)}>Reset layout</Button></div>
-            <div className="layout-editor" ref={stageRef}>
+            <div className="layout-editor" ref={activeTab==="layout"?stageRef:undefined}>
               <div className="editor-canvas" style={{transform:`scale(${editorScale})`}}>
                 <div className="capture-area" style={{left:`${layout.area.x}%`,top:`${layout.area.y}%`,width:`${layout.area.width}%`,height:`${layout.area.height}%`}}><span>OBS CAPTURE AREA</span></div>
                 {renderGamePanel(true)}
@@ -493,9 +484,14 @@ export default function PokerConsole(){
             <div className="stats-table"><div className="stats-table-head"><span>PLAYER</span>{["HANDS","VPIP","PFR","3BET","F C-BET","FOLD TO FCB","WTSD","W$SD"].map(label=><span key={label}>{label}</span>)}</div>{state.players.map(player=><div className={`stats-table-row${player.sittingOut?" is-out":""}`} key={player.seat}><b>S{player.seat} · {player.name}</b>{statValues(player.stats).map(([label,value])=><span key={label}>{value}</span>)}</div>)}</div>
           </TabsContent>
           <TabsContent value="range" className="range-tab">
-            <div className="layout-heading"><div><span className="eyebrow">HAND RANGE HEATMAP</span><h1>Starting Hand Range</h1><p>明度で参加率、色相でCall／Raise傾向を表示します。セル右下は観測サンプル数です。</p></div></div>
-            <div className="range-player-selector">{state.players.map(player=><Button key={player.seat} size="sm" variant={player.seat===rangePlayerSeat?"default":"outline"} onClick={()=>{setRangePlayerSeat(player.seat);window.localStorage.setItem(RANGE_PLAYER_KEY,String(player.seat));}}>S{player.seat} {player.name}</Button>)}</div>
-            {renderRangeHeatmap()}
+            <div className="layout-heading"><div><span className="eyebrow">HAND RANGE HEATMAP</span><h1>All Player Ranges</h1><p>全シートを同時表示します。明度が参加率、色相がCall／Raise傾向です。各セルの詳細はマウスオーバーで確認できます。</p></div></div>
+            <div className="layout-editor" ref={activeTab==="range"?stageRef:undefined}>
+              <div className="editor-canvas" style={{transform:`scale(${editorScale})`}}>
+                <div className="capture-area" style={{left:`${layout.area.x}%`,top:`${layout.area.y}%`,width:`${layout.area.width}%`,height:`${layout.area.height}%`}}><span>OBS CAPTURE AREA</span></div>
+                {state.players.map(player=>renderSeatRange(player,true))}
+                {renderRangeLegend()}
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
