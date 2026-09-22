@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { NativeSelect,NativeSelectOption } from "@/components/ui/native-select";
 import { Tabs,TabsContent,TabsList,TabsTrigger } from "@/components/ui/tabs";
-import { amountToCall,createDemoHand,DEFAULT_ANTE,DEFAULT_BLINDS,executeCommand,resetHand,type AnteConfig,type BlindConfig,type HandState,type PokerCommand } from "@/lib/poker-core";
+import { amountToCall,awardPot,createDemoHand,DEFAULT_ANTE,DEFAULT_BLINDS,executeCommand,resetHand,type AnteConfig,type BlindConfig,type HandState,type PokerCommand } from "@/lib/poker-core";
 import { calculateEquity,deck } from "@/lib/equity";
 
 declare global{interface Document{modelContext?:{registerTool:(tool:Record<string,unknown>,options?:{signal?:AbortSignal})=>void|Promise<void>}}}
@@ -56,6 +56,7 @@ export default function PokerConsole(){
   const [amount,setAmount]=useState("600");
   const [shortcutAmountEditing,setShortcutAmountEditing]=useState(false);
   const [shortcutAmountDraft,setShortcutAmountDraft]=useState("");
+  const [winnerSeat,setWinnerSeat]=useState(1);
   const [notice,setNotice]=useState("Ready");
   const [storageReady,setStorageReady]=useState(false);
   const [layout,setLayout]=useState<OverlayLayout>(DEFAULT_LAYOUT);
@@ -66,6 +67,7 @@ export default function PokerConsole(){
   const stageRef=useRef<HTMLDivElement>(null);
   const shortcutAmountActive=useRef(false);
   const shortcutAmountBuffer=useRef("");
+  const winnerShortcutActive=useRef(false);
   const actor=state.players.find(p=>p.seat===state.actorSeat);
   const callAmount=actor?amountToCall(state,actor.seat):0;
   const equity=useMemo(()=>calculateEquity(state.players,state.board),[state.players,state.board]);
@@ -88,6 +90,15 @@ export default function PokerConsole(){
     if(!Number.isFinite(target))return false;
     return dispatch({type:state.currentBet===0?"BET_TO":"RAISE_TO",seat:actor.seat,amount:target});
   };
+  const awardWinner=(seat:number)=>{
+    try{
+      const next=awardPot(state,seat);
+      setHistory(items=>[...items,state]);setState(next);setWinnerSeat(seat);
+      winnerShortcutActive.current=false;setNotice(next.events.at(-1)?.label??"Pot awarded");
+      return true;
+    }
+    catch(error){setNotice(error instanceof Error?error.message:"Winner selection failed");return false;}
+  };
   useEffect(()=>setHydrated(true),[]);
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
@@ -106,6 +117,13 @@ export default function PokerConsole(){
       }
       if(editable||event.ctrlKey||event.metaKey||event.altKey||event.shiftKey)return;
       const digit=event.code.match(/^Digit([0-9])$/)?.[1]??event.code.match(/^Numpad([0-9])$/)?.[1];
+      if(winnerShortcutActive.current&&digit!==undefined){
+        event.preventDefault();
+        const seat=Number(digit);
+        if(seat>=1&&seat<=state.players.length)awardWinner(seat);
+        else setNotice("勝者はSeat 1〜9で指定してください");
+        return;
+      }
       if(digit!==undefined){
         event.preventDefault();
         shortcutAmountBuffer.current=shortcutAmountActive.current?`${shortcutAmountBuffer.current}${digit}`:digit;
@@ -114,10 +132,13 @@ export default function PokerConsole(){
       if(event.code==="Backspace"&&shortcutAmountActive.current){
         event.preventDefault();shortcutAmountBuffer.current=shortcutAmountBuffer.current.slice(0,-1);setShortcutAmountDraft(shortcutAmountBuffer.current);return;
       }
-      if(event.code==="Escape"&&shortcutAmountActive.current){
-        event.preventDefault();shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");return;
+      if(event.code==="Escape"&&(shortcutAmountActive.current||winnerShortcutActive.current)){
+        event.preventDefault();shortcutAmountActive.current=false;shortcutAmountBuffer.current="";winnerShortcutActive.current=false;setShortcutAmountEditing(false);setShortcutAmountDraft("");setNotice("Shortcut cancelled");return;
       }
       if((event.code==="Enter"||event.code==="NumpadEnter")&&shortcutAmountActive.current){event.preventDefault();submitBetOrRaise(shortcutAmountBuffer.current);return;}
+      if(event.code==="KeyW"&&!event.repeat){
+        event.preventDefault();winnerShortcutActive.current=true;shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setNotice("WINNER: Seat番号のキー 1〜9 を押してください");return;
+      }
       if(event.repeat||!actor)return;
       if(event.code==="KeyF"){event.preventDefault();dispatch({type:"FOLD",seat:actor.seat});}
       else if(event.code==="KeyC"&&callAmount>0){event.preventDefault();dispatch({type:"CALL",seat:actor.seat});}
@@ -395,6 +416,10 @@ export default function PokerConsole(){
           <label>BET / RAISE TO</label>
           <div className="amount-row"><Input data-bet-amount="true" inputMode="numeric" value={amount} onChange={event=>{shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setAmount(event.target.value);}} onKeyDown={event=>{if(event.code==="Enter"||event.code==="NumpadEnter"){event.preventDefault();submitBetOrRaise();}}} aria-label="Bet or raise total"/><Button disabled={!actor} onClick={()=>submitBetOrRaise()}>{state.currentBet===0?"Bet":"Raise"}</Button></div>
           <Button className="allin" disabled={!actor} variant="outline" onClick={()=>actor&&dispatch({type:"ALL_IN",seat:actor.seat})}>All-in</Button>
+        </section>
+        <section className="winner-control">
+          <div><span className="eyebrow">WINNER / POT</span><small>Shortcut: W → Seat 1–9</small></div>
+          <div className="winner-row"><NativeSelect aria-label="Winner seat" value={String(winnerSeat)} onChange={event=>setWinnerSeat(Number(event.target.value))}>{state.players.map(player=><NativeSelectOption value={String(player.seat)} key={player.seat}>Seat {player.seat} · {player.name}{player.folded?" (Folded)":""}</NativeSelectOption>)}</NativeSelect><Button disabled={state.pot<=0} onClick={()=>awardWinner(winnerSeat)}>Award Pot</Button></div>
         </section>
         <section className="card-editor">
           <div className="section-title"><span>COMMUNITY CARDS</span></div>
