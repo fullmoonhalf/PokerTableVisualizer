@@ -3,7 +3,7 @@ export type AnteMode = "none" | "big-blind" | "all-players";
 export type BigBlindAntePriority = "blind" | "ante";
 export type AnteConfig = { mode:AnteMode; amount:number; priority:BigBlindAntePriority };
 export type BlindConfig = { smallBlind:number; bigBlind:number; chipUnit:number };
-export type Player = { seat:number; name:string; stack:number; streetBet:number; totalInvested:number; folded:boolean; allIn:boolean; acted:boolean; cards:[string,string] | null };
+export type Player = { seat:number; name:string; stack:number; streetBet:number; totalInvested:number; folded:boolean; allIn:boolean; acted:boolean; sittingOut:boolean; cards:[string,string] | null };
 export type PokerEvent = { id:number; type:string; seat?:number; amount?:number; street:Street; label:string };
 export type HandState = { handNumber:number; street:Street; button:number; smallBlind:number; bigBlind:number; chipUnit:number; ante:AnteConfig; currentBet:number; minRaise:number; actorSeat:number|null; pot:number; players:Player[]; board:string[]; events:PokerEvent[]; handStartStacks:Record<number,number> };
 export type PokerCommand =
@@ -18,7 +18,7 @@ const roster = [
 export const DEFAULT_ANTE:AnteConfig={mode:"big-blind",amount:200,priority:"ante"};
 export const DEFAULT_BLINDS:BlindConfig={smallBlind:100,bigBlind:200,chipUnit:100};
 type ForcedBet = { seat:number; amount:number; kind:"small-blind"|"big-blind"|"ante"; countsTowardStreetBet:boolean };
-const canAct = (p:Player) => !p.folded && !p.allIn;
+const canAct = (p:Player) => !p.sittingOut && !p.folded && !p.allIn;
 const nextSeat = (state:HandState, from:number) => {
   const seats=[...state.players].sort((a,b)=>a.seat-b.seat);
   for(let offset=1;offset<=seats.length;offset+=1){
@@ -36,8 +36,10 @@ const commit=(p:Player,chips:number):Player=>{
   const stack=p.stack-paid;
   return {...p,stack,streetBet:p.streetBet+paid,totalInvested:p.totalInvested+paid,allIn:stack===0};
 };
-const forcedBets=(playerCount:number,button:number,smallBlind:number,bigBlind:number,ante:AnteConfig):ForcedBet[]=>{
-  const seatAfter=(seat:number,offset:number)=>((seat-1+offset)%playerCount)+1;
+const forcedBets=(activeSeats:number[],button:number,smallBlind:number,bigBlind:number,ante:AnteConfig):ForcedBet[]=>{
+  if(activeSeats.length<2)return [];
+  const buttonIndex=activeSeats.indexOf(button);
+  const seatAfter=(_:number,offset:number)=>activeSeats[(buttonIndex+offset)%activeSeats.length];
   const smallBlindSeat=seatAfter(button,1);
   const bigBlindSeat=seatAfter(button,2);
   const smallBlindPost:ForcedBet={seat:smallBlindSeat,amount:smallBlind,kind:"small-blind",countsTowardStreetBet:true};
@@ -47,7 +49,7 @@ const forcedBets=(playerCount:number,button:number,smallBlind:number,bigBlind:nu
     return ante.priority==="blind"?[smallBlindPost,bigBlindPost,antePost]:[antePost,smallBlindPost,bigBlindPost];
   }
   const antes:ForcedBet[]=ante.mode==="all-players"
-    ?Array.from({length:playerCount},(_,index)=>({seat:index+1,amount:ante.amount,kind:"ante" as const,countsTowardStreetBet:false}))
+    ?activeSeats.map(seat=>({seat,amount:ante.amount,kind:"ante" as const,countsTowardStreetBet:false}))
     :[];
   return [...antes,smallBlindPost,bigBlindPost];
 };
@@ -62,8 +64,10 @@ const startHand=(basePlayers:Player[],handNumber:number,ante:AnteConfig,blinds:B
   const smallBlind=Math.max(1,Math.floor(blinds.smallBlind));
   const bigBlind=Math.max(smallBlind,Math.floor(blinds.bigBlind));
   const chipUnit=Math.max(1,Math.floor(blinds.chipUnit));
-  const button=Math.max(1,Math.min(basePlayers.length,Math.floor(dealerButton)));
-  const posts=forcedBets(basePlayers.length,button,smallBlind,bigBlind,normalizedAnte);
+  const requestedButton=Math.max(1,Math.min(basePlayers.length,Math.floor(dealerButton)));
+  const activeSeats=basePlayers.filter(player=>!player.sittingOut).map(player=>player.seat).sort((a,b)=>a-b);
+  const button=activeSeats.find(seat=>seat>=requestedButton)??activeSeats[0]??requestedButton;
+  const posts=forcedBets(activeSeats,button,smallBlind,bigBlind,normalizedAnte);
   const handStartStacks=Object.fromEntries(basePlayers.map(player=>[player.seat,player.stack]));
   let players=basePlayers;
   const appliedPosts:ForcedBet[]=[];
@@ -75,12 +79,12 @@ const startHand=(basePlayers:Player[],handNumber:number,ante:AnteConfig,blinds:B
   }
   const pot=players.reduce((total,player)=>total+player.totalInvested,0);
   let state:HandState={
-    handNumber,street:"preflop",button,
+    handNumber,street:activeSeats.length>=2?"preflop":"finished",button,
     smallBlind,bigBlind,chipUnit,ante:normalizedAnte,currentBet:bigBlind,minRaise:bigBlind,actorSeat:null,pot,board:[],players,handStartStacks,
     events:[]
   };
-  const bigBlindSeat=posts.find(post=>post.kind==="big-blind")?.seat??button;
-  state={...state,actorSeat:nextSeat(state,bigBlindSeat)};
+  const bigBlindSeat=posts.find(post=>post.kind==="big-blind")?.seat;
+  state={...state,actorSeat:bigBlindSeat===undefined?null:nextSeat(state,bigBlindSeat)};
   state=record(state,{type:"HAND_STARTED",label:`Hand started · BTN Seat ${button}`});
   for(const post of appliedPosts){
     const player=state.players.find(item=>item.seat===post.seat);
@@ -91,7 +95,7 @@ const startHand=(basePlayers:Player[],handNumber:number,ante:AnteConfig,blinds:B
 };
 
 export function createDemoHand(ante:AnteConfig=DEFAULT_ANTE,blinds:BlindConfig=DEFAULT_BLINDS,dealerButton=1):HandState{
-  const players:Player[]=roster.map(([seat,name,stack])=>({seat,name,stack,streetBet:0,totalInvested:0,folded:false,allIn:false,acted:false,cards:seat===1?["A♠","K♠"]:seat===2?["Q♥","Q♦"]:null}));
+  const players:Player[]=roster.map(([seat,name,stack])=>({seat,name,stack,streetBet:0,totalInvested:0,folded:false,allIn:false,acted:false,sittingOut:false,cards:seat===1?["A♠","K♠"]:seat===2?["Q♥","Q♦"]:null}));
   return startHand(players,1,ante,blinds,dealerButton);
 }
 
@@ -100,7 +104,7 @@ export function resetHand(previous:HandState,ante:AnteConfig,blinds:BlindConfig,
   const openingStacks=previous.handStartStacks??Object.fromEntries(previous.players.map(player=>[player.seat,player.stack+player.totalInvested]));
   const players=previous.players.map(player=>{
     const stack=advanceHandNumber?player.stack:openingStacks[player.seat]??player.stack+player.totalInvested;
-    return {...player,stack,streetBet:0,totalInvested:0,folded:false,allIn:stack===0,acted:false,cards:null};
+    return {...player,stack,streetBet:0,totalInvested:0,folded:player.sittingOut,allIn:stack===0,acted:player.sittingOut,cards:null};
   });
   return startHand(players,handNumber,ante,blinds,dealerButton);
 }
@@ -119,13 +123,28 @@ const settle=(state:HandState,actingSeat:number):HandState=>{
   return record(advanced,{type:"STREET_ADVANCED",label:`${street.toUpperCase()} begins`});
 };
 
+export function setSeatOut(state:HandState,seat:number,sittingOut:boolean):HandState{
+  const player=state.players.find(item=>item.seat===seat);
+  if(!player) throw new Error("対象のSeatが見つかりません");
+  if(player.sittingOut===sittingOut) return state;
+  const players=state.players.map(item=>item.seat===seat
+    ?{...item,sittingOut,folded:sittingOut?true:item.folded,acted:sittingOut?true:item.acted,cards:sittingOut?null:item.cards}
+    :item);
+  let next=record({...state,players},{type:sittingOut?"SEAT_OUT":"SEAT_IN",seat,label:`${player.name} · ${sittingOut?"Seat Out":"Seat In (next hand)"}`});
+  if(!sittingOut)return next;
+  const contenders=next.players.filter(item=>!item.folded&&!item.sittingOut);
+  if(contenders.length===1)return record({...next,street:"finished",actorSeat:null},{type:"WINNER_REQUIRED",seat:contenders[0].seat,label:"Betting complete · select the winner"});
+  if(state.actorSeat===seat)next=settle(next,seat);
+  return next;
+}
+
 export function awardPot(state:HandState,seats:number[]):HandState{
   if(state.pot<=0) throw new Error("配分できるPotがありません");
   const uniqueSeats=[...new Set(seats)];
   if(!uniqueSeats.length) throw new Error("勝者を1人以上選択してください");
   const winners=uniqueSeats.map(seat=>state.players.find(player=>player.seat===seat));
   if(winners.some(winner=>!winner)) throw new Error("勝者の席が見つかりません");
-  if(winners.some(winner=>winner?.folded)) throw new Error("フォールド済みのプレイヤーは選べません");
+  if(winners.some(winner=>winner?.folded||winner?.sittingOut)) throw new Error("フォールド済み／Seat Outのプレイヤーは選べません");
   const amount=state.pot;
   const chipUnit=Math.max(1,state.chipUnit);
   if(amount%chipUnit!==0) throw new Error(`Potは最低チップ ${chipUnit} で割り切れません`);
