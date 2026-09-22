@@ -8,6 +8,7 @@ import { NativeSelect,NativeSelectOption } from "@/components/ui/native-select";
 import { Tabs,TabsContent,TabsList,TabsTrigger } from "@/components/ui/tabs";
 import { amountToCall,awardPot,createDemoHand,DEFAULT_ANTE,DEFAULT_BLINDS,EMPTY_PLAYER_STATS,EMPTY_RANGE_CELL,executeCommand,RANGE_RANKS,resetHand,setSeatOut as updateSeatOut,type AnteConfig,type BlindConfig,type HandState,type PokerCommand,type PlayerStats } from "@/lib/poker-core";
 import { calculateEquity,deck } from "@/lib/equity";
+import { cardIndexLabel,useSeat01Rfid } from "@/lib/use-seat01-rfid";
 
 declare global{interface Document{modelContext?:{registerTool:(tool:Record<string,unknown>,options?:{signal?:AbortSignal})=>void|Promise<void>}}}
 const STORAGE_KEY="poker-stream.hand.v1";
@@ -75,6 +76,7 @@ export default function PokerConsole(){
   const [showStats,setShowStats]=useState(false);
   const [showRange,setShowRange]=useState(false);
   const [fullResetConfirmation,setFullResetConfirmation]=useState("");
+  const seat01Rfid=useSeat01Rfid();
   const stageRef=useRef<HTMLDivElement>(null);
   const shortcutAmountActive=useRef(false);
   const shortcutAmountBuffer=useRef("");
@@ -136,7 +138,7 @@ export default function PokerConsole(){
     setChroma(params.get("key")||"00ff00");
   },[]);
   useEffect(()=>{
-    const syncDisplay=(value:string|null)=>{setShowStats(value==="stats");setShowRange(value==="range");if(value&&["layout","players","levels","stats","range","reset"].includes(value))setActiveTab(value);};
+    const syncDisplay=(value:string|null)=>{setShowStats(value==="stats");setShowRange(value==="range");if(value&&["layout","players","levels","stats","range","rfid","reset"].includes(value))setActiveTab(value);};
     syncDisplay(window.localStorage.getItem(DISPLAY_TAB_KEY));
     const sync=(event:StorageEvent)=>{if(event.key===DISPLAY_TAB_KEY)syncDisplay(event.newValue);};
     window.addEventListener("storage",sync);return()=>window.removeEventListener("storage",sync);
@@ -378,6 +380,7 @@ export default function PokerConsole(){
   const resetEverything=()=>{
     if(fullResetConfirmation!=="RESET")return;
     if(!window.confirm("すべての設定と保存データを初期値へ戻します。この操作は取り消せません。続行しますか？"))return;
+    seat01Rfid.disconnect();
     const next=createDemoHand();
     window.localStorage.removeItem(STORAGE_KEY);window.localStorage.removeItem(LAYOUT_KEY);window.localStorage.removeItem(LEVELS_KEY);window.localStorage.setItem(DISPLAY_TAB_KEY,"layout");
     setState(next);setHistory([]);setLayout(DEFAULT_LAYOUT);setLevels(DEFAULT_LEVELS.map(level=>({...level,ante:{...level.ante}})));setSelectedLevelId(1);
@@ -388,6 +391,7 @@ export default function PokerConsole(){
   };
   const cardSelect=(value:string,onChange:(value:string)=>void,label:string)=><NativeSelect size="sm" aria-label={label} value={value} onChange={event=>onChange(event.target.value)}><NativeSelectOption value="">—</NativeSelectOption>{deck.map(card=><NativeSelectOption value={card} key={card}>{card}</NativeSelectOption>)}</NativeSelect>;
   const percent=(value:number,total:number)=>total?`${((value/total)*100).toFixed(1)}%`:"—";
+  const receivedTime=(value:number|null)=>value?new Date(value).toLocaleTimeString():"—";
   const statValues=(stats:PlayerStats)=>[
     ["HANDS",String(stats.hands)],["VPIP",percent(stats.vpipHands,stats.hands)],["PFR",percent(stats.pfrHands,stats.hands)],["3BET",percent(stats.threeBets,stats.threeBetOpportunities)],
     ["F C-BET",percent(stats.flopCBets,stats.flopCBetOpportunities)],["FOLD TO FCB",percent(stats.foldsToFlopCBet,stats.foldToFlopCBetOpportunities)],["WTSD",percent(stats.wentToShowdown,stats.sawFlop)],["W$SD",percent(stats.showdownWins,stats.wentToShowdown)]
@@ -451,7 +455,7 @@ export default function PokerConsole(){
     <section className="workspace">
       <div className="layout-panel">
         <Tabs value={activeTab} onValueChange={value=>{setActiveTab(value);setShowStats(value==="stats");setShowRange(value==="range");window.localStorage.setItem(DISPLAY_TAB_KEY,value);}} className="layout-tabs">
-          <TabsList className="layout-tabs-list"><TabsTrigger value="layout">OBSレイアウト</TabsTrigger><TabsTrigger value="players">プレイヤー設定</TabsTrigger><TabsTrigger value="levels">レベルストラクチャ</TabsTrigger><TabsTrigger value="stats">統計</TabsTrigger><TabsTrigger value="range">Range</TabsTrigger><TabsTrigger value="reset">リセット管理</TabsTrigger></TabsList>
+          <TabsList className="layout-tabs-list"><TabsTrigger value="layout">OBSレイアウト</TabsTrigger><TabsTrigger value="players">プレイヤー設定</TabsTrigger><TabsTrigger value="levels">レベルストラクチャ</TabsTrigger><TabsTrigger value="stats">統計</TabsTrigger><TabsTrigger value="range">Range</TabsTrigger><TabsTrigger value="rfid">RFID接続</TabsTrigger><TabsTrigger value="reset">リセット管理</TabsTrigger></TabsList>
           <TabsContent value="layout">
             <div className="layout-heading"><div><span className="eyebrow">OBS LAYOUT</span><h1>Overlay placement</h1><p>Seat panels can be dragged. The dashed rectangle marks the capture area.</p></div><Button variant="outline" onClick={()=>setLayout(DEFAULT_LAYOUT)}>Reset layout</Button></div>
             <div className="layout-editor" ref={activeTab==="layout"?stageRef:undefined}>
@@ -510,6 +514,18 @@ export default function PokerConsole(){
                 <div className="capture-area" style={{left:`${layout.area.x}%`,top:`${layout.area.y}%`,width:`${layout.area.width}%`,height:`${layout.area.height}%`}}><span>OBS CAPTURE AREA</span></div>
                 {state.players.map(player=>renderSeatRange(player,true))}
               </div>
+            </div>
+          </TabsContent>
+          <TabsContent value="rfid" className="rfid-tab">
+            <div className="layout-heading"><div><span className="eyebrow">RFID DIAGNOSTICS</span><h1>Seat01 BLE接続</h1><p>接続状態と受信データを確認する診断段階です。読み取ったカードはゲーム状態・OBS・統計へまだ反映されません。</p></div></div>
+            <section className="rfid-connection-card">
+              <div className="rfid-connection-head"><div><span className={`rfid-status is-${seat01Rfid.state.status}`}>{seat01Rfid.state.status.toUpperCase()}</span><h2>{seat01Rfid.state.deviceName||"Seat01 device"}</h2><small>{seat01Rfid.state.probeName||"Probe未確認"}</small></div><div className="rfid-actions"><Button onClick={seat01Rfid.connect} disabled={["requesting","connecting","connected"].includes(seat01Rfid.state.status)}>接続</Button><Button variant="outline" onClick={seat01Rfid.startScan} disabled={seat01Rfid.state.status!=="connected"}>Scan開始</Button><Button variant="outline" onClick={seat01Rfid.stopScan} disabled={seat01Rfid.state.status!=="connected"}>Scan停止</Button><Button variant="ghost" onClick={seat01Rfid.disconnect} disabled={seat01Rfid.state.status!=="connected"}>切断</Button></div></div>
+              {seat01Rfid.state.error&&<div className="rfid-error">{seat01Rfid.state.error}</div>}
+              <div className="rfid-metrics"><span><small>BATTERY</small><b>{seat01Rfid.state.battery===null?"—":`${seat01Rfid.state.battery}%`}</b></span><span><small>CHARGING</small><b>{seat01Rfid.state.charging===null?"—":seat01Rfid.state.charging?"YES":"NO"}</b></span><span><small>LAST MESSAGE</small><b>{receivedTime(seat01Rfid.state.lastMessageAt)}</b></span><span><small>HEARTBEAT</small><b>{receivedTime(seat01Rfid.state.lastHeartbeatAt)}</b></span></div>
+            </section>
+            <div className="rfid-diagnostics-grid">
+              <section className="rfid-candidates"><span className="eyebrow">RAW CARD CANDIDATES</span><div>{seat01Rfid.state.candidates.length?seat01Rfid.state.candidates.map((candidate,index)=><article key={`${candidate.card}-${index}`}><strong>{cardIndexLabel(candidate.card)}</strong><span>INDEX {candidate.card}</span><small>DECK {candidate.deck??"—"} · RSSI {candidate.rssi??"—"}</small></article>):<p>カード通知を待っています。</p>}</div></section>
+              <section className="rfid-raw"><span className="eyebrow">LAST VALID MESSAGE</span><pre>{seat01Rfid.state.rawMessage||"No message received."}</pre></section>
             </div>
           </TabsContent>
           <TabsContent value="reset" className="reset-management">
