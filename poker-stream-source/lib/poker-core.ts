@@ -5,7 +5,7 @@ export type AnteConfig = { mode:AnteMode; amount:number; priority:BigBlindAntePr
 export type BlindConfig = { smallBlind:number; bigBlind:number };
 export type Player = { seat:number; name:string; stack:number; streetBet:number; totalInvested:number; folded:boolean; allIn:boolean; acted:boolean; cards:[string,string] | null };
 export type PokerEvent = { id:number; type:string; seat?:number; amount?:number; street:Street; label:string };
-export type HandState = { handId:string; street:Street; button:number; smallBlind:number; bigBlind:number; ante:AnteConfig; currentBet:number; minRaise:number; actorSeat:number|null; pot:number; players:Player[]; board:string[]; events:PokerEvent[] };
+export type HandState = { handId:string; street:Street; button:number; smallBlind:number; bigBlind:number; ante:AnteConfig; currentBet:number; minRaise:number; actorSeat:number|null; pot:number; players:Player[]; board:string[]; events:PokerEvent[]; handStartStacks:Record<number,number> };
 export type PokerCommand =
   | { type:"FOLD"|"CHECK"|"CALL"|"ALL_IN"; seat:number }
   | { type:"BET_TO"|"RAISE_TO"; seat:number; amount:number };
@@ -63,6 +63,7 @@ const startHand=(basePlayers:Player[],handId:string,ante:AnteConfig,blinds:Blind
   const bigBlind=Math.max(smallBlind,Math.floor(blinds.bigBlind));
   const button=Math.max(1,Math.min(basePlayers.length,Math.floor(dealerButton)));
   const posts=forcedBets(basePlayers.length,button,smallBlind,bigBlind,normalizedAnte);
+  const handStartStacks=Object.fromEntries(basePlayers.map(player=>[player.seat,player.stack]));
   let players=basePlayers;
   const appliedPosts:ForcedBet[]=[];
   for(const post of posts){
@@ -74,7 +75,7 @@ const startHand=(basePlayers:Player[],handId:string,ante:AnteConfig,blinds:Blind
   const pot=players.reduce((total,player)=>total+player.totalInvested,0);
   let state:HandState={
     handId,street:"preflop",button,
-    smallBlind,bigBlind,ante:normalizedAnte,currentBet:bigBlind,minRaise:bigBlind,actorSeat:null,pot,board:[],players,
+    smallBlind,bigBlind,ante:normalizedAnte,currentBet:bigBlind,minRaise:bigBlind,actorSeat:null,pot,board:[],players,handStartStacks,
     events:[]
   };
   const bigBlindSeat=posts.find(post=>post.kind==="big-blind")?.seat??button;
@@ -98,7 +99,11 @@ export function resetHand(previous:HandState,ante:AnteConfig,blinds:BlindConfig,
   const handId=advanceHandNumber
     ?match?`${match[1]}${String(Number(match[2])+1).padStart(match[2].length,"0")}`:`LIVE-${new Date().toISOString().slice(0,10)}-001`
     :previous.handId;
-  const players=previous.players.map(player=>({...player,streetBet:0,totalInvested:0,folded:false,allIn:player.stack===0,acted:false,cards:null}));
+  const openingStacks=previous.handStartStacks??Object.fromEntries(previous.players.map(player=>[player.seat,player.stack+player.totalInvested]));
+  const players=previous.players.map(player=>{
+    const stack=advanceHandNumber?player.stack:openingStacks[player.seat]??player.stack+player.totalInvested;
+    return {...player,stack,streetBet:0,totalInvested:0,folded:false,allIn:stack===0,acted:false,cards:null};
+  });
   return startHand(players,handId,ante,blinds,dealerButton);
 }
 

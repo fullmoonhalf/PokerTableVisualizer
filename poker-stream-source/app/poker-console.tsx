@@ -31,6 +31,11 @@ const DEFAULT_LEVELS:BlindLevel[]=[
   {id:7,smallBlind:800,bigBlind:1600,ante:{mode:"big-blind",amount:1600,priority:"ante"}},
   {id:8,smallBlind:1000,bigBlind:2000,ante:{mode:"big-blind",amount:2000,priority:"ante"}},
 ];
+const normalizeHandState=(restored:HandState):HandState=>({
+  ...restored,
+  ante:{...(restored.ante??{mode:"none",amount:0}),priority:restored.ante?.priority??"ante"} as AnteConfig,
+  handStartStacks:restored.handStartStacks??Object.fromEntries(restored.players.map(player=>[player.seat,player.stack+player.totalInvested]))
+});
 
 export default function PokerConsole(){
   const [hydrated,setHydrated]=useState(false);
@@ -78,9 +83,9 @@ export default function PokerConsole(){
   },[state]);
   useEffect(()=>{
     const saved=window.localStorage.getItem(STORAGE_KEY);
-    if(saved){try{const restored=JSON.parse(saved) as HandState;const normalized={...restored,ante:{...(restored.ante??{mode:"none",amount:0}),priority:restored.ante?.priority??"ante"} as AnteConfig};if(normalized.players.length===9){setState(normalized);setNextAnte(normalized.ante);setNextBlinds({smallBlind:normalized.smallBlind,bigBlind:normalized.bigBlind});setNextButton(normalized.button);setButtonSeatInput(normalized.button);setSelectedLevelId(null);}}catch{}}
+    if(saved){try{const restored=normalizeHandState(JSON.parse(saved) as HandState);if(restored.players.length===9){setState(restored);setNextAnte(restored.ante);setNextBlinds({smallBlind:restored.smallBlind,bigBlind:restored.bigBlind});setNextButton(restored.button);setButtonSeatInput(restored.button);setSelectedLevelId(null);}}catch{}}
     setStorageReady(true);
-    const sync=(event:StorageEvent)=>{if(event.key===STORAGE_KEY&&event.newValue){try{const restored=JSON.parse(event.newValue) as HandState;if(restored.players.length===9)setState({...restored,ante:{...(restored.ante??{mode:"none",amount:0}),priority:restored.ante?.priority??"ante"} as AnteConfig});}catch{}}};
+    const sync=(event:StorageEvent)=>{if(event.key===STORAGE_KEY&&event.newValue){try{const restored=normalizeHandState(JSON.parse(event.newValue) as HandState);if(restored.players.length===9)setState(restored);}catch{}}};
     window.addEventListener("storage",sync);
     return()=>window.removeEventListener("storage",sync);
   },[]);
@@ -197,7 +202,11 @@ export default function PokerConsole(){
     setState(previous=>{const board=Array.from({length:5},(_,i)=>previous.board[i]??"");board[index]=value;return{...previous,board};});
   };
   const setPlayerProfile=(seat:number,changes:Partial<Pick<HandState["players"][number],"name"|"stack">>)=>{
-    setState(previous=>({...previous,players:previous.players.map(player=>player.seat===seat?{...player,...changes}:player)}));
+    setState(previous=>{
+      const player=previous.players.find(item=>item.seat===seat);
+      const handStartStacks=changes.stack===undefined||!player?previous.handStartStacks:{...previous.handStartStacks,[seat]:changes.stack+player.totalInvested};
+      return {...previous,handStartStacks,players:previous.players.map(item=>item.seat===seat?{...item,...changes}:item)};
+    });
   };
   const cardSuitClass=(card:string)=>card.endsWith("♠")?"suit-spade":card.endsWith("♥")?"suit-heart":card.endsWith("♦")?"suit-diamond":card.endsWith("♣")?"suit-club":"suit-unknown";
   const renderCardFace=(card:string,fallback:string,key?:React.Key)=><b className={`card-face ${cardSuitClass(card)}`} key={key}>{card?<><span className="card-suit">{card.slice(-1)}</span><span className="card-rank">{card.slice(0,-1)}</span></>:<span className="card-rank">{fallback}</span>}</b>;
