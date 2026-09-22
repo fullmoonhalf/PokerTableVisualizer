@@ -388,7 +388,6 @@ export default function PokerConsole(){
     <header><span>SEAT {player.seat}</span><strong>{player.name}</strong></header>
     <div className="range-grid">{RANGE_RANKS.flatMap((_,row)=>RANGE_RANKS.map((__,column)=>{const label=rangeLabelAt(row,column),cell={...EMPTY_RANGE_CELL,...player.stats.preflopRange[label]};return <div key={label} className={`range-cell${row===4?" range-divider-row":""}${column===4?" range-divider-col":""}`} style={rangeCellStyle(player,label)} title={`${label} · dealt ${cell.dealt} · VPIP ${percent(cell.participated,cell.dealt)} · aggression ${percent(cell.raises,cell.calls+cell.raises)}`}/>;}))}</div>
   </article>;
-  const renderRangeLegend=()=> <div className="range-mode-legend"><span className="range-legend passive">CALL-HEAVY</span><small>暗い＝低参加　明るい＝高参加</small><span className="range-legend aggressive">RAISE-HEAVY</span></div>;
   const renderPlayerContent=(player:HandState["players"][number],showShortcutAmount=false,showSeatNumber=false)=>{
     const stackDelta=player.stack-(state.handStartStacks[player.seat]??player.stack);
     return <>
@@ -415,7 +414,7 @@ export default function PokerConsole(){
   </section>;
   const exportJson=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download=`hand-${state.handNumber}.json`;link.click();URL.revokeObjectURL(url);};
   if(!hydrated)return <main className="hydration-shell" aria-hidden="true"/>;
-  if(overlay&&showRange)return <main className="overlay-canvas range-overlay" style={{backgroundColor:`#${chroma.replace("#","")}`}}>{state.players.map(player=>renderSeatRange(player))}{renderRangeLegend()}</main>;
+  if(overlay&&showRange)return <main className="overlay-canvas range-overlay" style={{backgroundColor:`#${chroma.replace("#","")}`}}>{state.players.map(player=>renderSeatRange(player))}</main>;
   if(overlay)return <main className="overlay-canvas" style={{backgroundColor:`#${chroma.replace("#","")}`}}>
     {renderGamePanel()}
     {state.players.map(player=><article key={player.seat} style={seatPosition(player.seat)} className={`overlay-seat ${playerStatus(player)}`}>
@@ -489,7 +488,6 @@ export default function PokerConsole(){
               <div className="editor-canvas" style={{transform:`scale(${editorScale})`}}>
                 <div className="capture-area" style={{left:`${layout.area.x}%`,top:`${layout.area.y}%`,width:`${layout.area.width}%`,height:`${layout.area.height}%`}}><span>OBS CAPTURE AREA</span></div>
                 {state.players.map(player=>renderSeatRange(player,true))}
-                {renderRangeLegend()}
               </div>
             </div>
           </TabsContent>
