@@ -3,10 +3,11 @@ export type AnteMode = "none" | "big-blind" | "all-players";
 export type BigBlindAntePriority = "blind" | "ante";
 export type AnteConfig = { mode:AnteMode; amount:number; priority:BigBlindAntePriority };
 export type BlindConfig = { smallBlind:number; bigBlind:number; chipUnit:number };
-export type PlayerStats = { hands:number; vpipHands:number; pfrHands:number; threeBetOpportunities:number; threeBets:number; flopCBetOpportunities:number; flopCBets:number; foldToFlopCBetOpportunities:number; foldsToFlopCBet:number; sawFlop:number; wentToShowdown:number; showdownWins:number };
+export type PreflopRangeCellStats = { dealt:number; participated:number; calls:number; raises:number; rfiOpportunities:number; facingOpenOpportunities:number; facingThreeBetOpportunities:number };
+export type PlayerStats = { hands:number; vpipHands:number; pfrHands:number; threeBetOpportunities:number; threeBets:number; flopCBetOpportunities:number; flopCBets:number; foldToFlopCBetOpportunities:number; foldsToFlopCBet:number; sawFlop:number; wentToShowdown:number; showdownWins:number; preflopRange:Record<string,PreflopRangeCellStats> };
 export type Player = { seat:number; name:string; stack:number; streetBet:number; totalInvested:number; folded:boolean; allIn:boolean; acted:boolean; sittingOut:boolean; cards:[string,string] | null; stats:PlayerStats };
 export type PokerEvent = { id:number; type:string; seat?:number; amount?:number; street:Street; label:string };
-export type HandState = { handNumber:number; street:Street; button:number; smallBlind:number; bigBlind:number; chipUnit:number; ante:AnteConfig; currentBet:number; minRaise:number; actorSeat:number|null; pot:number; players:Player[]; board:string[]; events:PokerEvent[]; handStartStacks:Record<number,number>; vpipSeats:number[]; pfrSeats:number[]; threeBetOpportunitySeats:number[]; preflopRaiseCount:number; preflopAggressorSeat:number|null; flopCBetSeat:number|null; flopCBetResponses:number[] };
+export type HandState = { handNumber:number; street:Street; button:number; smallBlind:number; bigBlind:number; chipUnit:number; ante:AnteConfig; currentBet:number; minRaise:number; actorSeat:number|null; pot:number; players:Player[]; board:string[]; events:PokerEvent[]; handStartStacks:Record<number,number>; vpipSeats:number[]; pfrSeats:number[]; threeBetOpportunitySeats:number[]; preflopRaiseCount:number; preflopAggressorSeat:number|null; flopCBetSeat:number|null; flopCBetResponses:number[]; rangeSampledSeats:number[]; rangeParticipationSeats:number[]; rangeHandLabels:Record<number,string> };
 export type PokerCommand =
   | { type:"FOLD"|"CHECK"|"CALL"|"ALL_IN"; seat:number }
   | { type:"BET_TO"|"RAISE_TO"; seat:number; amount:number };
@@ -18,7 +19,17 @@ const roster = [
 ] as const;
 export const DEFAULT_ANTE:AnteConfig={mode:"big-blind",amount:200,priority:"ante"};
 export const DEFAULT_BLINDS:BlindConfig={smallBlind:100,bigBlind:200,chipUnit:100};
-export const EMPTY_PLAYER_STATS:PlayerStats={hands:0,vpipHands:0,pfrHands:0,threeBetOpportunities:0,threeBets:0,flopCBetOpportunities:0,flopCBets:0,foldToFlopCBetOpportunities:0,foldsToFlopCBet:0,sawFlop:0,wentToShowdown:0,showdownWins:0};
+export const EMPTY_RANGE_CELL:PreflopRangeCellStats={dealt:0,participated:0,calls:0,raises:0,rfiOpportunities:0,facingOpenOpportunities:0,facingThreeBetOpportunities:0};
+export const EMPTY_PLAYER_STATS:PlayerStats={hands:0,vpipHands:0,pfrHands:0,threeBetOpportunities:0,threeBets:0,flopCBetOpportunities:0,flopCBets:0,foldToFlopCBetOpportunities:0,foldsToFlopCBet:0,sawFlop:0,wentToShowdown:0,showdownWins:0,preflopRange:{}};
+export const RANGE_RANKS=["A","K","Q","J","T","9","8","7","6","5","4","3","2"] as const;
+export const startingHandLabel=(cards:[string,string] | null)=>{
+  if(!cards||!cards[0]||!cards[1])return null;
+  const rankOf=(card:string)=>card.slice(0,-1),suitOf=(card:string)=>card.slice(-1);
+  const ranks=[rankOf(cards[0]),rankOf(cards[1])];
+  if(!RANGE_RANKS.includes(ranks[0] as typeof RANGE_RANKS[number])||!RANGE_RANKS.includes(ranks[1] as typeof RANGE_RANKS[number]))return null;
+  const ordered=[...ranks].sort((a,b)=>RANGE_RANKS.indexOf(a as typeof RANGE_RANKS[number])-RANGE_RANKS.indexOf(b as typeof RANGE_RANKS[number]));
+  return ordered[0]===ordered[1]?`${ordered[0]}${ordered[1]}`:`${ordered[0]}${ordered[1]}${suitOf(cards[0])===suitOf(cards[1])?"s":"o"}`;
+};
 type ForcedBet = { seat:number; amount:number; kind:"small-blind"|"big-blind"|"ante"; countsTowardStreetBet:boolean };
 const canAct = (p:Player) => !p.sittingOut && !p.folded && !p.allIn;
 const nextSeat = (state:HandState, from:number) => {
@@ -33,7 +44,19 @@ const nextSeat = (state:HandState, from:number) => {
 const record=(state:HandState,event:Omit<PokerEvent,"id"|"street">):HandState=>({
   ...state,events:[...state.events,{...event,id:state.events.length+1,street:state.street}]
 });
-const addStat=(players:Player[],seat:number,key:keyof PlayerStats)=>players.map(player=>player.seat===seat?{...player,stats:{...player.stats,[key]:player.stats[key]+1}}:player);
+type NumericStatKey=Exclude<keyof PlayerStats,"preflopRange">;
+const addStat=(players:Player[],seat:number,key:NumericStatKey)=>players.map(player=>player.seat===seat?{...player,stats:{...player.stats,[key]:player.stats[key]+1}}:player);
+const updateRangeCell=(players:Player[],seat:number,label:string,update:(cell:PreflopRangeCellStats)=>PreflopRangeCellStats)=>players.map(player=>player.seat===seat?{...player,stats:{...player.stats,preflopRange:{...player.stats.preflopRange,[label]:update({...EMPTY_RANGE_CELL,...player.stats.preflopRange[label]})}}}:player);
+const captureKnownStartingHands=(state:HandState):HandState=>{
+  let players=state.players,rangeSampledSeats=state.rangeSampledSeats,rangeHandLabels=state.rangeHandLabels;
+  for(const player of players){
+    if(player.sittingOut||rangeSampledSeats.includes(player.seat))continue;
+    const label=startingHandLabel(player.cards);if(!label)continue;
+    players=updateRangeCell(players,player.seat,label,cell=>({...cell,dealt:cell.dealt+1}));
+    rangeSampledSeats=[...rangeSampledSeats,player.seat];rangeHandLabels={...rangeHandLabels,[player.seat]:label};
+  }
+  return {...state,players,rangeSampledSeats,rangeHandLabels};
+};
 const commit=(p:Player,chips:number):Player=>{
   const paid=Math.max(0,Math.min(chips,p.stack));
   const stack=p.stack-paid;
@@ -72,7 +95,7 @@ const startHand=(basePlayers:Player[],handNumber:number,ante:AnteConfig,blinds:B
   const button=activeSeats.find(seat=>seat>=requestedButton)??activeSeats[0]??requestedButton;
   const posts=forcedBets(activeSeats,button,smallBlind,bigBlind,normalizedAnte);
   const handStartStacks=Object.fromEntries(basePlayers.map(player=>[player.seat,player.stack]));
-  let players=basePlayers.map(player=>({...player,stats:{...EMPTY_PLAYER_STATS,...player.stats,hands:player.stats.hands+(countHand&&!player.sittingOut?1:0)}}));
+  let players=basePlayers.map(player=>({...player,stats:{...EMPTY_PLAYER_STATS,...player.stats,preflopRange:{...(player.stats?.preflopRange??{})},hands:(player.stats?.hands??0)+(countHand&&!player.sittingOut?1:0)}}));
   const appliedPosts:ForcedBet[]=[];
   for(const post of posts){
     const player=players.find(item=>item.seat===post.seat);
@@ -84,7 +107,7 @@ const startHand=(basePlayers:Player[],handNumber:number,ante:AnteConfig,blinds:B
   let state:HandState={
     handNumber,street:activeSeats.length>=2?"preflop":"finished",button,
     smallBlind,bigBlind,chipUnit,ante:normalizedAnte,currentBet:bigBlind,minRaise:bigBlind,actorSeat:null,pot,board:[],players,handStartStacks,
-    events:[],vpipSeats:[],pfrSeats:[],threeBetOpportunitySeats:[],preflopRaiseCount:0,preflopAggressorSeat:null,flopCBetSeat:null,flopCBetResponses:[]
+    events:[],vpipSeats:[],pfrSeats:[],threeBetOpportunitySeats:[],preflopRaiseCount:0,preflopAggressorSeat:null,flopCBetSeat:null,flopCBetResponses:[],rangeSampledSeats:[],rangeParticipationSeats:[],rangeHandLabels:{}
   };
   const bigBlindSeat=posts.find(post=>post.kind==="big-blind")?.seat;
   state={...state,actorSeat:bigBlindSeat===undefined?null:nextSeat(state,bigBlindSeat)};
@@ -103,6 +126,7 @@ export function createDemoHand(ante:AnteConfig=DEFAULT_ANTE,blinds:BlindConfig=D
 }
 
 export function resetHand(previous:HandState,ante:AnteConfig,blinds:BlindConfig,dealerButton:number,advanceHandNumber=false):HandState{
+  previous=captureKnownStartingHands(previous);
   const handNumber=advanceHandNumber?previous.handNumber+1:previous.handNumber;
   const openingStacks=previous.handStartStacks??Object.fromEntries(previous.players.map(player=>[player.seat,player.stack+player.totalInvested]));
   const players=previous.players.map(player=>{
@@ -134,6 +158,7 @@ const settle=(state:HandState,actingSeat:number):HandState=>{
 };
 
 export function setSeatOut(state:HandState,seat:number,sittingOut:boolean):HandState{
+  state=captureKnownStartingHands(state);
   const player=state.players.find(item=>item.seat===seat);
   if(!player) throw new Error("対象のSeatが見つかりません");
   if(player.sittingOut===sittingOut) return state;
@@ -149,6 +174,7 @@ export function setSeatOut(state:HandState,seat:number,sittingOut:boolean):HandS
 }
 
 export function awardPot(state:HandState,seats:number[]):HandState{
+  state=captureKnownStartingHands(state);
   if(state.pot<=0) throw new Error("配分できるPotがありません");
   const uniqueSeats=[...new Set(seats)];
   if(!uniqueSeats.length) throw new Error("勝者を1人以上選択してください");
@@ -175,12 +201,14 @@ export function awardPot(state:HandState,seats:number[]):HandState{
 }
 
 export function executeCommand(state:HandState,command:PokerCommand):HandState{
+  state=captureKnownStartingHands(state);
   if(state.actorSeat!==command.seat) throw new Error("現在のアクターではありません");
   const actor=state.players.find(p=>p.seat===command.seat);
   if(!actor||!canAct(actor)) throw new Error("このプレイヤーはアクションできません");
   let players=state.players,currentBet=state.currentBet,minRaise=state.minRaise,amount=0,label="";
   let vpipSeats=state.vpipSeats,pfrSeats=state.pfrSeats,threeBetOpportunitySeats=state.threeBetOpportunitySeats;
   let preflopRaiseCount=state.preflopRaiseCount,preflopAggressorSeat=state.preflopAggressorSeat,flopCBetSeat=state.flopCBetSeat,flopCBetResponses=state.flopCBetResponses;
+  let rangeParticipationSeats=state.rangeParticipationSeats;
   const facedThreeBetOpportunity=state.street==="preflop"&&state.preflopRaiseCount===1&&!threeBetOpportunitySeats.includes(actor.seat);
   if(facedThreeBetOpportunity){players=addStat(players,actor.seat,"threeBetOpportunities");threeBetOpportunitySeats=[...threeBetOpportunitySeats,actor.seat];}
   if(command.type==="FOLD"){players=players.map(p=>p.seat===actor.seat?{...p,folded:true,acted:true}:p);label=`${actor.name} folds`;}
@@ -202,6 +230,16 @@ export function executeCommand(state:HandState,command:PokerCommand):HandState{
   }
   const aggressive=command.type==="BET_TO"||command.type==="RAISE_TO"||(command.type==="ALL_IN"&&currentBet>state.currentBet);
   const voluntary=amount>0&&["CALL","BET_TO","RAISE_TO","ALL_IN"].includes(command.type);
+  const rangeLabel=state.rangeHandLabels[actor.seat];
+  if(state.street==="preflop"&&rangeLabel){
+    players=updateRangeCell(players,actor.seat,rangeLabel,cell=>({...cell,
+      rfiOpportunities:cell.rfiOpportunities+(state.preflopRaiseCount===0?1:0),
+      facingOpenOpportunities:cell.facingOpenOpportunities+(state.preflopRaiseCount===1?1:0),
+      facingThreeBetOpportunities:cell.facingThreeBetOpportunities+(state.preflopRaiseCount>=2?1:0),
+      calls:cell.calls+(voluntary&&!aggressive?1:0),raises:cell.raises+(aggressive?1:0)
+    }));
+    if(voluntary&&!rangeParticipationSeats.includes(actor.seat)){players=updateRangeCell(players,actor.seat,rangeLabel,cell=>({...cell,participated:cell.participated+1}));rangeParticipationSeats=[...rangeParticipationSeats,actor.seat];}
+  }
   if(state.street==="preflop"&&voluntary&&!vpipSeats.includes(actor.seat)){players=addStat(players,actor.seat,"vpipHands");vpipSeats=[...vpipSeats,actor.seat];}
   if(state.street==="preflop"&&aggressive){
     if(!pfrSeats.includes(actor.seat)){players=addStat(players,actor.seat,"pfrHands");pfrSeats=[...pfrSeats,actor.seat];}
@@ -212,7 +250,7 @@ export function executeCommand(state:HandState,command:PokerCommand):HandState{
   if(hasFlopCBetOpportunity){players=addStat(players,actor.seat,"flopCBetOpportunities");if(aggressive){players=addStat(players,actor.seat,"flopCBets");flopCBetSeat=actor.seat;}}
   const respondsToFlopCBet=state.street==="flop"&&state.flopCBetSeat!==null&&actor.seat!==state.flopCBetSeat&&state.currentBet>actor.streetBet&&!flopCBetResponses.includes(actor.seat);
   if(respondsToFlopCBet){players=addStat(players,actor.seat,"foldToFlopCBetOpportunities");if(command.type==="FOLD")players=addStat(players,actor.seat,"foldsToFlopCBet");flopCBetResponses=[...flopCBetResponses,actor.seat];}
-  let next:HandState={...state,players,currentBet,minRaise,pot:state.pot+amount,vpipSeats,pfrSeats,threeBetOpportunitySeats,preflopRaiseCount,preflopAggressorSeat,flopCBetSeat,flopCBetResponses};
+  let next:HandState={...state,players,currentBet,minRaise,pot:state.pot+amount,vpipSeats,pfrSeats,threeBetOpportunitySeats,preflopRaiseCount,preflopAggressorSeat,flopCBetSeat,flopCBetResponses,rangeParticipationSeats};
   next=record(next,{type:command.type,seat:actor.seat,amount:amount||undefined,label});
   return settle(next,actor.seat);
 }
