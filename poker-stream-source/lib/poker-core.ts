@@ -2,10 +2,10 @@ export type Street = "preflop" | "flop" | "turn" | "river" | "showdown" | "finis
 export type AnteMode = "none" | "big-blind" | "all-players";
 export type BigBlindAntePriority = "blind" | "ante";
 export type AnteConfig = { mode:AnteMode; amount:number; priority:BigBlindAntePriority };
-export type BlindConfig = { smallBlind:number; bigBlind:number };
+export type BlindConfig = { smallBlind:number; bigBlind:number; chipUnit:number };
 export type Player = { seat:number; name:string; stack:number; streetBet:number; totalInvested:number; folded:boolean; allIn:boolean; acted:boolean; cards:[string,string] | null };
 export type PokerEvent = { id:number; type:string; seat?:number; amount?:number; street:Street; label:string };
-export type HandState = { handNumber:number; street:Street; button:number; smallBlind:number; bigBlind:number; ante:AnteConfig; currentBet:number; minRaise:number; actorSeat:number|null; pot:number; players:Player[]; board:string[]; events:PokerEvent[]; handStartStacks:Record<number,number> };
+export type HandState = { handNumber:number; street:Street; button:number; smallBlind:number; bigBlind:number; chipUnit:number; ante:AnteConfig; currentBet:number; minRaise:number; actorSeat:number|null; pot:number; players:Player[]; board:string[]; events:PokerEvent[]; handStartStacks:Record<number,number> };
 export type PokerCommand =
   | { type:"FOLD"|"CHECK"|"CALL"|"ALL_IN"; seat:number }
   | { type:"BET_TO"|"RAISE_TO"; seat:number; amount:number };
@@ -16,7 +16,7 @@ const roster = [
   [7,"Haru",22400],[8,"Nagi",17600],[9,"Riku",20800],
 ] as const;
 export const DEFAULT_ANTE:AnteConfig={mode:"big-blind",amount:200,priority:"ante"};
-export const DEFAULT_BLINDS:BlindConfig={smallBlind:100,bigBlind:200};
+export const DEFAULT_BLINDS:BlindConfig={smallBlind:100,bigBlind:200,chipUnit:100};
 type ForcedBet = { seat:number; amount:number; kind:"small-blind"|"big-blind"|"ante"; countsTowardStreetBet:boolean };
 const canAct = (p:Player) => !p.folded && !p.allIn;
 const nextSeat = (state:HandState, from:number) => {
@@ -61,6 +61,7 @@ const startHand=(basePlayers:Player[],handNumber:number,ante:AnteConfig,blinds:B
   const normalizedAnte:AnteConfig={mode:ante.mode,amount:Math.max(0,Math.floor(ante.amount)),priority:ante.priority??"ante"};
   const smallBlind=Math.max(1,Math.floor(blinds.smallBlind));
   const bigBlind=Math.max(smallBlind,Math.floor(blinds.bigBlind));
+  const chipUnit=Math.max(1,Math.floor(blinds.chipUnit));
   const button=Math.max(1,Math.min(basePlayers.length,Math.floor(dealerButton)));
   const posts=forcedBets(basePlayers.length,button,smallBlind,bigBlind,normalizedAnte);
   const handStartStacks=Object.fromEntries(basePlayers.map(player=>[player.seat,player.stack]));
@@ -75,7 +76,7 @@ const startHand=(basePlayers:Player[],handNumber:number,ante:AnteConfig,blinds:B
   const pot=players.reduce((total,player)=>total+player.totalInvested,0);
   let state:HandState={
     handNumber,street:"preflop",button,
-    smallBlind,bigBlind,ante:normalizedAnte,currentBet:bigBlind,minRaise:bigBlind,actorSeat:null,pot,board:[],players,handStartStacks,
+    smallBlind,bigBlind,chipUnit,ante:normalizedAnte,currentBet:bigBlind,minRaise:bigBlind,actorSeat:null,pot,board:[],players,handStartStacks,
     events:[]
   };
   const bigBlindSeat=posts.find(post=>post.kind==="big-blind")?.seat??button;
@@ -118,14 +119,28 @@ const settle=(state:HandState,actingSeat:number):HandState=>{
   return record(advanced,{type:"STREET_ADVANCED",label:`${street.toUpperCase()} begins`});
 };
 
-export function awardPot(state:HandState,seat:number):HandState{
+export function awardPot(state:HandState,seats:number[]):HandState{
   if(state.pot<=0) throw new Error("配分できるPotがありません");
-  const winner=state.players.find(player=>player.seat===seat);
-  if(!winner) throw new Error("勝者の席が見つかりません");
-  if(winner.folded) throw new Error("フォールド済みのプレイヤーは選べません");
+  const uniqueSeats=[...new Set(seats)];
+  if(!uniqueSeats.length) throw new Error("勝者を1人以上選択してください");
+  const winners=uniqueSeats.map(seat=>state.players.find(player=>player.seat===seat));
+  if(winners.some(winner=>!winner)) throw new Error("勝者の席が見つかりません");
+  if(winners.some(winner=>winner?.folded)) throw new Error("フォールド済みのプレイヤーは選べません");
   const amount=state.pot;
-  const players=state.players.map(player=>player.seat===seat?{...player,stack:player.stack+amount}:player);
-  return record({...state,players,pot:0,street:"finished",actorSeat:null},{type:"POT_AWARDED",seat,amount,label:`${winner.name} wins ${amount}`});
+  const chipUnit=Math.max(1,state.chipUnit);
+  if(amount%chipUnit!==0) throw new Error(`Potは最低チップ ${chipUnit} で割り切れません`);
+  const baseUnits=Math.floor(amount/chipUnit/uniqueSeats.length);
+  let oddUnits=amount/chipUnit-baseUnits*uniqueSeats.length;
+  const orderedSeats=[...uniqueSeats].sort((a,b)=>{
+    const distance=(seat:number)=>((seat-state.button+state.players.length)%state.players.length)||state.players.length;
+    return distance(a)-distance(b);
+  });
+  const payouts=Object.fromEntries(uniqueSeats.map(seat=>[seat,baseUnits*chipUnit])) as Record<number,number>;
+  for(const seat of orderedSeats){if(oddUnits<=0)break;payouts[seat]+=chipUnit;oddUnits-=1;}
+  const players=state.players.map(player=>payouts[player.seat]?{...player,stack:player.stack+payouts[player.seat]}:player);
+  const names=winners.map(winner=>winner?.name).join(" / ");
+  const label=uniqueSeats.length===1?`${names} wins ${amount}`:`${names} chop ${amount}`;
+  return record({...state,players,pot:0,street:"finished",actorSeat:null},{type:"POT_AWARDED",amount,label});
 }
 
 export function executeCommand(state:HandState,command:PokerCommand):HandState{
@@ -144,6 +159,7 @@ export function executeCommand(state:HandState,command:PokerCommand):HandState{
   } else {
     const target=command.amount,minimum=currentBet===0?state.bigBlind:currentBet+minRaise;
     if(!Number.isFinite(target)||target<minimum)throw new Error(`最低額は ${minimum} です`);
+    if(target%state.chipUnit!==0)throw new Error(`ベット額は最低チップ ${state.chipUnit} 単位です`);
     if(target<=actor.streetBet||target-actor.streetBet>actor.stack)throw new Error("スタックを超えています");
     amount=target-actor.streetBet;minRaise=currentBet===0?target:target-currentBet;currentBet=target;
     players=players.map(p=>p.seat===actor.seat?{...commit(p,amount),acted:true}:canAct(p)?{...p,acted:false}:p);
