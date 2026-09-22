@@ -31,11 +31,16 @@ const DEFAULT_LEVELS:BlindLevel[]=[
   {id:7,smallBlind:800,bigBlind:1600,ante:{mode:"big-blind",amount:1600,priority:"ante"}},
   {id:8,smallBlind:1000,bigBlind:2000,ante:{mode:"big-blind",amount:2000,priority:"ante"}},
 ];
-const normalizeHandState=(restored:HandState):HandState=>({
-  ...restored,
-  ante:{...(restored.ante??{mode:"none",amount:0}),priority:restored.ante?.priority??"ante"} as AnteConfig,
-  handStartStacks:restored.handStartStacks??Object.fromEntries(restored.players.map(player=>[player.seat,player.stack+player.totalInvested]))
-});
+const normalizeHandState=(restored:HandState&{handId?:string}):HandState=>{
+  const {handId,...current}=restored;
+  const legacyNumber=Number(handId?.match(/(\d+)$/)?.[1]??1);
+  return {
+    ...current,
+    handNumber:Number.isFinite(restored.handNumber)&&restored.handNumber>0?restored.handNumber:legacyNumber,
+    ante:{...(restored.ante??{mode:"none",amount:0}),priority:restored.ante?.priority??"ante"} as AnteConfig,
+    handStartStacks:restored.handStartStacks??Object.fromEntries(restored.players.map(player=>[player.seat,player.stack+player.totalInvested]))
+  };
+};
 
 export default function PokerConsole(){
   const [hydrated,setHydrated]=useState(false);
@@ -301,11 +306,11 @@ export default function PokerConsole(){
     <div className="card-group"><span>RIVER</span><div>{renderCardFace(state.board[4]??"","—")}</div></div>
   </div>;
   const renderGamePanel=(draggable=false)=> <section className={`game-panel${draggable?" editor-draggable":""}`} style={gamePanelPosition} onPointerDown={draggable?event=>dragItem("game",event):undefined}>
-    <div className="game-panel-top"><span>HAND <strong>{state.handId}</strong></span><b>{state.street.toUpperCase()}</b></div>
+    <div className="game-panel-top"><span className="top-pot-stat"><small>POT</small><strong>{state.pot.toLocaleString()}</strong></span><b>{state.street.toUpperCase()}</b></div>
     {renderBoard()}
-    <div className="game-panel-bottom"><span className="game-stat pot-stat"><small>POT</small><strong>{state.pot.toLocaleString()}</strong></span><span className="game-stat blind-stat"><small>BLINDS</small><strong>{state.smallBlind} / {state.bigBlind}</strong></span><span className="game-stat ante-stat"><small>{state.ante.mode==="big-blind"?"BB ANTE":"ANTE"}</small><strong>{state.ante.mode==="none"?"—":state.ante.amount.toLocaleString()}</strong></span></div>
+    <div className="game-panel-bottom"><span className="game-stat hand-stat"><small>HAND</small><strong>{state.handNumber}</strong></span><span className="game-stat blind-stat"><small>BLINDS</small><strong>{state.smallBlind} / {state.bigBlind}</strong></span><span className="game-stat ante-stat"><small>{state.ante.mode==="big-blind"?"BB ANTE":"ANTE"}</small><strong>{state.ante.mode==="none"?"—":state.ante.amount.toLocaleString()}</strong></span></div>
   </section>;
-  const exportJson=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download=`${state.handId}.json`;link.click();URL.revokeObjectURL(url);};
+  const exportJson=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download=`hand-${state.handNumber}.json`;link.click();URL.revokeObjectURL(url);};
   if(!hydrated)return <main className="hydration-shell" aria-hidden="true"/>;
   if(overlay)return <main className="overlay-canvas" style={{backgroundColor:`#${chroma.replace("#","")}`}}>
     {renderGamePanel()}
@@ -316,7 +321,7 @@ export default function PokerConsole(){
   return <main className="app-shell">
     <header className="topbar">
       <div className="brand"><span className="brand-mark">P</span><div><strong>POKER STREAM</strong><small>OPERATOR CONSOLE</small></div></div>
-      <div className="hand-meta"><span>{state.handId}</span><b>{state.smallBlind} / {state.bigBlind} · {anteLabel(state.ante)}</b><Badge className="street-badge">{state.street.toUpperCase()}</Badge></div>
+      <div className="hand-meta"><span>HAND {state.handNumber}</span><b>{state.smallBlind} / {state.bigBlind} · {anteLabel(state.ante)}</b><Badge className="street-badge">{state.street.toUpperCase()}</Badge></div>
       <div className="system-state"><Button variant="outline" size="sm" onClick={()=>window.open("?view=overlay&key=00ff00","poker-overlay")}><ExternalLink size={15}/> OBS Overlay</Button><span className="live-dot"/> LOCAL <Radio size={17}/></div>
     </header>
     <section className="workspace">
