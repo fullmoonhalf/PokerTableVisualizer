@@ -37,6 +37,7 @@
 .game-panel-anchor{pointer-events:auto;cursor:grab;touch-action:none}.game-panel-anchor:active{cursor:grabbing}
 .seat-metrics{display:flex;gap:14px;margin-top:7px;color:#aabbb4;font-size:15px;font-weight:800}.seat-metrics b{color:#fff;margin-left:4px}
 .control-panel{max-height:calc(100vh - 104px);overflow-y:auto}.card-editor{display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--line);padding-top:14px}.board-editor{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}.board-editor label>span{display:block;margin-bottom:3px;color:var(--soft);font-size:.58rem;text-align:center}.board-editor [data-slot=native-select-wrapper],.hole-editor [data-slot=native-select-wrapper]{width:100%}.board-editor select,.hole-editor select{padding-left:7px;padding-right:20px}.hole-editor{display:grid;grid-template-columns:1fr 1fr;gap:5px}.hole-editor>div{display:grid;grid-template-columns:28px 1fr 1fr;align-items:center;gap:4px}.hole-editor>div>b{color:var(--soft);font-size:.62rem}.equity-note{display:flex;align-items:center;gap:10px;margin-top:9px;color:var(--soft);font-size:.7rem}.equity-note b{padding:3px 7px;border-radius:4px;background:#214238;color:#79d9b0;font-size:.62rem;letter-spacing:.08em}
+.button-control{display:grid;grid-template-columns:1fr 145px 88px;align-items:end;gap:8px;padding:11px;border:1px solid var(--line);border-radius:9px;background:#101816}.button-control>div{display:grid;gap:3px}.button-control>div>b{color:var(--primary);font-size:16px}.button-control button{height:36px}
 
 /* Large-format broadcast typography */
 .overlay-seat{width:360px;min-height:180px;padding:20px 22px}.overlay-seat .seat-top{font-size:18px}.overlay-seat .seat-name{font-size:38px}.overlay-seat .seat-stack{font-size:30px}.overlay-seat .last-action{font-size:18px;padding:6px 13px}.overlay-seat .seat-metrics{font-size:20px}.overlay-seat .hole-cards b{width:64px;height:86px;font-size:25px}
@@ -105,3 +106,4 @@
 .card-face{align-content:center;justify-items:center;line-height:1;row-gap:.08em}
 .card-face .card-suit{font-size:.72em;line-height:1}
 .card-face .card-rank{font-size:1em;line-height:1}
+.panel-footer{grid-template-columns:repeat(4,1fr)}

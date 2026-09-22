@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { NativeSelect,NativeSelectOption } from "@/components/ui/native-select";
 import { Tabs,TabsContent,TabsList,TabsTrigger } from "@/components/ui/tabs";
-import { amountToCall,createDemoHand,DEFAULT_ANTE,DEFAULT_BLINDS,executeCommand,type AnteConfig,type BlindConfig,type HandState,type PokerCommand } from "@/lib/poker-core";
+import { amountToCall,createDemoHand,DEFAULT_ANTE,DEFAULT_BLINDS,executeCommand,resetHand,type AnteConfig,type BlindConfig,type HandState,type PokerCommand } from "@/lib/poker-core";
 import { calculateEquity,deck } from "@/lib/equity";
 
 declare global{interface Document{modelContext?:{registerTool:(tool:Record<string,unknown>,options?:{signal?:AbortSignal})=>void|Promise<void>}}}
@@ -37,6 +37,8 @@ export default function PokerConsole(){
   const [state,setState]=useState<HandState>(()=>createDemoHand());
   const [nextAnte,setNextAnte]=useState<AnteConfig>(DEFAULT_ANTE);
   const [nextBlinds,setNextBlinds]=useState<BlindConfig>(DEFAULT_BLINDS);
+  const [nextButton,setNextButton]=useState(1);
+  const [buttonSeatInput,setButtonSeatInput]=useState(1);
   const [levels,setLevels]=useState<BlindLevel[]>(DEFAULT_LEVELS);
   const [levelsReady,setLevelsReady]=useState(false);
   const [selectedLevelId,setSelectedLevelId]=useState<number|null>(1);
@@ -76,7 +78,7 @@ export default function PokerConsole(){
   },[state]);
   useEffect(()=>{
     const saved=window.localStorage.getItem(STORAGE_KEY);
-    if(saved){try{const restored=JSON.parse(saved) as HandState;const normalized={...restored,ante:restored.ante??{mode:"none",amount:0}};if(normalized.players.length===9){setState(normalized);setNextAnte(normalized.ante);setNextBlinds({smallBlind:normalized.smallBlind,bigBlind:normalized.bigBlind});setSelectedLevelId(null);}}catch{}}
+    if(saved){try{const restored=JSON.parse(saved) as HandState;const normalized={...restored,ante:restored.ante??{mode:"none",amount:0}};if(normalized.players.length===9){setState(normalized);setNextAnte(normalized.ante);setNextBlinds({smallBlind:normalized.smallBlind,bigBlind:normalized.bigBlind});setNextButton(normalized.button);setButtonSeatInput(normalized.button);setSelectedLevelId(null);}}catch{}}
     setStorageReady(true);
     const sync=(event:StorageEvent)=>{if(event.key===STORAGE_KEY&&event.newValue){try{const restored=JSON.parse(event.newValue) as HandState;if(restored.players.length===9)setState({...restored,ante:restored.ante??{mode:"none",amount:0}});}catch{}}};
     window.addEventListener("storage",sync);
@@ -211,6 +213,17 @@ export default function PokerConsole(){
   });
   const removeLevel=(id:number)=>{setLevels(current=>current.filter(level=>level.id!==id));if(selectedLevelId===id)setSelectedLevelId(null);};
   const anteLabel=(ante:AnteConfig)=>ante.mode==="big-blind"?`BB ANTE ${ante.amount.toLocaleString()}`:ante.mode==="all-players"?`ANTE ${ante.amount.toLocaleString()}`:"NO ANTE";
+  const startFreshHand=(advance:boolean)=>{
+    const button=advance?nextButton%state.players.length+1:nextButton;
+    const next=resetHand(state,nextAnte,nextBlinds,button,advance);
+    setState(next);
+    setNextButton(next.button);
+    setButtonSeatInput(next.button);
+    setNextBlinds({smallBlind:next.smallBlind,bigBlind:next.bigBlind});
+    setAmount(String(next.bigBlind*3));
+    setHistory([]);
+    setNotice(`${advance?"New hand":"Reset"} · BTN Seat ${next.button} · ${next.smallBlind}/${next.bigBlind} · ${anteLabel(next.ante)}`);
+  };
   const cardSelect=(value:string,onChange:(value:string)=>void,label:string)=><NativeSelect size="sm" aria-label={label} value={value} onChange={event=>onChange(event.target.value)}><NativeSelectOption value="">—</NativeSelectOption>{deck.map(card=><NativeSelectOption value={card} key={card}>{card}</NativeSelectOption>)}</NativeSelect>;
   const renderPlayerContent=(player:HandState["players"][number])=><>
     <div className="seat-top"><span>{positionName(player.seat)}</span></div>
@@ -265,7 +278,7 @@ export default function PokerConsole(){
           <TabsContent value="players" className="player-settings">
             <div className="layout-heading"><div><span className="eyebrow">PLAYER SETTINGS</span><h1>プレイヤー設定</h1><p>名前と現在のスタックを編集します。変更はOBS表示へ即時反映されます。</p></div></div>
             <section className="table-settings">
-              <div><span className="eyebrow">NEXT HAND</span><b>テーブル設定</b><small>次に「New hand」を押したときに適用されます。</small></div>
+              <div><span className="eyebrow">NEXT HAND</span><b>テーブル設定</b><small>次に「NewHand」または「Reset」を押したときに適用されます。</small></div>
               <label>SB<Input type="number" min="1" step="50" value={nextBlinds.smallBlind} onChange={event=>{setSelectedLevelId(null);setNextBlinds(current=>({...current,smallBlind:Math.max(1,Number(event.target.value)||1)}));}}/></label>
               <label>BB<Input type="number" min="1" step="50" value={nextBlinds.bigBlind} onChange={event=>{setSelectedLevelId(null);setNextBlinds(current=>({...current,bigBlind:Math.max(1,Number(event.target.value)||1)}));}}/></label>
               <label>方式<NativeSelect value={nextAnte.mode} onChange={event=>{setSelectedLevelId(null);setNextAnte(current=>({...current,mode:event.target.value as AnteConfig["mode"]}));}}><NativeSelectOption value="none">Anteなし</NativeSelectOption><NativeSelectOption value="big-blind">BB Ante</NativeSelectOption><NativeSelectOption value="all-players">全員Ante</NativeSelectOption></NativeSelect></label>
@@ -298,6 +311,11 @@ export default function PokerConsole(){
           <div><ScanLine size={18}/><span>RFID gateway<small>Adapter ready</small></span><b>MOCK</b></div>
           <div><Mic size={18}/><span>Voice input<small>Command port ready</small></span><b>OFF</b></div>
         </div>
+        <section className="button-control">
+          <div><span className="eyebrow">HAND BUTTON</span><b>Seat {nextButton}</b></div>
+          <NativeSelect aria-label="Dealer button seat" value={String(buttonSeatInput)} onChange={event=>setButtonSeatInput(Number(event.target.value))}>{state.players.map(player=><NativeSelectOption value={String(player.seat)} key={player.seat}>Seat {player.seat} · {player.name}</NativeSelectOption>)}</NativeSelect>
+          <Button variant="outline" onClick={()=>{setNextButton(buttonSeatInput);setNotice(`Dealer button set to Seat ${buttonSeatInput}`);}}>Set BTN</Button>
+        </section>
         <section className="actor-card"><span className="eyebrow">CURRENT ACTION</span><h2>{actor?`Seat ${actor.seat} · ${actor.name}`:"Betting complete"}</h2><div className="actor-numbers"><span>TO CALL <b>{callAmount}</b></span><span>STACK <b>{actor?.stack.toLocaleString()??"—"}</b></span></div></section>
         <section className="actions">
           <div className="action-row">
@@ -315,12 +333,13 @@ export default function PokerConsole(){
           <div className="hole-editor">{state.players.map(player=><div key={player.seat}><b>S{player.seat}</b>{cardSelect(player.cards?.[0]??"",value=>setHoleCard(player.seat,0,value),`Seat ${player.seat} card 1`)}{cardSelect(player.cards?.[1]??"",value=>setHoleCard(player.seat,1,value),`Seat ${player.seat} card 2`)}</div>)}</div>
         </section>
         <div className="notice" aria-live="polite">{notice}</div>
-        <section className="history-panel"><div className="section-title"><span><History size={17}/> ACTION LOG</span><b>{state.events.length}</b></div><ol>{[...state.events].reverse().slice(0,7).map(event=><li key={event.id}><span>{event.street}</span><p>{event.label}</p></li>)}</ol></section>
         <footer className="panel-footer">
           <Button variant="ghost" disabled={!history.length} onClick={()=>{const previous=history.at(-1);if(previous){setState(previous);setHistory(items=>items.slice(0,-1));setNotice("Last action undone");}}}><RotateCcw size={16}/> Undo</Button>
-          <Button variant="ghost" onClick={()=>{const next=createDemoHand(nextAnte,nextBlinds);setState(next);setNextBlinds({smallBlind:next.smallBlind,bigBlind:next.bigBlind});setHistory([]);setNotice(`New hand · ${next.smallBlind}/${next.bigBlind} · ${anteLabel(next.ante)}`);}}>New hand</Button>
+          <Button variant="ghost" onClick={()=>startFreshHand(true)}>NewHand</Button>
+          <Button variant="ghost" onClick={()=>startFreshHand(false)}>Reset</Button>
           <Button variant="ghost" onClick={exportJson}><Download size={16}/> JSON</Button>
         </footer>
+        <section className="history-panel"><div className="section-title"><span><History size={17}/> ACTION LOG</span><b>{state.events.length}</b></div><ol>{[...state.events].reverse().slice(0,7).map(event=><li key={event.id}><span>{event.street}</span><p>{event.label}</p></li>)}</ol></section>
       </aside>
     </section>
   </main>;
