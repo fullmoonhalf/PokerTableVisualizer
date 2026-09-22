@@ -49,6 +49,8 @@ export default function PokerConsole(){
   const [selectedLevelId,setSelectedLevelId]=useState<number|null>(1);
   const [history,setHistory]=useState<HandState[]>([]);
   const [amount,setAmount]=useState("600");
+  const [shortcutAmountEditing,setShortcutAmountEditing]=useState(false);
+  const [shortcutAmountDraft,setShortcutAmountDraft]=useState("");
   const [notice,setNotice]=useState("Ready");
   const [storageReady,setStorageReady]=useState(false);
   const [layout,setLayout]=useState<OverlayLayout>(DEFAULT_LAYOUT);
@@ -57,12 +59,29 @@ export default function PokerConsole(){
   const [overlay,setOverlay]=useState(false);
   const [chroma,setChroma]=useState("00ff00");
   const stageRef=useRef<HTMLDivElement>(null);
+  const shortcutAmountActive=useRef(false);
+  const shortcutAmountBuffer=useRef("");
   const actor=state.players.find(p=>p.seat===state.actorSeat);
   const callAmount=actor?amountToCall(state,actor.seat):0;
   const equity=useMemo(()=>calculateEquity(state.players,state.board),[state.players,state.board]);
   const dispatch=(command:PokerCommand)=>{
-    try{const next=executeCommand(state,command);setHistory(items=>[...items,state]);setState(next);setNotice(next.events.at(-1)?.label??"Updated");}
-    catch(error){setNotice(error instanceof Error?error.message:"Action failed");}
+    try{
+      const next=executeCommand(state,command);
+      setHistory(items=>[...items,state]);setState(next);setNotice(next.events.at(-1)?.label??"Updated");
+      shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");
+      return true;
+    }
+    catch(error){setNotice(error instanceof Error?error.message:"Action failed");return false;}
+  };
+  const undoLastAction=()=>{
+    const previous=history.at(-1);if(!previous)return;
+    setState(previous);setHistory(items=>items.slice(0,-1));setNotice("Last action undone");
+  };
+  const submitBetOrRaise=(value=amount)=>{
+    if(!actor)return false;
+    const target=Number(value);
+    if(!Number.isFinite(target))return false;
+    return dispatch({type:state.currentBet===0?"BET_TO":"RAISE_TO",seat:actor.seat,amount:target});
   };
   useEffect(()=>setHydrated(true),[]);
   useEffect(()=>{
@@ -70,6 +89,39 @@ export default function PokerConsole(){
     setOverlay(params.get("view")==="overlay");
     setChroma(params.get("key")||"00ff00");
   },[]);
+  useEffect(()=>{
+    if(overlay)return;
+    const onKeyDown=(event:KeyboardEvent)=>{
+      const target=event.target as HTMLElement|null;
+      const editable=target?.matches("input, textarea, select, [contenteditable='true']")??false;
+      const betAmountInput=target?.matches("[data-bet-amount]")??false;
+      if((event.ctrlKey||event.metaKey)&&event.code==="KeyZ"&&(!editable||betAmountInput)){
+        if(history.length&&!event.repeat){event.preventDefault();undoLastAction();}
+        return;
+      }
+      if(editable||event.ctrlKey||event.metaKey||event.altKey||event.shiftKey)return;
+      const digit=event.code.match(/^Digit([0-9])$/)?.[1]??event.code.match(/^Numpad([0-9])$/)?.[1];
+      if(digit!==undefined){
+        event.preventDefault();
+        shortcutAmountBuffer.current=shortcutAmountActive.current?`${shortcutAmountBuffer.current}${digit}`:digit;
+        shortcutAmountActive.current=true;setShortcutAmountEditing(true);setShortcutAmountDraft(shortcutAmountBuffer.current);return;
+      }
+      if(event.code==="Backspace"&&shortcutAmountActive.current){
+        event.preventDefault();shortcutAmountBuffer.current=shortcutAmountBuffer.current.slice(0,-1);setShortcutAmountDraft(shortcutAmountBuffer.current);return;
+      }
+      if(event.code==="Escape"&&shortcutAmountActive.current){
+        event.preventDefault();shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");return;
+      }
+      if((event.code==="Enter"||event.code==="NumpadEnter")&&shortcutAmountActive.current){event.preventDefault();submitBetOrRaise(shortcutAmountBuffer.current);return;}
+      if(event.repeat||!actor)return;
+      if(event.code==="KeyF"){event.preventDefault();dispatch({type:"FOLD",seat:actor.seat});}
+      else if(event.code==="KeyC"&&callAmount>0){event.preventDefault();dispatch({type:"CALL",seat:actor.seat});}
+      else if(event.code==="KeyX"&&callAmount===0){event.preventDefault();dispatch({type:"CHECK",seat:actor.seat});}
+      else if(event.code==="KeyA"){event.preventDefault();dispatch({type:"ALL_IN",seat:actor.seat});}
+    };
+    window.addEventListener("keydown",onKeyDown);
+    return()=>window.removeEventListener("keydown",onKeyDown);
+  },[overlay,state,actor,callAmount,amount,history]);
   useEffect(()=>{
     const context=document.modelContext;if(!context?.registerTool)return;
     const lifecycle=new AbortController();
@@ -229,18 +281,19 @@ export default function PokerConsole(){
     setNextButton(next.button);
     setButtonSeatInput(next.button);
     setNextBlinds({smallBlind:next.smallBlind,bigBlind:next.bigBlind});
-    setAmount(String(next.bigBlind*3));
+    shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setAmount(String(next.bigBlind*3));
     setHistory([]);
     setNotice(`${advance?"New hand":"Reset"} · BTN Seat ${next.button} · ${next.smallBlind}/${next.bigBlind} · ${anteLabel(next.ante)}`);
   };
   const cardSelect=(value:string,onChange:(value:string)=>void,label:string)=><NativeSelect size="sm" aria-label={label} value={value} onChange={event=>onChange(event.target.value)}><NativeSelectOption value="">—</NativeSelectOption>{deck.map(card=><NativeSelectOption value={card} key={card}>{card}</NativeSelectOption>)}</NativeSelect>;
-  const renderPlayerContent=(player:HandState["players"][number])=><>
+  const renderPlayerContent=(player:HandState["players"][number],showShortcutAmount=false)=><>
     <div className="seat-top"><span>{positionName(player.seat)}</span></div>
     <div className="seat-name">{player.name}</div>
     <div className="seat-stack">{player.stack.toLocaleString()}</div>
     <div className="last-action">{lastAction(player.seat)||"Active"}</div>
     <div className="player-hand"><div className="hole-cards">{player.cards?player.cards.map((card,index)=>renderCardFace(card,"-",index)):[0,1].map(index=>renderCardFace("","-",index))}</div><div className="seat-metrics"><span>EQ <b>{equity?.percentages[player.seat]!==undefined?`${equity.percentages[player.seat].toFixed(1)}%`:"—"}</b></span></div></div>
     {player.streetBet>0&&<span className="bet-chip">{player.streetBet.toLocaleString()}</span>}
+    {showShortcutAmount&&<span className={`pending-bet-chip${player.streetBet>0?" has-current-bet":""}`}>INPUT {shortcutAmountDraft||"—"}</span>}
   </>;
   const renderBoard=()=> <div className="community-board">
     <div className="card-group"><span>FLOP</span><div>{[0,1,2].map(index=>renderCardFace(state.board[index]??"","—",index))}</div></div>
@@ -277,7 +330,7 @@ export default function PokerConsole(){
                 <div className="capture-area" style={{left:`${layout.area.x}%`,top:`${layout.area.y}%`,width:`${layout.area.width}%`,height:`${layout.area.height}%`}}><span>OBS CAPTURE AREA</span></div>
                 {renderGamePanel(true)}
                 {state.players.map(player=><article key={player.seat} onPointerDown={event=>dragItem(player.seat,event)} style={seatPosition(player.seat)} className={`overlay-seat editor-draggable ${playerStatus(player)}`}>
-                  {renderPlayerContent(player)}
+                  {renderPlayerContent(player,shortcutAmountEditing&&player.seat===actor?.seat)}
                 </article>)}
               </div>
             </div>
@@ -334,7 +387,8 @@ export default function PokerConsole(){
             <Button disabled={!actor||callAmount>0} variant="outline" onClick={()=>actor&&dispatch({type:"CHECK",seat:actor.seat})}>Check</Button>
             <Button disabled={!actor||callAmount===0} onClick={()=>actor&&dispatch({type:"CALL",seat:actor.seat})}>Call {callAmount||""}</Button>
           </div>
-          <label>BET / RAISE TO</label><div className="amount-row"><Input inputMode="numeric" value={amount} onChange={e=>setAmount(e.target.value)} aria-label="Bet or raise total"/><Button disabled={!actor} onClick={()=>actor&&dispatch({type:state.currentBet===0?"BET_TO":"RAISE_TO",seat:actor.seat,amount:Number(amount)})}>{state.currentBet===0?"Bet":"Raise"}</Button></div>
+          <label>BET / RAISE TO</label>
+          <div className="amount-row"><Input data-bet-amount="true" inputMode="numeric" value={amount} onChange={event=>{shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setAmount(event.target.value);}} onKeyDown={event=>{if(event.code==="Enter"||event.code==="NumpadEnter"){event.preventDefault();submitBetOrRaise();}}} aria-label="Bet or raise total"/><Button disabled={!actor} onClick={()=>submitBetOrRaise()}>{state.currentBet===0?"Bet":"Raise"}</Button></div>
           <Button className="allin" disabled={!actor} variant="outline" onClick={()=>actor&&dispatch({type:"ALL_IN",seat:actor.seat})}>All-in</Button>
         </section>
         <section className="card-editor">
@@ -345,7 +399,7 @@ export default function PokerConsole(){
         </section>
         <div className="notice" aria-live="polite">{notice}</div>
         <footer className="panel-footer">
-          <Button variant="ghost" disabled={!history.length} onClick={()=>{const previous=history.at(-1);if(previous){setState(previous);setHistory(items=>items.slice(0,-1));setNotice("Last action undone");}}}><RotateCcw size={16}/> Undo</Button>
+          <Button variant="ghost" disabled={!history.length} onClick={undoLastAction}><RotateCcw size={16}/> Undo</Button>
           <Button variant="ghost" onClick={()=>startFreshHand(true)}>NewHand</Button>
           <Button variant="ghost" onClick={()=>startFreshHand(false)}>Reset</Button>
           <Button variant="ghost" onClick={exportJson}><Download size={16}/> JSON</Button>

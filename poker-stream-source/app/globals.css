@@ -107,3 +107,4 @@
 .card-face .card-suit{font-size:.72em;line-height:1}
 .card-face .card-rank{font-size:1em;line-height:1}
 .panel-footer{grid-template-columns:repeat(4,1fr)}
+.pending-bet-chip{position:absolute;left:50%;top:calc(100% + 8px);z-index:4;transform:translateX(-50%);min-width:96px;padding:6px 12px;border:2px solid #ffe0a2;border-radius:9px;background:#211709;color:#ffd27d;box-shadow:0 4px 14px #000b;text-align:center;white-space:nowrap;font-size:17px;font-weight:900}.pending-bet-chip.has-current-bet{top:calc(100% + 50px)}
