@@ -106,7 +106,7 @@ export function resetHand(previous:HandState,ante:AnteConfig,blinds:BlindConfig,
 
 const settle=(state:HandState,actingSeat:number):HandState=>{
   const contenders=state.players.filter(p=>!p.folded);
-  if(contenders.length===1) return record({...state,street:"finished",actorSeat:null},{type:"POT_AWARDED",seat:contenders[0].seat,amount:state.pot,label:`${contenders[0].name} wins ${state.pot}`});
+  if(contenders.length===1) return record({...state,street:"finished",actorSeat:null},{type:"WINNER_REQUIRED",seat:contenders[0].seat,label:`Betting complete · select the winner`});
   const active=contenders.filter(p=>!p.allIn);
   const complete=active.every(p=>p.acted&&p.streetBet===state.currentBet);
   if(!complete) return {...state,actorSeat:nextSeat(state,actingSeat)};
@@ -117,6 +117,16 @@ const settle=(state:HandState,actingSeat:number):HandState=>{
   advanced={...advanced,actorSeat:nextSeat(advanced,advanced.button)};
   return record(advanced,{type:"STREET_ADVANCED",label:`${street.toUpperCase()} begins`});
 };
+
+export function awardPot(state:HandState,seat:number):HandState{
+  if(state.pot<=0) throw new Error("配分できるPotがありません");
+  const winner=state.players.find(player=>player.seat===seat);
+  if(!winner) throw new Error("勝者の席が見つかりません");
+  if(winner.folded) throw new Error("フォールド済みのプレイヤーは選べません");
+  const amount=state.pot;
+  const players=state.players.map(player=>player.seat===seat?{...player,stack:player.stack+amount}:player);
+  return record({...state,players,pot:0,street:"finished",actorSeat:null},{type:"POT_AWARDED",seat,amount,label:`${winner.name} wins ${amount}`});
+}
 
 export function executeCommand(state:HandState,command:PokerCommand):HandState{
   if(state.actorSeat!==command.seat) throw new Error("現在のアクターではありません");
