@@ -59,6 +59,7 @@ export default function PokerConsole(){
   const [shortcutAmountEditing,setShortcutAmountEditing]=useState(false);
   const [shortcutAmountDraft,setShortcutAmountDraft]=useState("");
   const [winnerSeats,setWinnerSeats]=useState<number[]>([1]);
+  const [seatOutSelection,setSeatOutSelection]=useState<number[]>([]);
   const [notice,setNotice]=useState("Ready");
   const [storageReady,setStorageReady]=useState(false);
   const [layout,setLayout]=useState<OverlayLayout>(DEFAULT_LAYOUT);
@@ -72,6 +73,7 @@ export default function PokerConsole(){
   const winnerShortcutActive=useRef(false);
   const seatOutShortcutActive=useRef(false);
   const winnerSeatsRef=useRef<number[]>([1]);
+  const seatOutSelectionRef=useRef<number[]>([]);
   const actor=state.players.find(p=>p.seat===state.actorSeat);
   const callAmount=actor?amountToCall(state,actor.seat):0;
   const equity=useMemo(()=>calculateEquity(state.players,state.board),[state.players,state.board]);
@@ -106,13 +108,16 @@ export default function PokerConsole(){
     }
     catch(error){setNotice(error instanceof Error?error.message:"Winner selection failed");return false;}
   };
-  const toggleSeatOut=(seat:number)=>{
+  const setSeatOutSelectionValue=(seats:number[])=>{seatOutSelectionRef.current=seats;setSeatOutSelection(seats);};
+  const toggleSeatOutSelection=(seat:number)=>setSeatOutSelectionValue(seatOutSelectionRef.current.includes(seat)?seatOutSelectionRef.current.filter(item=>item!==seat):[...seatOutSelectionRef.current,seat]);
+  const toggleSeatsOut=(seats:number[])=>{
     try{
-      const player=state.players.find(item=>item.seat===seat);if(!player)return false;
-      const next=updateSeatOut(state,seat,!player.sittingOut);
+      if(!seats.length){setNotice("Seatを1つ以上選択してください");return false;}
+      let next=state;
+      for(const seat of seats){const player=next.players.find(item=>item.seat===seat);if(player)next=updateSeatOut(next,seat,!player.sittingOut);}
       if(next===state)return false;
-      setHistory(items=>[...items,state]);setState(next);setNotice(next.events.at(-1)?.label??"Seat updated");
-      seatOutShortcutActive.current=false;return true;
+      setHistory(items=>[...items,state]);setState(next);setNotice(`Seat ${seats.join(", ")} を一括切替しました`);
+      seatOutShortcutActive.current=false;setSeatOutSelectionValue([]);return true;
     }
     catch(error){setNotice(error instanceof Error?error.message:"Seat Out failed");return false;}
   };
@@ -144,7 +149,7 @@ export default function PokerConsole(){
       if(seatOutShortcutActive.current&&digit!==undefined){
         event.preventDefault();
         const seat=Number(digit);
-        if(seat>=1&&seat<=state.players.length)toggleSeatOut(seat);
+        if(seat>=1&&seat<=state.players.length){toggleSeatOutSelection(seat);setNotice(`SEAT OUT / IN: ${seatOutSelectionRef.current.length?`Seat ${seatOutSelectionRef.current.join(", ")} を選択中 · Enterで確定`:"選択なし"}`);}
         else setNotice("Seat Outは1〜9で指定してください");
         return;
       }
@@ -157,15 +162,16 @@ export default function PokerConsole(){
         event.preventDefault();shortcutAmountBuffer.current=shortcutAmountBuffer.current.slice(0,-1);setShortcutAmountDraft(shortcutAmountBuffer.current);return;
       }
       if(event.code==="Escape"&&(shortcutAmountActive.current||winnerShortcutActive.current||seatOutShortcutActive.current)){
-        event.preventDefault();shortcutAmountActive.current=false;shortcutAmountBuffer.current="";winnerShortcutActive.current=false;seatOutShortcutActive.current=false;setShortcutAmountEditing(false);setShortcutAmountDraft("");setNotice("Shortcut cancelled");return;
+        event.preventDefault();shortcutAmountActive.current=false;shortcutAmountBuffer.current="";winnerShortcutActive.current=false;seatOutShortcutActive.current=false;setSeatOutSelectionValue([]);setShortcutAmountEditing(false);setShortcutAmountDraft("");setNotice("Shortcut cancelled");return;
       }
       if((event.code==="Enter"||event.code==="NumpadEnter")&&winnerShortcutActive.current){event.preventDefault();awardWinners();return;}
+      if((event.code==="Enter"||event.code==="NumpadEnter")&&seatOutShortcutActive.current){event.preventDefault();toggleSeatsOut(seatOutSelectionRef.current);return;}
       if((event.code==="Enter"||event.code==="NumpadEnter")&&shortcutAmountActive.current){event.preventDefault();submitBetOrRaise(shortcutAmountBuffer.current);return;}
       if(event.code==="KeyW"&&!event.repeat){
-        event.preventDefault();winnerShortcutActive.current=true;seatOutShortcutActive.current=false;setWinners([]);shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setNotice("WINNER: Seat番号を選択し、Enterで確定してください");return;
+        event.preventDefault();winnerShortcutActive.current=true;seatOutShortcutActive.current=false;setSeatOutSelectionValue([]);setWinners([]);shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setNotice("WINNER: Seat番号を選択し、Enterで確定してください");return;
       }
       if(event.code==="KeyO"&&!event.repeat){
-        event.preventDefault();seatOutShortcutActive.current=true;winnerShortcutActive.current=false;shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setNotice("SEAT OUT / IN: Seat番号 1〜9 を押してください");return;
+        event.preventDefault();seatOutShortcutActive.current=true;winnerShortcutActive.current=false;setSeatOutSelectionValue([]);shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setNotice("SEAT OUT / IN: Seat番号を選択し、Enterで一括確定してください");return;
       }
       if(event.repeat||!actor)return;
       if(event.code==="KeyF"){event.preventDefault();dispatch({type:"FOLD",seat:actor.seat});}
@@ -466,7 +472,7 @@ export default function PokerConsole(){
         </section>
         <section className="seatout-control">
           <div><span className="eyebrow">SEAT OUT / IN</span><small>Shortcut: O → Seat 1–9</small></div>
-          <div className="seatout-seats">{state.players.map(player=><button type="button" key={player.seat} className={player.sittingOut?"is-out":""} aria-pressed={player.sittingOut} onClick={()=>toggleSeatOut(player.seat)}><b>{player.seat}</b><span>{player.sittingOut?"OUT":"IN"}</span></button>)}</div>
+          <div className="seatout-seats">{state.players.map(player=><button type="button" key={player.seat} className={`${player.sittingOut?"is-out":""}${seatOutSelection.includes(player.seat)?" is-pending":""}`} aria-pressed={player.sittingOut} onClick={()=>toggleSeatsOut([player.seat])}><b>{player.seat}</b><span>{player.sittingOut?"OUT":"IN"}</span></button>)}</div>
         </section>
         <section className="card-editor">
           <div className="section-title"><span>COMMUNITY CARDS</span></div>
