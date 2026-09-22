@@ -385,7 +385,7 @@ export default function PokerConsole(){
   };
   const rangeLabelAt=(row:number,column:number)=>row===column?`${RANGE_RANKS[row]}${RANGE_RANKS[column]}`:row<column?`${RANGE_RANKS[row]}${RANGE_RANKS[column]}s`:`${RANGE_RANKS[column]}${RANGE_RANKS[row]}o`;
   const renderSeatRange=(player:HandState["players"][number],draggable=false)=><article key={player.seat} onPointerDown={draggable?event=>dragItem(player.seat,event):undefined} style={seatPosition(player.seat)} className={`range-seat${draggable?" editor-draggable":""} ${playerStatus(player)}`}>
-    <header><span>SEAT {player.seat} · {positionName(player.seat)}</span><strong>{player.name}</strong></header>
+    <header><span>SEAT {player.seat}</span><strong>{player.name}</strong></header>
     <div className="range-grid">{RANGE_RANKS.flatMap((_,row)=>RANGE_RANKS.map((__,column)=>{const label=rangeLabelAt(row,column),cell={...EMPTY_RANGE_CELL,...player.stats.preflopRange[label]};return <div key={label} className={`range-cell${row===4?" range-divider-row":""}${column===4?" range-divider-col":""}`} style={rangeCellStyle(player,label)} title={`${label} · dealt ${cell.dealt} · VPIP ${percent(cell.participated,cell.dealt)} · aggression ${percent(cell.raises,cell.calls+cell.raises)}`}/>;}))}</div>
   </article>;
   const renderRangeLegend=()=> <div className="range-mode-legend"><span className="range-legend passive">CALL-HEAVY</span><small>暗い＝低参加　明るい＝高参加</small><span className="range-legend aggressive">RAISE-HEAVY</span></div>;
