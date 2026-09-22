@@ -71,6 +71,7 @@ export default function PokerConsole(){
   const actor=state.players.find(p=>p.seat===state.actorSeat);
   const callAmount=actor?amountToCall(state,actor.seat):0;
   const equity=useMemo(()=>calculateEquity(state.players,state.board),[state.players,state.board]);
+  const potAwarded=state.events.some(event=>event.type==="POT_AWARDED");
   const dispatch=(command:PokerCommand)=>{
     try{
       const next=executeCommand(state,command);
@@ -312,15 +313,20 @@ export default function PokerConsole(){
     setNotice(`${advance?"New hand":"Reset"} · BTN Seat ${next.button} · ${next.smallBlind}/${next.bigBlind} · ${anteLabel(next.ante)}`);
   };
   const cardSelect=(value:string,onChange:(value:string)=>void,label:string)=><NativeSelect size="sm" aria-label={label} value={value} onChange={event=>onChange(event.target.value)}><NativeSelectOption value="">—</NativeSelectOption>{deck.map(card=><NativeSelectOption value={card} key={card}>{card}</NativeSelectOption>)}</NativeSelect>;
-  const renderPlayerContent=(player:HandState["players"][number],showShortcutAmount=false)=><>
+  const renderPlayerContent=(player:HandState["players"][number],showShortcutAmount=false,showSeatNumber=false)=>{
+    const stackDelta=player.stack-(state.handStartStacks[player.seat]??player.stack);
+    return <>
+    {showSeatNumber&&<span className="editor-seat-number">SEAT {player.seat}</span>}
     <div className="seat-top"><span>{positionName(player.seat)}</span></div>
     <div className="seat-name">{player.name}</div>
     <div className="seat-stack">{player.stack.toLocaleString()}</div>
+    {potAwarded&&stackDelta!==0&&<div className={`stack-delta ${stackDelta>0?"is-positive":"is-negative"}`}>{stackDelta>0?"+":""}{stackDelta.toLocaleString()}</div>}
     <div className="last-action">{lastAction(player.seat)||"Active"}</div>
     <div className="player-hand"><div className="hole-cards">{player.cards?player.cards.map((card,index)=>renderCardFace(card,"-",index)):[0,1].map(index=>renderCardFace("","-",index))}</div><div className="seat-metrics"><span>EQ <b>{equity?.percentages[player.seat]!==undefined?`${equity.percentages[player.seat].toFixed(1)}%`:"—"}</b></span></div></div>
     {player.streetBet>0&&<span className="bet-chip">{player.streetBet.toLocaleString()}</span>}
     {showShortcutAmount&&<span className={`pending-bet-chip${player.streetBet>0?" has-current-bet":""}`}>INPUT {shortcutAmountDraft||"—"}</span>}
   </>;
+  };
   const renderBoard=()=> <div className="community-board">
     <div className="card-group"><span>FLOP</span><div>{[0,1,2].map(index=>renderCardFace(state.board[index]??"","—",index))}</div></div>
     <div className="card-group"><span>TURN</span><div>{renderCardFace(state.board[3]??"","—")}</div></div>
@@ -356,7 +362,7 @@ export default function PokerConsole(){
                 <div className="capture-area" style={{left:`${layout.area.x}%`,top:`${layout.area.y}%`,width:`${layout.area.width}%`,height:`${layout.area.height}%`}}><span>OBS CAPTURE AREA</span></div>
                 {renderGamePanel(true)}
                 {state.players.map(player=><article key={player.seat} onPointerDown={event=>dragItem(player.seat,event)} style={seatPosition(player.seat)} className={`overlay-seat editor-draggable ${playerStatus(player)}`}>
-                  {renderPlayerContent(player,shortcutAmountEditing&&player.seat===actor?.seat)}
+                  {renderPlayerContent(player,shortcutAmountEditing&&player.seat===actor?.seat,true)}
                 </article>)}
               </div>
             </div>
