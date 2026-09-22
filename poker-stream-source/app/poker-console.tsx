@@ -282,12 +282,12 @@ export default function PokerConsole(){
   };
   const gamePanelPosition={left:`${layout.area.x+(layout.gamePanel.x*layout.area.width)/100}%`,top:`${layout.area.y+(layout.gamePanel.y*layout.area.height)/100}%`};
   const positionName=(seat:number)=>{
-    const player=state.players.find(item=>item.seat===seat);if(player?.sittingOut)return "OUT";
+    const player=state.players.find(item=>item.seat===seat);if(player?.sittingOut)return "-";
     const activeSeats=state.players.filter(item=>!item.sittingOut).map(item=>item.seat).sort((a,b)=>a-b);
     const count=activeSeats.length;
     const buttonIndex=activeSeats.indexOf(state.button);
     const offset=(activeSeats.indexOf(seat)-buttonIndex+count)%count;
-    const labelsByCount:Record<number,string[]>={9:["BTN","SB","BB","UTG","UTG+1","MP","LJ","HJ","CO"],8:["BTN","SB","BB","UTG","UTG+1","LJ","HJ","CO"],7:["BTN","SB","BB","UTG","MP","HJ","CO"],6:["BTN","SB","BB","UTG","HJ","CO"],5:["BTN","SB","BB","UTG","CO"],4:["BTN","SB","BB","CO"],3:["BTN","SB","BB"],2:["BTN/SB","BB"]};
+    const labelsByCount:Record<number,string[]>={9:["D","SB","BB","UTG","UTG1","UTG2","LJ","HJ","CO"],8:["D","SB","BB","UTG","UTG1","LJ","HJ","CO"],7:["D","SB","BB","UTG","LJ","HJ","CO"],6:["D","SB","BB","LJ","HJ","CO"],5:["D","SB","BB","HJ","CO"],4:["D","SB","BB","CO"],3:["D","SB","BB"],2:["D","BB"],1:["D"]};
     const labels=labelsByCount[count]??[];
     return labels[offset]??`S${seat}`;
   };
