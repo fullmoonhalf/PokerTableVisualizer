@@ -64,7 +64,7 @@ const normalizeCandidates=(value:unknown):RawCardCandidate[]=>{
 export const cardIndexLabel=(cardIndex:number)=>{
   if(!Number.isInteger(cardIndex)||cardIndex<1||cardIndex>52)return `#${cardIndex}`;
   const suits=["♠","♥","♦","♣"],rankIndex=(cardIndex-1)%13+1;
-  const rank=rankIndex===1?"A":rankIndex===11?"J":rankIndex===12?"Q":rankIndex===13?"K":String(rankIndex);
+  const rank=rankIndex===1?"A":rankIndex===10?"T":rankIndex===11?"J":rankIndex===12?"Q":rankIndex===13?"K":String(rankIndex);
   return `${rank}${suits[Math.floor((cardIndex-1)/13)]}`;
 };
 
