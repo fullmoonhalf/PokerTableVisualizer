@@ -144,11 +144,11 @@
 .rfid-seat-meta{display:flex;flex-direction:column;gap:1px;margin-top:5px}
 .rfid-seat-meta span{color:var(--soft);font-size:8px;line-height:1.05}
 .rfid-seat-meta b{display:block;overflow:hidden;margin:1px 0 0;color:#dbe6e1;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
-.rfid-seat-cards{display:grid;grid-template-columns:1fr 1fr;align-self:start;align-content:start;gap:3px;margin:0}
+.rfid-seat-cards{display:grid;grid-template-columns:1fr 1fr;align-self:start;align-content:start;gap:3px;margin:0;transform:translateX(15px)}
 .rfid-seat-cards strong{display:grid;place-items:center;width:42px;height:68px;border:1px solid #588a75;border-radius:6px;background:#17372b;font:900 25px Georgia,serif}
 .rfid-seat-cards>span{grid-column:1/-1;color:#71857d;font-size:16px;font-weight:900}
 .rfid-seat-cards em{grid-column:1/-1;margin:0;color:#7f938b;font-size:9px;font-style:normal;font-weight:900;text-align:center}
-.rfid-mini-ranking{display:grid;grid-template-columns:1fr;align-self:start;gap:5px;min-height:30px;margin:0 0 0 8px}
+.rfid-mini-ranking{display:grid;grid-template-columns:1fr;align-self:start;gap:5px;min-height:30px;margin:0 0 0 8px;transform:translateX(15px)}
 .rfid-mini-ranking>span{display:grid;grid-template-columns:25px minmax(28px,42px) 25px;align-items:center;gap:3px}
 .rfid-mini-ranking>span>b{font:700 12px Georgia,serif}
 .rfid-mini-ranking i{height:6px;overflow:hidden;border-radius:9px;background:#26342f}
