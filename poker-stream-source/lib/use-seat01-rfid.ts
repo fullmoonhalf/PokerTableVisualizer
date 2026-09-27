@@ -13,6 +13,7 @@ type RfidStatus="idle"|"requesting"|"connecting"|"connected"|"disconnected"|"err
 export type RfidDetectionStatus="empty"|"detecting"|"stable"|"conflict"|"confirmed";
 export type RawCardCandidate={card:number;deck?:number;rssi?:number};
 export type AggregatedCardCandidate={card:number;observations:number;coverage:number};
+export type RfidDetectionConfig={observationWindow:number;minObservations:number;minCoverage:number;requiredStableUpdates:number;conflictRatio:number};
 type BluetoothValueEvent=Event&{target:EventTarget&{value?:DataView}};
 type BluetoothCharacteristic=EventTarget&{
   value?:DataView;
@@ -33,7 +34,8 @@ export type Seat01RfidState={
 };
 
 const INITIAL_STATE:Seat01RfidState={status:"idle",deviceName:"",probeName:"",battery:null,charging:null,lastHeartbeatAt:null,lastMessageAt:null,candidates:[],rawMessage:"",error:"",detectionStatus:"empty",aggregatedCandidates:[],confirmedCards:[],scanMessageCount:0,stableUpdates:0};
-const OBSERVATION_WINDOW=20,MIN_OBSERVATIONS=6,MIN_COVERAGE=.35,REQUIRED_STABLE_UPDATES=5,CONFLICT_RATIO=.7;
+export const DEFAULT_RFID_DETECTION_CONFIG:RfidDetectionConfig={observationWindow:20,minObservations:6,minCoverage:.35,requiredStableUpdates:5,conflictRatio:.7};
+const RFID_CONFIG_KEY="poker-stream-rfid-detection-v1";
 
 const extractJsonObjects=(source:string)=>{
   const objects:string[]=[];let start=-1,depth=0,inString=false,escaped=false,lastEnd=0;
@@ -68,6 +70,8 @@ export const cardIndexLabel=(cardIndex:number)=>{
 
 export function useSeat01Rfid(){
   const [state,setState]=useState<Seat01RfidState>(INITIAL_STATE);
+  const [config,setConfigState]=useState<RfidDetectionConfig>(DEFAULT_RFID_DETECTION_CONFIG);
+  const configRef=useRef(config);
   const deviceRef=useRef<BluetoothDevice|null>(null),serverRef=useRef<BluetoothServer|null>(null),txRef=useRef<BluetoothCharacteristic|null>(null),rxRef=useRef<BluetoothCharacteristic|null>(null);
   const receiveBufferRef=useRef("");
   const observationPacketsRef=useRef<number[][]>([]),stableSignatureRef=useRef(""),stableUpdatesRef=useRef(0),confirmedCardsRef=useRef<number[]>([]);
@@ -76,6 +80,20 @@ export function useSeat01Rfid(){
     observationPacketsRef.current=[];stableSignatureRef.current="";stableUpdatesRef.current=0;confirmedCardsRef.current=[];
     setState(current=>({...current,candidates:[],detectionStatus:"empty",aggregatedCandidates:[],confirmedCards:[],scanMessageCount:0,stableUpdates:0}));
   },[]);
+
+  const updateConfig=useCallback((changes:Partial<RfidDetectionConfig>)=>{
+    setConfigState(current=>{
+      const next={
+        observationWindow:Math.max(2,Math.min(100,Math.round(changes.observationWindow??current.observationWindow))),
+        minObservations:Math.max(1,Math.min(100,Math.round(changes.minObservations??current.minObservations))),
+        minCoverage:Math.max(.01,Math.min(1,changes.minCoverage??current.minCoverage)),
+        requiredStableUpdates:Math.max(1,Math.min(30,Math.round(changes.requiredStableUpdates??current.requiredStableUpdates))),
+        conflictRatio:Math.max(.01,Math.min(1,changes.conflictRatio??current.conflictRatio)),
+      };
+      configRef.current=next;window.localStorage.setItem(RFID_CONFIG_KEY,JSON.stringify(next));return next;
+    });
+    resetDetection();
+  },[resetDetection]);
 
   const write=useCallback(async(text:string)=>{
     const characteristic=rxRef.current;if(!characteristic)throw new Error("Seat01は接続されていません");
@@ -98,19 +116,22 @@ export function useSeat01Rfid(){
         const charging=message.charging===true||message.charging==="true"?true:message.charging===false||message.charging==="false"?false:null;
         const now=Date.now(),candidates=normalizeCandidates(message.cards);
         if(mode==="scan"){
+          const detectionConfig=configRef.current;
           const cards=[...new Set(candidates.map(candidate=>candidate.card))];
-          observationPacketsRef.current=[...observationPacketsRef.current,cards].slice(-OBSERVATION_WINDOW);
+          observationPacketsRef.current=[...observationPacketsRef.current,cards].slice(-detectionConfig.observationWindow);
           const packets=observationPacketsRef.current,counts=new Map<number,number>();
           packets.forEach(packet=>packet.forEach(card=>counts.set(card,(counts.get(card)??0)+1)));
           const aggregatedCandidates=[...counts.entries()].map(([card,observations])=>({card,observations,coverage:observations/packets.length})).sort((a,b)=>b.observations-a.observations||a.card-b.card);
           const [first,second,third]=aggregatedCandidates;
-          const validPair=Boolean(first&&second&&first.observations>=MIN_OBSERVATIONS&&second.observations>=MIN_OBSERVATIONS&&first.coverage>=MIN_COVERAGE&&second.coverage>=MIN_COVERAGE);
-          const conflict=Boolean(validPair&&third&&third.observations>=second.observations*CONFLICT_RATIO);
+          const validPair=Boolean(first&&second&&first.observations>=detectionConfig.minObservations&&second.observations>=detectionConfig.minObservations&&first.coverage>=detectionConfig.minCoverage&&second.coverage>=detectionConfig.minCoverage);
+          const conflict=Boolean(validPair&&third&&third.observations>=second.observations*detectionConfig.conflictRatio);
           const signature=validPair&&!conflict?[first.card,second.card].sort((a,b)=>a-b).join("-"):"";
+          const confirmedSignature=confirmedCardsRef.current.join("-");
+          if(confirmedSignature&&signature!==confirmedSignature)confirmedCardsRef.current=[];
           const supportsPair=Boolean(signature&&cards.some(card=>card===first.card||card===second.card));
           if(!signature){stableSignatureRef.current="";stableUpdatesRef.current=0;}
           else if(supportsPair){stableUpdatesRef.current=stableSignatureRef.current===signature?stableUpdatesRef.current+1:1;stableSignatureRef.current=signature;}
-          if(!confirmedCardsRef.current.length&&signature&&stableUpdatesRef.current>=REQUIRED_STABLE_UPDATES)confirmedCardsRef.current=[first.card,second.card].sort((a,b)=>a-b);
+          if(!confirmedCardsRef.current.length&&signature&&stableUpdatesRef.current>=detectionConfig.requiredStableUpdates)confirmedCardsRef.current=[first.card,second.card].sort((a,b)=>a-b);
           const detectionStatus:RfidDetectionStatus=confirmedCardsRef.current.length?"confirmed":conflict?"conflict":validPair?"stable":aggregatedCandidates.length?"detecting":"empty";
           setState(current=>({...current,status:"connected",probeName:probe,battery:Number.isFinite(battery)?battery:current.battery,charging,lastMessageAt:now,candidates,rawMessage:JSON.stringify(message,null,2),error:"",detectionStatus,aggregatedCandidates,confirmedCards:confirmedCardsRef.current,scanMessageCount:packets.length,stableUpdates:stableUpdatesRef.current}));
         }else setState(current=>({...current,status:"connected",probeName:probe,battery:Number.isFinite(battery)?battery:current.battery,charging,lastMessageAt:now,lastHeartbeatAt:mode==="heartbeat"?now:current.lastHeartbeatAt,rawMessage:JSON.stringify(message,null,2),error:""}));
@@ -148,6 +169,7 @@ export function useSeat01Rfid(){
 
   const startScan=useCallback(async()=>{try{resetDetection();await write(SCAN_COMMAND);setState(current=>({...current,error:""}));}catch(error){setState(current=>({...current,error:error instanceof Error?error.message:"スキャン開始に失敗しました"}));}},[resetDetection,write]);
   const stopScan=useCallback(async()=>{try{await write(STOP_COMMAND);setState(current=>({...current,error:""}));}catch(error){setState(current=>({...current,error:error instanceof Error?error.message:"スキャン停止に失敗しました"}));}},[write]);
+  useEffect(()=>{try{const saved=JSON.parse(window.localStorage.getItem(RFID_CONFIG_KEY)??"null") as Partial<RfidDetectionConfig>|null;if(saved)updateConfig(saved);}catch{/* 破損した設定は既定値を使う */}},[updateConfig]);
   useEffect(()=>()=>{const device=deviceRef.current,tx=txRef.current;if(tx)tx.removeEventListener("characteristicvaluechanged",onValueChanged);if(device)device.removeEventListener("gattserverdisconnected",onDisconnected);},[onDisconnected,onValueChanged]);
-  return {state,connect,disconnect,startScan,stopScan};
+  return {state,config,updateConfig,resetConfig:()=>updateConfig(DEFAULT_RFID_DETECTION_CONFIG),connect,disconnect,startScan,stopScan};
 }
