@@ -171,5 +171,5 @@ export function useSeat01Rfid(){
   const stopScan=useCallback(async()=>{try{await write(STOP_COMMAND);setState(current=>({...current,error:""}));}catch(error){setState(current=>({...current,error:error instanceof Error?error.message:"スキャン停止に失敗しました"}));}},[write]);
   useEffect(()=>{try{const saved=JSON.parse(window.localStorage.getItem(RFID_CONFIG_KEY)??"null") as Partial<RfidDetectionConfig>|null;if(saved)updateConfig(saved);}catch{/* 破損した設定は既定値を使う */}},[updateConfig]);
   useEffect(()=>()=>{const device=deviceRef.current,tx=txRef.current;if(tx)tx.removeEventListener("characteristicvaluechanged",onValueChanged);if(device)device.removeEventListener("gattserverdisconnected",onDisconnected);},[onDisconnected,onValueChanged]);
-  return {state,config,updateConfig,resetConfig:()=>updateConfig(DEFAULT_RFID_DETECTION_CONFIG),connect,disconnect,startScan,stopScan};
+  return {state,config,updateConfig,resetConfig:()=>updateConfig(DEFAULT_RFID_DETECTION_CONFIG),clearDetection:resetDetection,connect,disconnect,startScan,stopScan};
 }
