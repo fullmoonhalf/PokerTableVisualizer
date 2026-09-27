@@ -8,7 +8,7 @@ import { NativeSelect,NativeSelectOption } from "@/components/ui/native-select";
 import { Tabs,TabsContent,TabsList,TabsTrigger } from "@/components/ui/tabs";
 import { amountToCall,awardPot,createDemoHand,DEFAULT_ANTE,DEFAULT_BLINDS,EMPTY_PLAYER_STATS,EMPTY_RANGE_CELL,executeCommand,RANGE_RANKS,resetHand,setSeatOut as updateSeatOut,type AnteConfig,type BlindConfig,type HandState,type PokerCommand,type PlayerStats } from "@/lib/poker-core";
 import { calculateEquity,deck } from "@/lib/equity";
-import { cardIndexLabel,useSeat01Rfid } from "@/lib/use-seat01-rfid";
+import { cardIndexLabel,useSeatRfid } from "@/lib/use-seat01-rfid";
 
 declare global{interface Document{modelContext?:{registerTool:(tool:Record<string,unknown>,options?:{signal?:AbortSignal})=>void|Promise<void>}}}
 const STORAGE_KEY="poker-stream.hand.v1";
@@ -78,7 +78,11 @@ export default function PokerConsole(){
   const [showRange,setShowRange]=useState(false);
   const [fullResetConfirmation,setFullResetConfirmation]=useState("");
   const [rfidAutoApply,setRfidAutoApply]=useState(false);
-  const seat01Rfid=useSeat01Rfid();
+  const [selectedRfidSeat,setSelectedRfidSeat]=useState(1);
+  const seat01Rfid=useSeatRfid(1),seat02Rfid=useSeatRfid(2),seat03Rfid=useSeatRfid(3),seat04Rfid=useSeatRfid(4),seat05Rfid=useSeatRfid(5);
+  const seat06Rfid=useSeatRfid(6),seat07Rfid=useSeatRfid(7),seat08Rfid=useSeatRfid(8),seat09Rfid=useSeatRfid(9);
+  const seatRfids=[seat01Rfid,seat02Rfid,seat03Rfid,seat04Rfid,seat05Rfid,seat06Rfid,seat07Rfid,seat08Rfid,seat09Rfid];
+  const selectedRfid=seatRfids[selectedRfidSeat-1];
   const stageRef=useRef<HTMLDivElement>(null);
   const shortcutAmountActive=useRef(false);
   const shortcutAmountBuffer=useRef("");
@@ -334,23 +338,44 @@ export default function PokerConsole(){
       cards[index]=value;return{...item,cards:cards[0]||cards[1]?cards:null};
     })}));
   };
-  const confirmedRfidCards=seat01Rfid.state.confirmedCards.map(cardIndexLabel);
-  const seat01Cards=state.players.find(player=>player.seat===1)?.cards;
-  const rfidAlreadyApplied=confirmedRfidCards.length===2&&seat01Cards?.[0]===confirmedRfidCards[0]&&seat01Cards?.[1]===confirmedRfidCards[1];
-  const applySeat01RfidCards=(automatic=false)=>{
-    if(confirmedRfidCards.length!==2)return false;
-    const cards=confirmedRfidCards as [string,string];
-    const seat01=state.players.find(player=>player.seat===1);
-    if(!seat01||seat01.sittingOut){if(!automatic)setNotice("Seat 1はSeat Out中のためRFIDカードを反映できません");return false;}
-    const usedElsewhere=[...state.board,...state.players.filter(player=>player.seat!==1).flatMap(player=>player.cards??[])];
+  const confirmedRfidCards=selectedRfid.state.confirmedCards.map(cardIndexLabel);
+  const selectedSeatCards=state.players.find(player=>player.seat===selectedRfidSeat)?.cards;
+  const rfidAlreadyApplied=confirmedRfidCards.length===2&&selectedSeatCards?.[0]===confirmedRfidCards[0]&&selectedSeatCards?.[1]===confirmedRfidCards[1];
+  const applyRfidCards=(seat:number,reader:typeof seat01Rfid,automatic=false)=>{
+    const confirmedCards=reader.state.confirmedCards.map(cardIndexLabel);
+    if(confirmedCards.length!==2)return false;
+    const cards=confirmedCards as [string,string];
+    const target=state.players.find(player=>player.seat===seat);
+    if(!target||target.sittingOut){if(!automatic)setNotice(`Seat ${seat}はSeat Out中のためRFIDカードを反映できません`);return false;}
+    const usedElsewhere=[...state.board,...state.players.filter(player=>player.seat!==seat).flatMap(player=>player.cards??[])];
     const duplicate=cards.find(card=>usedElsewhere.includes(card));
     if(duplicate){if(!automatic)setNotice(`${duplicate} は別の場所に割り当て済みです`);return false;}
-    const appliedKey=`${state.handNumber}:${cards.join("-")}`;
-    if(rfidAppliedKeyRef.current===appliedKey||rfidAlreadyApplied)return true;
-    setState(previous=>({...previous,players:previous.players.map(player=>player.seat===1?{...player,cards}:player)}));
-    rfidAppliedKeyRef.current=appliedKey;setNotice(`Seat 1 RFID · ${cards.join(" ")} を${automatic?"自動":"手動"}反映しました`);return true;
+    const appliedKey=`${state.handNumber}:${seat}:${cards.join("-")}`;
+    const alreadyApplied=target.cards?.[0]===cards[0]&&target.cards?.[1]===cards[1];
+    if(rfidAppliedKeyRef.current.split("|").includes(appliedKey)||alreadyApplied)return true;
+    setState(previous=>({...previous,players:previous.players.map(player=>player.seat===seat?{...player,cards}:player)}));
+    rfidAppliedKeyRef.current=[...new Set([...rfidAppliedKeyRef.current.split("|").filter(Boolean),appliedKey])].join("|");
+    setNotice(`Seat ${seat} RFID · ${cards.join(" ")} を${automatic?"自動":"手動"}反映しました`);return true;
   };
-  useEffect(()=>{if(rfidAutoApply&&seat01Rfid.state.confirmedCards.length===2)applySeat01RfidCards(true);},[rfidAutoApply,seat01Rfid.state.confirmedCards.join("-"),state.handNumber]);
+  const allRfidConfirmationSignature=seatRfids.map(reader=>reader.state.confirmedCards.join("-")).join("|");
+  useEffect(()=>{
+    if(!rfidAutoApply)return;
+    setState(previous=>{
+      let players=previous.players,changed=false;
+      seatRfids.forEach((reader,index)=>{
+        if(reader.state.confirmedCards.length!==2)return;
+        const seat=index+1,cards=reader.state.confirmedCards.map(cardIndexLabel) as [string,string];
+        const target=players.find(player=>player.seat===seat);
+        if(!target||target.sittingOut||(target.cards?.[0]===cards[0]&&target.cards?.[1]===cards[1]))return;
+        const usedElsewhere=[...previous.board,...players.filter(player=>player.seat!==seat).flatMap(player=>player.cards??[])];
+        if(cards.some(card=>usedElsewhere.includes(card)))return;
+        players=players.map(player=>player.seat===seat?{...player,cards}:player);changed=true;
+        const appliedKey=`${previous.handNumber}:${seat}:${cards.join("-")}`;
+        rfidAppliedKeyRef.current=[...new Set([...rfidAppliedKeyRef.current.split("|").filter(Boolean),appliedKey])].join("|");
+      });
+      return changed?{...previous,players}:previous;
+    });
+  },[rfidAutoApply,allRfidConfirmationSignature,state.handNumber]);
   const toggleRfidAutoApply=()=>setRfidAutoApply(current=>{const next=!current;window.localStorage.setItem(RFID_AUTO_APPLY_KEY,String(next));return next;});
   const setBoardCard=(index:number,value:string)=>{
     const current=state.board[index]??"";
@@ -388,7 +413,7 @@ export default function PokerConsole(){
     setNextBlinds({smallBlind:next.smallBlind,bigBlind:next.bigBlind,chipUnit:next.chipUnit});
     shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setAmount(String(next.bigBlind*3));
     setHistory([]);
-    rfidAppliedKeyRef.current="";seat01Rfid.clearDetection();
+    rfidAppliedKeyRef.current="";seatRfids.forEach(reader=>reader.clearDetection());
     setNotice(`${advance?"New hand":"Reset"} · BTN Seat ${next.button} · ${next.smallBlind}/${next.bigBlind} · ${anteLabel(next.ante)}`);
   };
   const resetGameSession=()=>{
@@ -398,14 +423,14 @@ export default function PokerConsole(){
     const next=resetHand(baseline,nextAnte,nextBlinds,nextButton,true);
     setState(next);setHistory([]);setWinners([next.actorSeat??next.button]);setSeatOutSelectionValue([]);setAmount(String(next.bigBlind*3));
     setShortcutAmountEditing(false);setShortcutAmountDraft("");shortcutAmountActive.current=false;shortcutAmountBuffer.current="";
-    rfidAppliedKeyRef.current="";seat01Rfid.clearDetection();
+    rfidAppliedKeyRef.current="";seatRfids.forEach(reader=>reader.clearDetection());
     setNotice(`Game reset · Hand 1 · BTN Seat ${next.button}`);
   };
   const resetEverything=()=>{
     if(fullResetConfirmation!=="RESET")return;
     if(!window.confirm("すべての設定と保存データを初期値へ戻します。この操作は取り消せません。続行しますか？"))return;
-    seat01Rfid.disconnect();
-    seat01Rfid.resetConfig();window.localStorage.removeItem(RFID_AUTO_APPLY_KEY);setRfidAutoApply(false);rfidAppliedKeyRef.current="";
+    seatRfids.forEach(reader=>{reader.disconnect();reader.resetConfig();});
+    window.localStorage.removeItem(RFID_AUTO_APPLY_KEY);setRfidAutoApply(false);rfidAppliedKeyRef.current="";setSelectedRfidSeat(1);
     const next=createDemoHand();
     window.localStorage.removeItem(STORAGE_KEY);window.localStorage.removeItem(LAYOUT_KEY);window.localStorage.removeItem(LEVELS_KEY);window.localStorage.setItem(DISPLAY_TAB_KEY,"layout");
     setState(next);setHistory([]);setLayout(DEFAULT_LAYOUT);setLevels(DEFAULT_LEVELS.map(level=>({...level,ante:{...level.ante}})));setSelectedLevelId(1);
@@ -542,33 +567,34 @@ export default function PokerConsole(){
             </div>
           </TabsContent>
           <TabsContent value="rfid" className="rfid-tab">
-            <div className="layout-heading"><div><span className="eyebrow">RFID DIAGNOSTICS</span><h1>Seat01 BLE接続</h1><p>確定した2枚をSeat 1のホールカードへ手動または自動で反映できます。未確定の候補はゲーム状態へ反映されません。</p></div></div>
+            <div className="layout-heading"><div><span className="eyebrow">RFID DIAGNOSTICS</span><h1>Seat01–Seat09 BLE接続</h1><p>シートごとに接続・安定判定し、確定した2枚を対応するホールカードへ反映します。</p></div></div>
+            <div className="rfid-seat-selector">{seatRfids.map(reader=><button type="button" key={reader.seat} className={`${selectedRfidSeat===reader.seat?"is-selected ":""}is-${reader.state.status}`} onClick={()=>setSelectedRfidSeat(reader.seat)}><b>SEAT {reader.seat}</b><span>{reader.state.status.toUpperCase()}</span>{reader.state.confirmedCards.length===2&&<small>{reader.state.confirmedCards.map(cardIndexLabel).join(" ")}</small>}</button>)}</div>
             <section className="rfid-connection-card">
-              <div className="rfid-connection-head"><div><span className={`rfid-status is-${seat01Rfid.state.status}`}>{seat01Rfid.state.status.toUpperCase()}</span><h2>{seat01Rfid.state.deviceName||"Seat01 device"}</h2><small>{seat01Rfid.state.probeName||"Probe未確認"}</small></div><div className="rfid-actions"><Button onClick={seat01Rfid.connect} disabled={["requesting","connecting","connected"].includes(seat01Rfid.state.status)}>接続</Button><Button variant="outline" onClick={seat01Rfid.startScan} disabled={seat01Rfid.state.status!=="connected"}>Scan開始</Button><Button variant="outline" onClick={seat01Rfid.stopScan} disabled={seat01Rfid.state.status!=="connected"}>Scan停止</Button><Button variant="ghost" onClick={seat01Rfid.disconnect} disabled={seat01Rfid.state.status!=="connected"}>切断</Button></div></div>
-              {seat01Rfid.state.error&&<div className="rfid-error">{seat01Rfid.state.error}</div>}
-              <div className="rfid-metrics"><span><small>BATTERY</small><b>{seat01Rfid.state.battery===null?"—":`${seat01Rfid.state.battery}%`}</b></span><span><small>CHARGING</small><b>{seat01Rfid.state.charging===null?"—":seat01Rfid.state.charging?"YES":"NO"}</b></span><span><small>LAST MESSAGE</small><b>{receivedTime(seat01Rfid.state.lastMessageAt)}</b></span><span><small>HEARTBEAT</small><b>{receivedTime(seat01Rfid.state.lastHeartbeatAt)}</b></span><span><small>SCAN WINDOW</small><b>{seat01Rfid.state.scanMessageCount} / {seat01Rfid.config.observationWindow}</b></span><span><small>STABILITY</small><b>{Math.min(seat01Rfid.state.stableUpdates,seat01Rfid.config.requiredStableUpdates)} / {seat01Rfid.config.requiredStableUpdates}</b></span></div>
+              <div className="rfid-connection-head"><div><span className={`rfid-status is-${selectedRfid.state.status}`}>{selectedRfid.state.status.toUpperCase()}</span><h2>{selectedRfid.state.deviceName||`${selectedRfid.expectedProbe} device`}</h2><small>{selectedRfid.state.probeName||`${selectedRfid.expectedProbe} · Probe未確認`}</small></div><div className="rfid-actions"><Button onClick={selectedRfid.connect} disabled={["requesting","connecting","connected"].includes(selectedRfid.state.status)}>接続</Button><Button variant="outline" onClick={selectedRfid.startScan} disabled={selectedRfid.state.status!=="connected"}>Scan開始</Button><Button variant="outline" onClick={selectedRfid.stopScan} disabled={selectedRfid.state.status!=="connected"}>Scan停止</Button><Button variant="ghost" onClick={selectedRfid.disconnect} disabled={!['connected','error'].includes(selectedRfid.state.status)}>切断</Button></div></div>
+              {selectedRfid.state.error&&<div className="rfid-error">{selectedRfid.state.error}</div>}
+              <div className="rfid-metrics"><span><small>BATTERY</small><b>{selectedRfid.state.battery===null?"—":`${selectedRfid.state.battery}%`}</b></span><span><small>CHARGING</small><b>{selectedRfid.state.charging===null?"—":selectedRfid.state.charging?"YES":"NO"}</b></span><span><small>LAST MESSAGE</small><b>{receivedTime(selectedRfid.state.lastMessageAt)}</b></span><span><small>HEARTBEAT</small><b>{receivedTime(selectedRfid.state.lastHeartbeatAt)}</b></span><span><small>SCAN WINDOW</small><b>{selectedRfid.state.scanMessageCount} / {selectedRfid.config.observationWindow}</b></span><span><small>STABILITY</small><b>{Math.min(selectedRfid.state.stableUpdates,selectedRfid.config.requiredStableUpdates)} / {selectedRfid.config.requiredStableUpdates}</b></span></div>
             </section>
-            <section className={`rfid-estimate is-${seat01Rfid.state.detectionStatus}`}>
-              <div className="rfid-estimate-head"><div><span className="eyebrow">CARD ESTIMATION</span><h2>2枚の安定判定</h2></div><b className="rfid-detection-status">{seat01Rfid.state.detectionStatus.toUpperCase()}</b></div>
-              <div className="rfid-confirmed-cards">{seat01Rfid.state.confirmedCards.length===2?seat01Rfid.state.confirmedCards.map(card=><strong key={card}>{cardIndexLabel(card)}</strong>):<p>観測を蓄積しています。確定するまでHandStateには反映されません。</p>}</div>
-              <div className={`rfid-handstate-transfer${rfidAlreadyApplied?" is-applied":""}`}><div><span>HANDSTATE · SEAT 1</span><b>{rfidAlreadyApplied?"反映済み":seat01Rfid.state.confirmedCards.length===2?"反映待ち":"確定待ち"}</b></div><div><Button size="sm" variant={rfidAutoApply?"default":"outline"} aria-pressed={rfidAutoApply} onClick={toggleRfidAutoApply}>自動反映 {rfidAutoApply?"ON":"OFF"}</Button><Button size="sm" disabled={seat01Rfid.state.confirmedCards.length!==2||rfidAlreadyApplied} onClick={()=>applySeat01RfidCards(false)}>Seat 1へ反映</Button></div></div>
-              <div className="rfid-ranking">{seat01Rfid.state.aggregatedCandidates.slice(0,5).map((candidate,index)=><article key={candidate.card}><b>#{index+1} {cardIndexLabel(candidate.card)}</b><span><i style={{width:`${candidate.coverage*100}%`}}/></span><small>{candidate.observations}回 · {(candidate.coverage*100).toFixed(0)}%</small></article>)}</div>
-              <small className="rfid-rule">直近{seat01Rfid.config.observationWindow}通知を集計 · 各{seat01Rfid.config.minObservations}回以上 · Coverage {(seat01Rfid.config.minCoverage*100).toFixed(0)}%以上 · 上位2枚が{seat01Rfid.config.requiredStableUpdates}更新連続で確定 · 3位が2位の{(seat01Rfid.config.conflictRatio*100).toFixed(0)}%以上なら競合</small>
+            <section className={`rfid-estimate is-${selectedRfid.state.detectionStatus}`}>
+              <div className="rfid-estimate-head"><div><span className="eyebrow">CARD ESTIMATION · SEAT {selectedRfidSeat}</span><h2>2枚の安定判定</h2></div><b className="rfid-detection-status">{selectedRfid.state.detectionStatus.toUpperCase()}</b></div>
+              <div className="rfid-confirmed-cards">{selectedRfid.state.confirmedCards.length===2?selectedRfid.state.confirmedCards.map(card=><strong key={card}>{cardIndexLabel(card)}</strong>):<p>観測を蓄積しています。確定するまでHandStateには反映されません。</p>}</div>
+              <div className={`rfid-handstate-transfer${rfidAlreadyApplied?" is-applied":""}`}><div><span>HANDSTATE · SEAT {selectedRfidSeat}</span><b>{rfidAlreadyApplied?"反映済み":selectedRfid.state.confirmedCards.length===2?"反映待ち":"確定待ち"}</b></div><div><Button size="sm" variant={rfidAutoApply?"default":"outline"} aria-pressed={rfidAutoApply} onClick={toggleRfidAutoApply}>全席自動反映 {rfidAutoApply?"ON":"OFF"}</Button><Button size="sm" disabled={selectedRfid.state.confirmedCards.length!==2||rfidAlreadyApplied} onClick={()=>applyRfidCards(selectedRfidSeat,selectedRfid,false)}>Seat {selectedRfidSeat}へ反映</Button></div></div>
+              <div className="rfid-ranking">{selectedRfid.state.aggregatedCandidates.slice(0,5).map((candidate,index)=><article key={candidate.card}><b>#{index+1} {cardIndexLabel(candidate.card)}</b><span><i style={{width:`${candidate.coverage*100}%`}}/></span><small>{candidate.observations}回 · {(candidate.coverage*100).toFixed(0)}%</small></article>)}</div>
+              <small className="rfid-rule">直近{selectedRfid.config.observationWindow}通知を集計 · 各{selectedRfid.config.minObservations}回以上 · Coverage {(selectedRfid.config.minCoverage*100).toFixed(0)}%以上 · 上位2枚が{selectedRfid.config.requiredStableUpdates}更新連続で確定 · 3位が2位の{(selectedRfid.config.conflictRatio*100).toFixed(0)}%以上なら競合</small>
             </section>
             <section className="rfid-settings">
-              <div className="rfid-settings-head"><div><span className="eyebrow">DETECTION SETTINGS</span><h2>安定判定の基準</h2></div><Button variant="ghost" size="sm" onClick={seat01Rfid.resetConfig}>初期値へ戻す</Button></div>
+              <div className="rfid-settings-head"><div><span className="eyebrow">DETECTION SETTINGS · SEAT {selectedRfidSeat}</span><h2>安定判定の基準</h2></div><Button variant="ghost" size="sm" onClick={selectedRfid.resetConfig}>初期値へ戻す</Button></div>
               <div className="rfid-settings-grid">
-                <label>観測窓（通知数）<Input type="number" min="2" max="100" value={seat01Rfid.config.observationWindow} onChange={event=>seat01Rfid.updateConfig({observationWindow:Number(event.target.value)})}/></label>
-                <label>最低観測回数<Input type="number" min="1" max="100" value={seat01Rfid.config.minObservations} onChange={event=>seat01Rfid.updateConfig({minObservations:Number(event.target.value)})}/></label>
-                <label>最低Coverage（%）<Input type="number" min="1" max="100" value={Math.round(seat01Rfid.config.minCoverage*100)} onChange={event=>seat01Rfid.updateConfig({minCoverage:Number(event.target.value)/100})}/></label>
-                <label>安定更新回数<Input type="number" min="1" max="30" value={seat01Rfid.config.requiredStableUpdates} onChange={event=>seat01Rfid.updateConfig({requiredStableUpdates:Number(event.target.value)})}/></label>
-                <label>競合判定比率（%）<Input type="number" min="1" max="100" value={Math.round(seat01Rfid.config.conflictRatio*100)} onChange={event=>seat01Rfid.updateConfig({conflictRatio:Number(event.target.value)/100})}/></label>
+                <label>観測窓（通知数）<Input type="number" min="2" max="100" value={selectedRfid.config.observationWindow} onChange={event=>selectedRfid.updateConfig({observationWindow:Number(event.target.value)})}/></label>
+                <label>最低観測回数<Input type="number" min="1" max="100" value={selectedRfid.config.minObservations} onChange={event=>selectedRfid.updateConfig({minObservations:Number(event.target.value)})}/></label>
+                <label>最低Coverage（%）<Input type="number" min="1" max="100" value={Math.round(selectedRfid.config.minCoverage*100)} onChange={event=>selectedRfid.updateConfig({minCoverage:Number(event.target.value)/100})}/></label>
+                <label>安定更新回数<Input type="number" min="1" max="30" value={selectedRfid.config.requiredStableUpdates} onChange={event=>selectedRfid.updateConfig({requiredStableUpdates:Number(event.target.value)})}/></label>
+                <label>競合判定比率（%）<Input type="number" min="1" max="100" value={Math.round(selectedRfid.config.conflictRatio*100)} onChange={event=>selectedRfid.updateConfig({conflictRatio:Number(event.target.value)/100})}/></label>
               </div>
               <p>変更すると現在の観測履歴と確定結果をクリアし、新しい基準で再判定します。設定はこのブラウザに保存されます。</p>
             </section>
             <div className="rfid-diagnostics-grid">
-              <section className="rfid-candidates"><span className="eyebrow">RAW CARD CANDIDATES</span><div>{seat01Rfid.state.candidates.length?seat01Rfid.state.candidates.map((candidate,index)=><article key={`${candidate.card}-${index}`}><strong>{cardIndexLabel(candidate.card)}</strong><span>INDEX {candidate.card}</span><small>DECK {candidate.deck??"—"} · RSSI {candidate.rssi??"—"}</small></article>):<p>カード通知を待っています。</p>}</div></section>
-              <section className="rfid-raw"><span className="eyebrow">LAST VALID MESSAGE</span><pre>{seat01Rfid.state.rawMessage||"No message received."}</pre></section>
+              <section className="rfid-candidates"><span className="eyebrow">RAW CARD CANDIDATES · SEAT {selectedRfidSeat}</span><div>{selectedRfid.state.candidates.length?selectedRfid.state.candidates.map((candidate,index)=><article key={`${candidate.card}-${index}`}><strong>{cardIndexLabel(candidate.card)}</strong><span>INDEX {candidate.card}</span><small>DECK {candidate.deck??"—"} · RSSI {candidate.rssi??"—"}</small></article>):<p>カード通知を待っています。</p>}</div></section>
+              <section className="rfid-raw"><span className="eyebrow">LAST VALID MESSAGE · SEAT {selectedRfidSeat}</span><pre>{selectedRfid.state.rawMessage||"No message received."}</pre></section>
             </div>
           </TabsContent>
           <TabsContent value="reset" className="reset-management">

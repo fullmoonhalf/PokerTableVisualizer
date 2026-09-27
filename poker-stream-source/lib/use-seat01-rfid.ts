@@ -35,7 +35,7 @@ export type Seat01RfidState={
 
 const INITIAL_STATE:Seat01RfidState={status:"idle",deviceName:"",probeName:"",battery:null,charging:null,lastHeartbeatAt:null,lastMessageAt:null,candidates:[],rawMessage:"",error:"",detectionStatus:"empty",aggregatedCandidates:[],confirmedCards:[],scanMessageCount:0,stableUpdates:0};
 export const DEFAULT_RFID_DETECTION_CONFIG:RfidDetectionConfig={observationWindow:20,minObservations:6,minCoverage:.35,requiredStableUpdates:5,conflictRatio:.7};
-const RFID_CONFIG_KEY="poker-stream-rfid-detection-v1";
+const rfidConfigKey=(probeName:string)=>`poker-stream.rfid-detection.${probeName}.v1`;
 
 const extractJsonObjects=(source:string)=>{
   const objects:string[]=[];let start=-1,depth=0,inString=false,escaped=false,lastEnd=0;
@@ -68,7 +68,8 @@ export const cardIndexLabel=(cardIndex:number)=>{
   return `${rank}${suits[Math.floor((cardIndex-1)/13)]}`;
 };
 
-export function useSeat01Rfid(){
+export function useSeatRfid(seat:number){
+  const expectedProbe=`Seat${String(seat).padStart(2,"0")}`,configStorageKey=rfidConfigKey(expectedProbe);
   const [state,setState]=useState<Seat01RfidState>(INITIAL_STATE);
   const [config,setConfigState]=useState<RfidDetectionConfig>(DEFAULT_RFID_DETECTION_CONFIG);
   const configRef=useRef(config);
@@ -90,13 +91,13 @@ export function useSeat01Rfid(){
         requiredStableUpdates:Math.max(1,Math.min(30,Math.round(changes.requiredStableUpdates??current.requiredStableUpdates))),
         conflictRatio:Math.max(.01,Math.min(1,changes.conflictRatio??current.conflictRatio)),
       };
-      configRef.current=next;window.localStorage.setItem(RFID_CONFIG_KEY,JSON.stringify(next));return next;
+      configRef.current=next;window.localStorage.setItem(configStorageKey,JSON.stringify(next));return next;
     });
     resetDetection();
-  },[resetDetection]);
+  },[configStorageKey,resetDetection]);
 
   const write=useCallback(async(text:string)=>{
-    const characteristic=rxRef.current;if(!characteristic)throw new Error("Seat01は接続されていません");
+    const characteristic=rxRef.current;if(!characteristic)throw new Error(`${expectedProbe}は接続されていません`);
     const bytes=new TextEncoder().encode(text);
     if(characteristic.writeValueWithResponse)await characteristic.writeValueWithResponse(bytes);
     else if(characteristic.writeValue)await characteristic.writeValue(bytes);
@@ -111,7 +112,7 @@ export function useSeat01Rfid(){
       try{
         const message=JSON.parse(raw) as Record<string,unknown>;
         const probe=typeof message.probe==="string"?message.probe:"";
-        if(probe!=="Seat01"){setState(current=>({...current,status:"error",probeName:probe,rawMessage:raw,error:`Seat01以外の通知を受信しました: ${probe||"unknown"}`}));continue;}
+        if(probe!==expectedProbe){setState(current=>({...current,status:"error",probeName:probe,rawMessage:raw,error:`${expectedProbe}以外の通知を受信しました: ${probe||"unknown"}`}));continue;}
         const mode=typeof message.mode==="string"?message.mode:"unknown",battery=Number(message.battery);
         const charging=message.charging===true||message.charging==="true"?true:message.charging===false||message.charging==="false"?false:null;
         const now=Date.now(),candidates=normalizeCandidates(message.cards);
@@ -137,7 +138,7 @@ export function useSeat01Rfid(){
         }else setState(current=>({...current,status:"connected",probeName:probe,battery:Number.isFinite(battery)?battery:current.battery,charging,lastMessageAt:now,lastHeartbeatAt:mode==="heartbeat"?now:current.lastHeartbeatAt,rawMessage:JSON.stringify(message,null,2),error:""}));
       }catch(error){setState(current=>({...current,status:"error",rawMessage:raw,error:error instanceof Error?error.message:"BLE通知を解析できません"}));}
     }
-  },[]);
+  },[expectedProbe]);
 
   const onDisconnected=useCallback(()=>{serverRef.current=null;txRef.current=null;rxRef.current=null;setState(current=>({...current,status:"disconnected",error:"BLE接続が切断されました"}));},[]);
 
@@ -169,7 +170,7 @@ export function useSeat01Rfid(){
 
   const startScan=useCallback(async()=>{try{resetDetection();await write(SCAN_COMMAND);setState(current=>({...current,error:""}));}catch(error){setState(current=>({...current,error:error instanceof Error?error.message:"スキャン開始に失敗しました"}));}},[resetDetection,write]);
   const stopScan=useCallback(async()=>{try{await write(STOP_COMMAND);setState(current=>({...current,error:""}));}catch(error){setState(current=>({...current,error:error instanceof Error?error.message:"スキャン停止に失敗しました"}));}},[write]);
-  useEffect(()=>{try{const saved=JSON.parse(window.localStorage.getItem(RFID_CONFIG_KEY)??"null") as Partial<RfidDetectionConfig>|null;if(saved)updateConfig(saved);}catch{/* 破損した設定は既定値を使う */}},[updateConfig]);
+  useEffect(()=>{try{const raw=window.localStorage.getItem(configStorageKey)??(seat===1?window.localStorage.getItem("poker-stream-rfid-detection-v1"):null);const saved=JSON.parse(raw??"null") as Partial<RfidDetectionConfig>|null;if(saved)updateConfig(saved);}catch{/* 破損した設定は既定値を使う */}},[configStorageKey,seat,updateConfig]);
   useEffect(()=>()=>{const device=deviceRef.current,tx=txRef.current;if(tx)tx.removeEventListener("characteristicvaluechanged",onValueChanged);if(device)device.removeEventListener("gattserverdisconnected",onDisconnected);},[onDisconnected,onValueChanged]);
-  return {state,config,updateConfig,resetConfig:()=>updateConfig(DEFAULT_RFID_DETECTION_CONFIG),clearDetection:resetDetection,connect,disconnect,startScan,stopScan};
+  return {seat,expectedProbe,state,config,updateConfig,resetConfig:()=>updateConfig(DEFAULT_RFID_DETECTION_CONFIG),clearDetection:resetDetection,connect,disconnect,startScan,stopScan};
 }
