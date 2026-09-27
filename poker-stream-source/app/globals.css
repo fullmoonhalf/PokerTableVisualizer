@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "../vendor/shadcn-tailwind-4.13.0.css";
+.rfid-tab.rfid-tab.rfid-tab.rfid-tab .rfid-seat-card{height:116px;min-height:116px}.rfid-tab.rfid-tab.rfid-tab.rfid-tab .rfid-seat-card .rfid-seat-cards,.rfid-tab.rfid-tab.rfid-tab.rfid-tab .rfid-seat-card .rfid-mini-ranking{align-self:start;padding-top:0}.rfid-tab.rfid-tab.rfid-tab.rfid-tab .rfid-seat-card .rfid-seat-actions{top:6px;bottom:auto;height:102px}
 .rfid-tab.rfid-tab.rfid-tab.rfid-tab .rfid-seat-card .rfid-seat-actions{position:absolute;top:6px;right:6px;z-index:4;align-self:auto;align-content:start;transform:none}
 .rfid-tab.rfid-tab.rfid-tab.rfid-tab .rfid-seat-card .rfid-seat-actions{align-self:start;align-content:start}
 .rfid-tab.rfid-tab.rfid-tab.rfid-tab .rfid-seat-card .rfid-seat-cards,.rfid-tab.rfid-tab.rfid-tab.rfid-tab .rfid-seat-card .rfid-mini-ranking{transform:translateX(20px)}.rfid-tab.rfid-tab.rfid-tab.rfid-tab .rfid-seat-card .rfid-seat-actions{transform:translateX(10px)}
