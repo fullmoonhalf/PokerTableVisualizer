@@ -30,10 +30,10 @@ type BluetoothNavigator=Navigator&{bluetooth?:{requestDevice:(options:unknown)=>
 export type Seat01RfidState={
   status:RfidStatus;deviceName:string;probeName:string;battery:number|null;charging:boolean|null;
   lastHeartbeatAt:number|null;lastMessageAt:number|null;candidates:RawCardCandidate[];rawMessage:string;error:string;
-  detectionStatus:RfidDetectionStatus;aggregatedCandidates:AggregatedCardCandidate[];confirmedCards:number[];scanMessageCount:number;stableUpdates:number;
+  detectionStatus:RfidDetectionStatus;aggregatedCandidates:AggregatedCardCandidate[];confirmedCards:number[];scanMessageCount:number;stableUpdates:number;scanning:boolean;
 };
 
-const INITIAL_STATE:Seat01RfidState={status:"idle",deviceName:"",probeName:"",battery:null,charging:null,lastHeartbeatAt:null,lastMessageAt:null,candidates:[],rawMessage:"",error:"",detectionStatus:"empty",aggregatedCandidates:[],confirmedCards:[],scanMessageCount:0,stableUpdates:0};
+const INITIAL_STATE:Seat01RfidState={status:"idle",deviceName:"",probeName:"",battery:null,charging:null,lastHeartbeatAt:null,lastMessageAt:null,candidates:[],rawMessage:"",error:"",detectionStatus:"empty",aggregatedCandidates:[],confirmedCards:[],scanMessageCount:0,stableUpdates:0,scanning:false};
 export const DEFAULT_RFID_DETECTION_CONFIG:RfidDetectionConfig={observationWindow:20,minObservations:6,minCoverage:.35,requiredStableUpdates:5,conflictRatio:.7};
 const rfidConfigKey=(probeName:string)=>`poker-stream.rfid-detection.${probeName}.v1`;
 
@@ -140,14 +140,14 @@ export function useSeatRfid(seat:number){
     }
   },[expectedProbe]);
 
-  const onDisconnected=useCallback(()=>{serverRef.current=null;txRef.current=null;rxRef.current=null;setState(current=>({...current,status:"disconnected",error:"BLE接続が切断されました"}));},[]);
+  const onDisconnected=useCallback(()=>{serverRef.current=null;txRef.current=null;rxRef.current=null;setState(current=>({...current,status:"disconnected",scanning:false,error:"BLE接続が切断されました"}));},[]);
 
   const disconnect=useCallback(()=>{
     const device=deviceRef.current,tx=txRef.current;
     if(tx){tx.removeEventListener("characteristicvaluechanged",onValueChanged);void tx.stopNotifications?.().catch(()=>undefined);}
     if(device){device.removeEventListener("gattserverdisconnected",onDisconnected);serverRef.current?.disconnect();}
     deviceRef.current=null;serverRef.current=null;txRef.current=null;rxRef.current=null;receiveBufferRef.current="";
-    setState(current=>({...current,status:"disconnected",error:""}));
+    setState(current=>({...current,status:"disconnected",scanning:false,error:""}));
   },[onDisconnected,onValueChanged]);
 
   const connect=useCallback(async()=>{
@@ -165,11 +165,12 @@ export function useSeatRfid(seat:number){
       setState(current=>({...current,status:"connected",deviceName:device.name??device.id,error:""}));
       resetDetection();
       await write(SCAN_COMMAND);
+      setState(current=>({...current,scanning:true,error:""}));
     }catch(error){setState(current=>({...current,status:"error",error:error instanceof Error?error.message:"BLE接続に失敗しました"}));}
   },[onDisconnected,onValueChanged,resetDetection,write]);
 
-  const startScan=useCallback(async()=>{try{resetDetection();await write(SCAN_COMMAND);setState(current=>({...current,error:""}));}catch(error){setState(current=>({...current,error:error instanceof Error?error.message:"スキャン開始に失敗しました"}));}},[resetDetection,write]);
-  const stopScan=useCallback(async()=>{try{await write(STOP_COMMAND);setState(current=>({...current,error:""}));}catch(error){setState(current=>({...current,error:error instanceof Error?error.message:"スキャン停止に失敗しました"}));}},[write]);
+  const startScan=useCallback(async()=>{try{resetDetection();await write(SCAN_COMMAND);setState(current=>({...current,scanning:true,error:""}));}catch(error){setState(current=>({...current,scanning:false,error:error instanceof Error?error.message:"スキャン開始に失敗しました"}));}},[resetDetection,write]);
+  const stopScan=useCallback(async()=>{try{await write(STOP_COMMAND);setState(current=>({...current,scanning:false,error:""}));}catch(error){setState(current=>({...current,error:error instanceof Error?error.message:"スキャン停止に失敗しました"}));}},[write]);
   useEffect(()=>{try{const raw=window.localStorage.getItem(configStorageKey)??(seat===1?window.localStorage.getItem("poker-stream-rfid-detection-v1"):null);const saved=JSON.parse(raw??"null") as Partial<RfidDetectionConfig>|null;if(saved)updateConfig(saved);}catch{/* 破損した設定は既定値を使う */}},[configStorageKey,seat,updateConfig]);
   useEffect(()=>()=>{const device=deviceRef.current,tx=txRef.current;if(tx)tx.removeEventListener("characteristicvaluechanged",onValueChanged);if(device)device.removeEventListener("gattserverdisconnected",onDisconnected);},[onDisconnected,onValueChanged]);
   return {seat,expectedProbe,state,config,updateConfig,resetConfig:()=>updateConfig(DEFAULT_RFID_DETECTION_CONFIG),clearDetection:resetDetection,connect,disconnect,startScan,stopScan};
