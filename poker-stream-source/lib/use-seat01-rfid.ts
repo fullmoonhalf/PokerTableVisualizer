@@ -10,7 +10,9 @@ const SCAN_COMMAND="mode=scan\nscan=1\ntimeout=200\nidol=5000\nheartbeat=10000\n
 const STOP_COMMAND="mode=scan\nscan=0\ntimeout=200\nidol=5000\nheartbeat=10000\n";
 
 type RfidStatus="idle"|"requesting"|"connecting"|"connected"|"disconnected"|"error";
+export type RfidDetectionStatus="empty"|"detecting"|"stable"|"conflict"|"confirmed";
 export type RawCardCandidate={card:number;deck?:number;rssi?:number};
+export type AggregatedCardCandidate={card:number;observations:number;coverage:number};
 type BluetoothValueEvent=Event&{target:EventTarget&{value?:DataView}};
 type BluetoothCharacteristic=EventTarget&{
   value?:DataView;
@@ -27,9 +29,11 @@ type BluetoothNavigator=Navigator&{bluetooth?:{requestDevice:(options:unknown)=>
 export type Seat01RfidState={
   status:RfidStatus;deviceName:string;probeName:string;battery:number|null;charging:boolean|null;
   lastHeartbeatAt:number|null;lastMessageAt:number|null;candidates:RawCardCandidate[];rawMessage:string;error:string;
+  detectionStatus:RfidDetectionStatus;aggregatedCandidates:AggregatedCardCandidate[];confirmedCards:number[];scanMessageCount:number;stableUpdates:number;
 };
 
-const INITIAL_STATE:Seat01RfidState={status:"idle",deviceName:"",probeName:"",battery:null,charging:null,lastHeartbeatAt:null,lastMessageAt:null,candidates:[],rawMessage:"",error:""};
+const INITIAL_STATE:Seat01RfidState={status:"idle",deviceName:"",probeName:"",battery:null,charging:null,lastHeartbeatAt:null,lastMessageAt:null,candidates:[],rawMessage:"",error:"",detectionStatus:"empty",aggregatedCandidates:[],confirmedCards:[],scanMessageCount:0,stableUpdates:0};
+const OBSERVATION_WINDOW=20,MIN_OBSERVATIONS=6,MIN_COVERAGE=.35,REQUIRED_STABLE_UPDATES=5,CONFLICT_RATIO=.7;
 
 const extractJsonObjects=(source:string)=>{
   const objects:string[]=[];let start=-1,depth=0,inString=false,escaped=false,lastEnd=0;
@@ -66,6 +70,12 @@ export function useSeat01Rfid(){
   const [state,setState]=useState<Seat01RfidState>(INITIAL_STATE);
   const deviceRef=useRef<BluetoothDevice|null>(null),serverRef=useRef<BluetoothServer|null>(null),txRef=useRef<BluetoothCharacteristic|null>(null),rxRef=useRef<BluetoothCharacteristic|null>(null);
   const receiveBufferRef=useRef("");
+  const observationPacketsRef=useRef<number[][]>([]),stableSignatureRef=useRef(""),stableUpdatesRef=useRef(0),confirmedCardsRef=useRef<number[]>([]);
+
+  const resetDetection=useCallback(()=>{
+    observationPacketsRef.current=[];stableSignatureRef.current="";stableUpdatesRef.current=0;confirmedCardsRef.current=[];
+    setState(current=>({...current,candidates:[],detectionStatus:"empty",aggregatedCandidates:[],confirmedCards:[],scanMessageCount:0,stableUpdates:0}));
+  },[]);
 
   const write=useCallback(async(text:string)=>{
     const characteristic=rxRef.current;if(!characteristic)throw new Error("Seat01は接続されていません");
@@ -87,7 +97,23 @@ export function useSeat01Rfid(){
         const mode=typeof message.mode==="string"?message.mode:"unknown",battery=Number(message.battery);
         const charging=message.charging===true||message.charging==="true"?true:message.charging===false||message.charging==="false"?false:null;
         const now=Date.now(),candidates=normalizeCandidates(message.cards);
-        setState(current=>({...current,status:"connected",probeName:probe,battery:Number.isFinite(battery)?battery:current.battery,charging,lastMessageAt:now,lastHeartbeatAt:mode==="heartbeat"?now:current.lastHeartbeatAt,candidates:mode==="scan"?candidates:current.candidates,rawMessage:JSON.stringify(message,null,2),error:""}));
+        if(mode==="scan"){
+          const cards=[...new Set(candidates.map(candidate=>candidate.card))];
+          observationPacketsRef.current=[...observationPacketsRef.current,cards].slice(-OBSERVATION_WINDOW);
+          const packets=observationPacketsRef.current,counts=new Map<number,number>();
+          packets.forEach(packet=>packet.forEach(card=>counts.set(card,(counts.get(card)??0)+1)));
+          const aggregatedCandidates=[...counts.entries()].map(([card,observations])=>({card,observations,coverage:observations/packets.length})).sort((a,b)=>b.observations-a.observations||a.card-b.card);
+          const [first,second,third]=aggregatedCandidates;
+          const validPair=Boolean(first&&second&&first.observations>=MIN_OBSERVATIONS&&second.observations>=MIN_OBSERVATIONS&&first.coverage>=MIN_COVERAGE&&second.coverage>=MIN_COVERAGE);
+          const conflict=Boolean(validPair&&third&&third.observations>=second.observations*CONFLICT_RATIO);
+          const signature=validPair&&!conflict?[first.card,second.card].sort((a,b)=>a-b).join("-"):"";
+          const supportsPair=Boolean(signature&&cards.some(card=>card===first.card||card===second.card));
+          if(!signature){stableSignatureRef.current="";stableUpdatesRef.current=0;}
+          else if(supportsPair){stableUpdatesRef.current=stableSignatureRef.current===signature?stableUpdatesRef.current+1:1;stableSignatureRef.current=signature;}
+          if(!confirmedCardsRef.current.length&&signature&&stableUpdatesRef.current>=REQUIRED_STABLE_UPDATES)confirmedCardsRef.current=[first.card,second.card].sort((a,b)=>a-b);
+          const detectionStatus:RfidDetectionStatus=confirmedCardsRef.current.length?"confirmed":conflict?"conflict":validPair?"stable":aggregatedCandidates.length?"detecting":"empty";
+          setState(current=>({...current,status:"connected",probeName:probe,battery:Number.isFinite(battery)?battery:current.battery,charging,lastMessageAt:now,candidates,rawMessage:JSON.stringify(message,null,2),error:"",detectionStatus,aggregatedCandidates,confirmedCards:confirmedCardsRef.current,scanMessageCount:packets.length,stableUpdates:stableUpdatesRef.current}));
+        }else setState(current=>({...current,status:"connected",probeName:probe,battery:Number.isFinite(battery)?battery:current.battery,charging,lastMessageAt:now,lastHeartbeatAt:mode==="heartbeat"?now:current.lastHeartbeatAt,rawMessage:JSON.stringify(message,null,2),error:""}));
       }catch(error){setState(current=>({...current,status:"error",rawMessage:raw,error:error instanceof Error?error.message:"BLE通知を解析できません"}));}
     }
   },[]);
@@ -115,11 +141,12 @@ export function useSeat01Rfid(){
       deviceRef.current=device;serverRef.current=server;txRef.current=tx;rxRef.current=rx;
       device.addEventListener("gattserverdisconnected",onDisconnected);tx.addEventListener("characteristicvaluechanged",onValueChanged);await tx.startNotifications();
       setState(current=>({...current,status:"connected",deviceName:device.name??device.id,error:""}));
+      resetDetection();
       await write(SCAN_COMMAND);
     }catch(error){setState(current=>({...current,status:"error",error:error instanceof Error?error.message:"BLE接続に失敗しました"}));}
-  },[onDisconnected,onValueChanged,write]);
+  },[onDisconnected,onValueChanged,resetDetection,write]);
 
-  const startScan=useCallback(async()=>{try{await write(SCAN_COMMAND);setState(current=>({...current,error:""}));}catch(error){setState(current=>({...current,error:error instanceof Error?error.message:"スキャン開始に失敗しました"}));}},[write]);
+  const startScan=useCallback(async()=>{try{resetDetection();await write(SCAN_COMMAND);setState(current=>({...current,error:""}));}catch(error){setState(current=>({...current,error:error instanceof Error?error.message:"スキャン開始に失敗しました"}));}},[resetDetection,write]);
   const stopScan=useCallback(async()=>{try{await write(STOP_COMMAND);setState(current=>({...current,error:""}));}catch(error){setState(current=>({...current,error:error instanceof Error?error.message:"スキャン停止に失敗しました"}));}},[write]);
   useEffect(()=>()=>{const device=deviceRef.current,tx=txRef.current;if(tx)tx.removeEventListener("characteristicvaluechanged",onValueChanged);if(device)device.removeEventListener("gattserverdisconnected",onDisconnected);},[onDisconnected,onValueChanged]);
   return {state,connect,disconnect,startScan,stopScan};
