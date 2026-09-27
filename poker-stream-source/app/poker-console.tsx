@@ -15,6 +15,7 @@ const STORAGE_KEY="poker-stream.hand.v1";
 const LAYOUT_KEY="poker-stream.layout.v1";
 const LEVELS_KEY="poker-stream.levels.v1";
 const DISPLAY_TAB_KEY="poker-stream.display-tab.v1";
+const RFID_AUTO_APPLY_KEY="poker-stream.rfid-auto-apply.v1";
 type Point={x:number;y:number};
 type OverlayLayout={seats:Record<number,Point>;gamePanel:Point;area:{x:number;y:number;width:number;height:number}};
 type BlindLevel={id:number;smallBlind:number;bigBlind:number;chipUnit:number;ante:AnteConfig};
@@ -76,6 +77,7 @@ export default function PokerConsole(){
   const [showStats,setShowStats]=useState(false);
   const [showRange,setShowRange]=useState(false);
   const [fullResetConfirmation,setFullResetConfirmation]=useState("");
+  const [rfidAutoApply,setRfidAutoApply]=useState(false);
   const seat01Rfid=useSeat01Rfid();
   const stageRef=useRef<HTMLDivElement>(null);
   const shortcutAmountActive=useRef(false);
@@ -84,6 +86,7 @@ export default function PokerConsole(){
   const seatOutShortcutActive=useRef(false);
   const winnerSeatsRef=useRef<number[]>([1]);
   const seatOutSelectionRef=useRef<number[]>([]);
+  const rfidAppliedKeyRef=useRef("");
   const actor=state.players.find(p=>p.seat===state.actorSeat);
   const callAmount=actor?amountToCall(state,actor.seat):0;
   const equity=useMemo(()=>calculateEquity(state.players,state.board),[state.players,state.board]);
@@ -137,6 +140,7 @@ export default function PokerConsole(){
     setOverlay(params.get("view")==="overlay");
     setChroma(params.get("key")||"00ff00");
   },[]);
+  useEffect(()=>setRfidAutoApply(window.localStorage.getItem(RFID_AUTO_APPLY_KEY)==="true"),[]);
   useEffect(()=>{
     const syncDisplay=(value:string|null)=>{setShowStats(value==="stats");setShowRange(value==="range");if(value&&["layout","players","levels","stats","range","rfid","reset"].includes(value))setActiveTab(value);};
     syncDisplay(window.localStorage.getItem(DISPLAY_TAB_KEY));
@@ -330,6 +334,24 @@ export default function PokerConsole(){
       cards[index]=value;return{...item,cards:cards[0]||cards[1]?cards:null};
     })}));
   };
+  const confirmedRfidCards=seat01Rfid.state.confirmedCards.map(cardIndexLabel);
+  const seat01Cards=state.players.find(player=>player.seat===1)?.cards;
+  const rfidAlreadyApplied=confirmedRfidCards.length===2&&seat01Cards?.[0]===confirmedRfidCards[0]&&seat01Cards?.[1]===confirmedRfidCards[1];
+  const applySeat01RfidCards=(automatic=false)=>{
+    if(confirmedRfidCards.length!==2)return false;
+    const cards=confirmedRfidCards as [string,string];
+    const seat01=state.players.find(player=>player.seat===1);
+    if(!seat01||seat01.sittingOut){if(!automatic)setNotice("Seat 1はSeat Out中のためRFIDカードを反映できません");return false;}
+    const usedElsewhere=[...state.board,...state.players.filter(player=>player.seat!==1).flatMap(player=>player.cards??[])];
+    const duplicate=cards.find(card=>usedElsewhere.includes(card));
+    if(duplicate){if(!automatic)setNotice(`${duplicate} は別の場所に割り当て済みです`);return false;}
+    const appliedKey=`${state.handNumber}:${cards.join("-")}`;
+    if(rfidAppliedKeyRef.current===appliedKey||rfidAlreadyApplied)return true;
+    setState(previous=>({...previous,players:previous.players.map(player=>player.seat===1?{...player,cards}:player)}));
+    rfidAppliedKeyRef.current=appliedKey;setNotice(`Seat 1 RFID · ${cards.join(" ")} を${automatic?"自動":"手動"}反映しました`);return true;
+  };
+  useEffect(()=>{if(rfidAutoApply&&seat01Rfid.state.confirmedCards.length===2)applySeat01RfidCards(true);},[rfidAutoApply,seat01Rfid.state.confirmedCards.join("-"),state.handNumber]);
+  const toggleRfidAutoApply=()=>setRfidAutoApply(current=>{const next=!current;window.localStorage.setItem(RFID_AUTO_APPLY_KEY,String(next));return next;});
   const setBoardCard=(index:number,value:string)=>{
     const current=state.board[index]??"";
     if(cardUsedElsewhere(value,current)){setNotice(`${value} is already assigned`);return;}
@@ -366,6 +388,7 @@ export default function PokerConsole(){
     setNextBlinds({smallBlind:next.smallBlind,bigBlind:next.bigBlind,chipUnit:next.chipUnit});
     shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setAmount(String(next.bigBlind*3));
     setHistory([]);
+    rfidAppliedKeyRef.current="";seat01Rfid.clearDetection();
     setNotice(`${advance?"New hand":"Reset"} · BTN Seat ${next.button} · ${next.smallBlind}/${next.bigBlind} · ${anteLabel(next.ante)}`);
   };
   const resetGameSession=()=>{
@@ -375,12 +398,14 @@ export default function PokerConsole(){
     const next=resetHand(baseline,nextAnte,nextBlinds,nextButton,true);
     setState(next);setHistory([]);setWinners([next.actorSeat??next.button]);setSeatOutSelectionValue([]);setAmount(String(next.bigBlind*3));
     setShortcutAmountEditing(false);setShortcutAmountDraft("");shortcutAmountActive.current=false;shortcutAmountBuffer.current="";
+    rfidAppliedKeyRef.current="";seat01Rfid.clearDetection();
     setNotice(`Game reset · Hand 1 · BTN Seat ${next.button}`);
   };
   const resetEverything=()=>{
     if(fullResetConfirmation!=="RESET")return;
     if(!window.confirm("すべての設定と保存データを初期値へ戻します。この操作は取り消せません。続行しますか？"))return;
     seat01Rfid.disconnect();
+    seat01Rfid.resetConfig();window.localStorage.removeItem(RFID_AUTO_APPLY_KEY);setRfidAutoApply(false);rfidAppliedKeyRef.current="";
     const next=createDemoHand();
     window.localStorage.removeItem(STORAGE_KEY);window.localStorage.removeItem(LAYOUT_KEY);window.localStorage.removeItem(LEVELS_KEY);window.localStorage.setItem(DISPLAY_TAB_KEY,"layout");
     setState(next);setHistory([]);setLayout(DEFAULT_LAYOUT);setLevels(DEFAULT_LEVELS.map(level=>({...level,ante:{...level.ante}})));setSelectedLevelId(1);
@@ -517,7 +542,7 @@ export default function PokerConsole(){
             </div>
           </TabsContent>
           <TabsContent value="rfid" className="rfid-tab">
-            <div className="layout-heading"><div><span className="eyebrow">RFID DIAGNOSTICS</span><h1>Seat01 BLE接続</h1><p>接続状態と受信データを確認する診断段階です。読み取ったカードはゲーム状態・OBS・統計へまだ反映されません。</p></div></div>
+            <div className="layout-heading"><div><span className="eyebrow">RFID DIAGNOSTICS</span><h1>Seat01 BLE接続</h1><p>確定した2枚をSeat 1のホールカードへ手動または自動で反映できます。未確定の候補はゲーム状態へ反映されません。</p></div></div>
             <section className="rfid-connection-card">
               <div className="rfid-connection-head"><div><span className={`rfid-status is-${seat01Rfid.state.status}`}>{seat01Rfid.state.status.toUpperCase()}</span><h2>{seat01Rfid.state.deviceName||"Seat01 device"}</h2><small>{seat01Rfid.state.probeName||"Probe未確認"}</small></div><div className="rfid-actions"><Button onClick={seat01Rfid.connect} disabled={["requesting","connecting","connected"].includes(seat01Rfid.state.status)}>接続</Button><Button variant="outline" onClick={seat01Rfid.startScan} disabled={seat01Rfid.state.status!=="connected"}>Scan開始</Button><Button variant="outline" onClick={seat01Rfid.stopScan} disabled={seat01Rfid.state.status!=="connected"}>Scan停止</Button><Button variant="ghost" onClick={seat01Rfid.disconnect} disabled={seat01Rfid.state.status!=="connected"}>切断</Button></div></div>
               {seat01Rfid.state.error&&<div className="rfid-error">{seat01Rfid.state.error}</div>}
@@ -526,6 +551,7 @@ export default function PokerConsole(){
             <section className={`rfid-estimate is-${seat01Rfid.state.detectionStatus}`}>
               <div className="rfid-estimate-head"><div><span className="eyebrow">CARD ESTIMATION</span><h2>2枚の安定判定</h2></div><b className="rfid-detection-status">{seat01Rfid.state.detectionStatus.toUpperCase()}</b></div>
               <div className="rfid-confirmed-cards">{seat01Rfid.state.confirmedCards.length===2?seat01Rfid.state.confirmedCards.map(card=><strong key={card}>{cardIndexLabel(card)}</strong>):<p>観測を蓄積しています。確定するまでHandStateには反映されません。</p>}</div>
+              <div className={`rfid-handstate-transfer${rfidAlreadyApplied?" is-applied":""}`}><div><span>HANDSTATE · SEAT 1</span><b>{rfidAlreadyApplied?"反映済み":seat01Rfid.state.confirmedCards.length===2?"反映待ち":"確定待ち"}</b></div><div><Button size="sm" variant={rfidAutoApply?"default":"outline"} aria-pressed={rfidAutoApply} onClick={toggleRfidAutoApply}>自動反映 {rfidAutoApply?"ON":"OFF"}</Button><Button size="sm" disabled={seat01Rfid.state.confirmedCards.length!==2||rfidAlreadyApplied} onClick={()=>applySeat01RfidCards(false)}>Seat 1へ反映</Button></div></div>
               <div className="rfid-ranking">{seat01Rfid.state.aggregatedCandidates.slice(0,5).map((candidate,index)=><article key={candidate.card}><b>#{index+1} {cardIndexLabel(candidate.card)}</b><span><i style={{width:`${candidate.coverage*100}%`}}/></span><small>{candidate.observations}回 · {(candidate.coverage*100).toFixed(0)}%</small></article>)}</div>
               <small className="rfid-rule">直近{seat01Rfid.config.observationWindow}通知を集計 · 各{seat01Rfid.config.minObservations}回以上 · Coverage {(seat01Rfid.config.minCoverage*100).toFixed(0)}%以上 · 上位2枚が{seat01Rfid.config.requiredStableUpdates}更新連続で確定 · 3位が2位の{(seat01Rfid.config.conflictRatio*100).toFixed(0)}%以上なら競合</small>
             </section>
