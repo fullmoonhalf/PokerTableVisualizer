@@ -66,8 +66,10 @@ const forcedBets=(activeSeats:number[],button:number,smallBlind:number,bigBlind:
   if(activeSeats.length<2)return [];
   const buttonIndex=activeSeats.indexOf(button);
   const seatAfter=(_:number,offset:number)=>activeSeats[(buttonIndex+offset)%activeSeats.length];
-  const smallBlindSeat=seatAfter(button,1);
-  const bigBlindSeat=seatAfter(button,2);
+  // Heads-up: the button posts SB and acts first preflop; the other seat posts BB.
+  const headsUp=activeSeats.length===2;
+  const smallBlindSeat=headsUp?button:seatAfter(button,1);
+  const bigBlindSeat=seatAfter(button,headsUp?1:2);
   const smallBlindPost:ForcedBet={seat:smallBlindSeat,amount:smallBlind,kind:"small-blind",countsTowardStreetBet:true};
   const bigBlindPost:ForcedBet={seat:bigBlindSeat,amount:bigBlind,kind:"big-blind",countsTowardStreetBet:true};
   if(ante.mode==="big-blind"){
