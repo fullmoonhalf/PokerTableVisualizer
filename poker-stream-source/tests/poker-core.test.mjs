@@ -112,3 +112,57 @@ for (const seats of [[], [4]]) test(`${seats.length} active players: no forced b
   assert.equal(state.actorSeat, null);
   assert.equal(state.pot, 0);
 });
+
+for (const removed of [1, 2, 3]) test(`enter HU after seat ${removed} leaves: surviving previous BB becomes BTN`, () => {
+  let state = setup([1, 2, 3], 1);
+  state = setSeatOut(state, removed, true);
+  const survivors = [1, 2, 3].filter(seat => seat !== removed);
+  const requested = survivors.find(seat => seat > state.button) ?? survivors[0];
+  state = resetHand(state, noAnte, blinds, requested, true);
+  const button = removed === 3 ? requested : 3;
+  const bb = survivors.find(seat => seat !== button);
+  assert.equal(state.button, button);
+  assertPositions(state, button, bb, button);
+  if (removed !== 3) assert.notEqual(bb, 3);
+  state = executeCommand(state, { type: 'CALL', seat: button });
+  state = executeCommand(state, { type: 'CHECK', seat: bb });
+  assert.equal(state.street, 'flop');
+  assert.equal(state.actorSeat, bb);
+});
+
+test('same-hand reset into HU preserves requested BTN', () => {
+  let state = setup([1, 2, 3], 1);
+  state = setSeatOut(state, 2, true);
+  state = resetHand(state, noAnte, blinds, 1);
+  assertPositions(state, 1, 3, 1);
+});
+
+test('existing HU respects supplied BTN on next hand', () => {
+  const state = resetHand(setup([1, 3], 1), noAnte, blinds, 1, true);
+  assertPositions(state, 1, 3, 1);
+});
+
+test('multiway next hand keeps requested BTN', () => {
+  const state = resetHand(setup([1, 2, 3, 4], 1), noAnte, blinds, 2, true);
+  assertPositions(state, 3, 4, 1);
+});
+
+for (const priority of ['blind', 'ante']) test(`multiple seat-outs into HU preserve short BB ante (${priority})`, () => {
+  let state = setup([2, 4, 7, 9], 2);
+  state = setSeatOut(state, 2, true);
+  state = setSeatOut(state, 4, true);
+  // Previous BB was 7. Seat 9 becomes the new short BB, even with BTN requested as 9.
+  state = { ...state, players: state.players.map(p => p.seat === 9 ? { ...p, stack: 300 } : p) };
+  const opening = Object.fromEntries(state.players.map(p => [p.seat, p.stack]));
+  state = resetHand(state, { mode: 'big-blind', amount: 200, priority }, blinds, 9, true);
+  assert.equal(state.button, 7);
+  assert.equal(state.actorSeat, 7);
+  assert.equal(player(state, 9).streetBet, priority === 'blind' ? 200 : 100);
+  assert.equal(player(state, 9).totalInvested, 300);
+  assert.equal(player(state, 9).allIn, true);
+  assert.equal(state.pot, 400);
+  for (const p of state.players) assert.equal(p.stack + p.totalInvested, opening[p.seat]);
+  const again = resetHand(state, state.ante, blinds, state.button);
+  assert.equal(again.button, 7);
+  assert.equal(again.pot, state.pot);
+});

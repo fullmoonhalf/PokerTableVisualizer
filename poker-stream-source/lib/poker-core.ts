@@ -135,6 +135,16 @@ export function resetHand(previous:HandState,ante:AnteConfig,blinds:BlindConfig,
     const stack=advanceHandNumber?player.stack:openingStacks[player.seat]??player.stack+player.totalInvested;
     return {...player,stack,streetBet:0,totalInvested:0,folded:player.sittingOut,allIn:stack===0,acted:player.sittingOut,cards:null};
   });
+  const activeSeats=players.filter(player=>!player.sittingOut).map(player=>player.seat);
+  // Use the hand's original posts: seat-out flags may already have changed.
+  const previousBlinds=previous.events.filter(event=>event.type==="BLIND_POSTED");
+  const previousSmallBlind=previousBlinds[0]?.seat;
+  const previousBigBlind=previousBlinds[1]?.seat;
+  const enteringHeadsUp=previousSmallBlind!==undefined&&previousSmallBlind!==previous.button;
+  if(advanceHandNumber&&activeSeats.length===2&&enteringHeadsUp&&previousBigBlind!==undefined&&activeSeats.includes(previousBigBlind)){
+    // The surviving previous BB becomes BTN/SB, avoiding consecutive big blinds.
+    dealerButton=previousBigBlind;
+  }
   return startHand(players,handNumber,ante,blinds,dealerButton,advanceHandNumber);
 }
 
