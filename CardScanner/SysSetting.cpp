@@ -35,6 +35,13 @@ String SysSetting::get(const char *key)
 }
 
 
+bool SysSetting::has(const char *key) const
+{
+    String _key(key);
+    return _Collection.find(_key) != _Collection.end();
+}
+
+
 /// @brief 
 /// @param key 
 /// @return 
