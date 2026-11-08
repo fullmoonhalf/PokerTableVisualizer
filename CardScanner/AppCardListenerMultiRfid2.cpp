@@ -59,6 +59,10 @@ bool AppCardListenerMultiRfid2::scan(int timeout)
     _CardCount = 0;
     for (uint8_t t = 0; t < RFID_READER_COUNT; t++) {
         _ReadCount[t] = 0;
+        if((_ScanSlotMask & (1U << t)) == 0)
+        {
+            continue;
+        }
         if(_ValidSlot[t] == false)
         {
             continue;
@@ -75,6 +79,10 @@ bool AppCardListenerMultiRfid2::scan(int timeout)
         int count = 0;
         if(_scan(_MFRC522, timeout, _CardInfo+_CardCount, &count))
         {
+            for(int card_index=0; card_index<count; ++card_index)
+            {
+                _CardInfo[_CardCount+card_index].slot = t;
+            }
             _ReadCount[t] = count;
             _CardCount += count;
         }
@@ -116,7 +124,13 @@ bool AppCardListenerMultiRfid2::switchTcaChannel(int channel)
 /// @return 
 int AppCardListenerMultiRfid2::encode(char *outBuffer)
 {
-    return _encode(outBuffer, _CardInfo, _CardCount);
+    return _encode(outBuffer, _CardInfo, _CardCount, true);
+}
+
+
+void AppCardListenerMultiRfid2::setScanSlotMask(uint32_t mask)
+{
+    _ScanSlotMask = mask;
 }
 
 
