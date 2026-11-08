@@ -278,7 +278,7 @@ void AppCardListenerUnitRfid2Base::_dump(AppCardInfo *infos, int Count)
 /// @brief 外部に渡す用のエンコード
 /// @param buffer 
 /// @return 
-int AppCardListenerUnitRfid2Base::_encode(char *outBuffer, AppCardInfo *infos, int Count)
+int AppCardListenerUnitRfid2Base::_encode(char *outBuffer, AppCardInfo *infos, int Count, bool includeSlot)
 {
     char *seek = outBuffer;
     seek += sprintf(seek, "[");
@@ -286,7 +286,14 @@ int AppCardListenerUnitRfid2Base::_encode(char *outBuffer, AppCardInfo *infos, i
     for(int slot_index=0; slot_index<Count; ++slot_index)
     {
         AppCardInfo &slot = infos[slot_index];
-        seek += sprintf(seek, "%s{\"card\":%d,\"deck\":%d,\"rssi\":240}", delim, slot.info[1], slot.info[0]);
+        if(includeSlot)
+        {
+            seek += sprintf(seek, "%s{\"slot\":%d,\"card\":%d,\"deck\":%d,\"rssi\":240}", delim, slot.slot, slot.info[1], slot.info[0]);
+        }
+        else
+        {
+            seek += sprintf(seek, "%s{\"card\":%d,\"deck\":%d,\"rssi\":240}", delim, slot.info[1], slot.info[0]);
+        }
         delim = ",";
     }
     seek += sprintf(seek, "]");
