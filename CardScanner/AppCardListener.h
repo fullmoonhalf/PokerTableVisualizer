@@ -7,6 +7,7 @@
 class AppCardInfo
 {
 public:
+    uint8_t slot;
     uint8_t size;
     uint8_t uid[16];
     uint8_t info[4];

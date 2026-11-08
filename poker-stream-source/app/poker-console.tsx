@@ -9,6 +9,7 @@ import { Tabs,TabsContent,TabsList,TabsTrigger } from "@/components/ui/tabs";
 import { amountToCall,awardPot,createDemoHand,DEFAULT_ANTE,DEFAULT_BLINDS,EMPTY_PLAYER_STATS,EMPTY_RANGE_CELL,executeCommand,RANGE_RANKS,resetHand,setSeatOut as updateSeatOut,type AnteConfig,type BlindConfig,type HandState,type PokerCommand,type PlayerStats } from "@/lib/poker-core";
 import { calculateEquity,deck } from "@/lib/equity";
 import { cardIndexLabel,useSeatRfid } from "@/lib/use-seat01-rfid";
+import { dealerSlotsForStreet,useDealerRfid } from "@/lib/use-dealer-rfid";
 
 declare global{interface Document{modelContext?:{registerTool:(tool:Record<string,unknown>,options?:{signal?:AbortSignal})=>void|Promise<void>}}}
 const STORAGE_KEY="poker-stream.hand.v1";
@@ -16,6 +17,8 @@ const LAYOUT_KEY="poker-stream.layout.v1";
 const LEVELS_KEY="poker-stream.levels.v1";
 const DISPLAY_TAB_KEY="poker-stream.display-tab.v1";
 const RFID_AUTO_APPLY_KEY="poker-stream.rfid-auto-apply.v1";
+const BOARD_INPUT_MODE_KEY="poker-stream.board-input-mode.v1";
+type BoardInputMode="auto"|"manual";
 type Point={x:number;y:number};
 type OverlayLayout={seats:Record<number,Point>;gamePanel:Point;area:{x:number;y:number;width:number;height:number}};
 type BlindLevel={id:number;smallBlind:number;bigBlind:number;chipUnit:number;ante:AnteConfig};
@@ -78,9 +81,12 @@ export default function PokerConsole(){
   const [showRange,setShowRange]=useState(false);
   const [fullResetConfirmation,setFullResetConfirmation]=useState("");
   const [rfidAutoApply,setRfidAutoApply]=useState(false);
+  const [boardInputMode,setBoardInputMode]=useState<BoardInputMode>("manual");
   const seat01Rfid=useSeatRfid(1),seat02Rfid=useSeatRfid(2),seat03Rfid=useSeatRfid(3),seat04Rfid=useSeatRfid(4),seat05Rfid=useSeatRfid(5);
   const seat06Rfid=useSeatRfid(6),seat07Rfid=useSeatRfid(7),seat08Rfid=useSeatRfid(8),seat09Rfid=useSeatRfid(9);
   const seatRfids=[seat01Rfid,seat02Rfid,seat03Rfid,seat04Rfid,seat05Rfid,seat06Rfid,seat07Rfid,seat08Rfid,seat09Rfid];
+  const dealerRfid=useDealerRfid();
+  const {state:dealerRfidState,startScan:startDealerScan,stopScan:stopDealerScan}=dealerRfid;
   const stageRef=useRef<HTMLDivElement>(null);
   const shortcutAmountActive=useRef(false);
   const shortcutAmountBuffer=useRef("");
@@ -143,6 +149,8 @@ export default function PokerConsole(){
     setChroma(params.get("key")||"00ff00");
   },[]);
   useEffect(()=>setRfidAutoApply(window.localStorage.getItem(RFID_AUTO_APPLY_KEY)==="true"),[]);
+  useEffect(()=>{const savedMode=window.localStorage.getItem(BOARD_INPUT_MODE_KEY)==="auto"?"auto":"manual";queueMicrotask(()=>setBoardInputMode(savedMode));},[]);
+  const dealerActiveSlots=dealerRfidState.activeSlots.join(",");
   useEffect(()=>{
     const syncDisplay=(value:string|null)=>{setShowStats(value==="stats");setShowRange(value==="range");if(value&&["layout","players","levels","stats","range","rfid","reset"].includes(value))setActiveTab(value);};
     syncDisplay(window.localStorage.getItem(DISPLAY_TAB_KEY));
@@ -375,8 +383,31 @@ export default function PokerConsole(){
       return changed?{...previous,players}:previous;
     });
   },[rfidAutoApply,allRfidConfirmationSignature,state.handNumber]);
+  useEffect(()=>{
+    if(dealerRfidState.status!=="connected")return;
+    if(boardInputMode==="manual"){if(dealerRfidState.scanning)void stopDealerScan();return;}
+    const slots=dealerSlotsForStreet(state.street);
+    if(!slots.length){if(dealerRfidState.scanning)void stopDealerScan();return;}
+    if(slots.join(",")!==dealerActiveSlots)void startDealerScan(slots);
+  },[boardInputMode,state.street,dealerRfidState.status,dealerRfidState.scanning,dealerActiveSlots,startDealerScan,stopDealerScan]);
+  useEffect(()=>{
+    if(boardInputMode!=="auto")return;
+    const confirmed=dealerRfidState.slots.map(slot=>({slot:slot.slot,card:slot.confirmedCard}));
+    const timer=window.setTimeout(()=>setState(previous=>{
+      const board=Array.from({length:5},(_,slot)=>previous.board[slot]??"");let changed=false;
+      confirmed.forEach(item=>{if(item.card===null)return;const card=cardIndexLabel(item.card);if(board[item.slot]!==card){board[item.slot]=card;changed=true;}});
+      return changed?{...previous,board}:previous;
+    }),0);
+    return()=>window.clearTimeout(timer);
+  },[boardInputMode,dealerRfidState.slots]);
   const toggleRfidAutoApply=()=>setRfidAutoApply(current=>{const next=!current;window.localStorage.setItem(RFID_AUTO_APPLY_KEY,String(next));return next;});
-  const updateAllRfidConfig=(changes:Parameters<typeof seat01Rfid.updateConfig>[0])=>{const next={...seat01Rfid.config,...changes};seatRfids.forEach(reader=>reader.updateConfig(next));};
+  const changeBoardInputMode=(mode:BoardInputMode)=>{
+    if(mode===boardInputMode)return;
+    dealerRfid.clearDetection();
+    if(mode==="manual"&&dealerRfid.state.scanning)void dealerRfid.stopScan();
+    window.localStorage.setItem(BOARD_INPUT_MODE_KEY,mode);setBoardInputMode(mode);setNotice(`Board RFID · ${mode==="auto"?"自動":"手動"}モードへ切り替えました`);
+  };
+  const updateAllRfidConfig=(changes:Parameters<typeof seat01Rfid.updateConfig>[0])=>{const next={...seat01Rfid.config,...changes};seatRfids.forEach(reader=>reader.updateConfig(next));dealerRfid.updateConfig(next);};
   const rfidCandidateProgress=(reader:typeof seat01Rfid,observations:number)=>reader.config.minObservations<=1?100:Math.max(0,Math.min(100,((observations-1)/(reader.config.minObservations-1))*100));
   const setBoardCard=(index:number,value:string)=>{
     const current=state.board[index]??"";
@@ -415,6 +446,7 @@ export default function PokerConsole(){
     shortcutAmountActive.current=false;shortcutAmountBuffer.current="";setShortcutAmountEditing(false);setShortcutAmountDraft("");setAmount(String(next.bigBlind*3));
     setHistory([]);
     rfidAppliedKeyRef.current="";seatRfids.forEach(reader=>reader.clearDetection());
+    dealerRfid.resetForNewHand();
     setNotice(`${advance?"New hand":"Reset"} · BTN Seat ${next.button} · ${next.smallBlind}/${next.bigBlind} · ${anteLabel(next.ante)}`);
   };
   const resetGameSession=()=>{
@@ -425,13 +457,16 @@ export default function PokerConsole(){
     setState(next);setHistory([]);setWinners([next.actorSeat??next.button]);setSeatOutSelectionValue([]);setAmount(String(next.bigBlind*3));
     setShortcutAmountEditing(false);setShortcutAmountDraft("");shortcutAmountActive.current=false;shortcutAmountBuffer.current="";
     rfidAppliedKeyRef.current="";seatRfids.forEach(reader=>reader.clearDetection());
+    dealerRfid.resetForNewHand();
     setNotice(`Game reset · Hand 1 · BTN Seat ${next.button}`);
   };
   const resetEverything=()=>{
     if(fullResetConfirmation!=="RESET")return;
     if(!window.confirm("すべての設定と保存データを初期値へ戻します。この操作は取り消せません。続行しますか？"))return;
     seatRfids.forEach(reader=>{reader.disconnect();reader.resetConfig();});
+    dealerRfid.disconnect();dealerRfid.resetConfig();
     window.localStorage.removeItem(RFID_AUTO_APPLY_KEY);setRfidAutoApply(false);rfidAppliedKeyRef.current="";
+    window.localStorage.removeItem(BOARD_INPUT_MODE_KEY);setBoardInputMode("manual");
     const next=createDemoHand();
     window.localStorage.removeItem(STORAGE_KEY);window.localStorage.removeItem(LAYOUT_KEY);window.localStorage.removeItem(LEVELS_KEY);window.localStorage.setItem(DISPLAY_TAB_KEY,"layout");
     setState(next);setHistory([]);setLayout(DEFAULT_LAYOUT);setLevels(DEFAULT_LEVELS.map(level=>({...level,ante:{...level.ante}})));setSelectedLevelId(1);
@@ -440,7 +475,7 @@ export default function PokerConsole(){
     setShortcutAmountEditing(false);setShortcutAmountDraft("");shortcutAmountActive.current=false;shortcutAmountBuffer.current="";
     setNotice("All settings and game data reset");
   };
-  const cardSelect=(value:string,onChange:(value:string)=>void,label:string)=><NativeSelect size="sm" aria-label={label} value={value} onChange={event=>onChange(event.target.value)}><NativeSelectOption value="">—</NativeSelectOption>{deck.map(card=><NativeSelectOption value={card} key={card}>{card}</NativeSelectOption>)}</NativeSelect>;
+  const cardSelect=(value:string,onChange:(value:string)=>void,label:string,disabled=false)=><NativeSelect size="sm" aria-label={label} value={value} disabled={disabled} onChange={event=>onChange(event.target.value)}><NativeSelectOption value="">—</NativeSelectOption>{deck.map(card=><NativeSelectOption value={card} key={card}>{card}</NativeSelectOption>)}</NativeSelect>;
   const percent=(value:number,total:number)=>total?`${((value/total)*100).toFixed(1)}%`:"—";
   const receivedTime=(value:number|null)=>value?new Date(value).toLocaleTimeString():"—";
   const statValues=(stats:PlayerStats)=>[
@@ -568,9 +603,17 @@ export default function PokerConsole(){
             </div>
           </TabsContent>
           <TabsContent value="rfid" className="rfid-tab">
-            <div className="layout-heading rfid-page-heading"><div><span className="eyebrow">RFID DASHBOARD</span><h1>Seat01–Seat09</h1><p>全シートの接続・読取・反映状態を一画面で確認します。</p></div><Button size="sm" variant={rfidAutoApply?"default":"outline"} aria-pressed={rfidAutoApply} onClick={toggleRfidAutoApply}>全席自動反映 {rfidAutoApply?"ON":"OFF"}</Button></div>
+            <div className="layout-heading rfid-page-heading"><div><span className="eyebrow">RFID DASHBOARD</span><h1>Dealer / Seat01–Seat09</h1><p>ボードと全シートの接続・読取・反映状態を一画面で確認します。</p></div><Button size="sm" variant={rfidAutoApply?"default":"outline"} aria-pressed={rfidAutoApply} onClick={toggleRfidAutoApply}>全席自動反映 {rfidAutoApply?"ON":"OFF"}</Button></div>
+            <section className={`dealer-rfid-card is-${dealerRfid.state.status}`}>
+              <div className="dealer-rfid-head"><div><span className="eyebrow">BOARD RFID · 0 ORIGIN</span><h2>{dealerRfid.expectedProbe}</h2><p>{dealerRfid.state.deviceName||"未接続"} · BAT {dealerRfid.state.battery===null?"—":`${dealerRfid.state.battery}%`} · LAST RX {receivedTime(dealerRfid.state.lastMessageAt)}</p></div><span className={`rfid-status is-${dealerRfid.state.status}${dealerRfid.state.scanning?" is-scanning":""}`}>{dealerRfid.state.scanning?`SCANNING [${dealerRfid.state.activeSlots.join(",")}]`:dealerRfid.state.status.toUpperCase()}</span></div>
+              <div className="dealer-rfid-mode"><Button size="sm" variant={boardInputMode==="auto"?"default":"outline"} onClick={()=>changeBoardInputMode("auto")}>自動</Button><Button size="sm" variant={boardInputMode==="manual"?"default":"outline"} onClick={()=>changeBoardInputMode("manual")}>手動</Button><small>手動モード中はDealerからの更新を反映しません。</small></div>
+              <div className="dealer-slot-grid">{dealerRfid.state.slots.map(slot=><article key={slot.slot} className={`detection-${slot.detectionStatus}`}><header><b>slot={slot.slot}</b><small>{["Flop 1","Flop 2","Flop 3","Turn","River"][slot.slot]}</small></header><strong>{slot.confirmedCard===null?"—":cardIndexLabel(slot.confirmedCard)}</strong><span>{slot.detectionStatus.toUpperCase()}</span><small>obs={slot.observations} coverage={(slot.coverage*100).toFixed(0)}% stable={slot.stableUpdates}</small></article>)}</div>
+              {dealerRfid.state.error&&<p className="rfid-seat-error">{dealerRfid.state.error}</p>}
+              <details><summary>受信詳細</summary><pre>{dealerRfid.state.rawMessage||"No message received."}</pre></details>
+              <div className="dealer-rfid-actions"><Button size="sm" onClick={dealerRfid.connect} disabled={["requesting","connecting","connected"].includes(dealerRfid.state.status)}>{dealerRfid.state.status==="connected"?"接続済":"Dealer接続"}</Button><Button size="sm" variant="outline" onClick={()=>dealerRfid.startScan(dealerSlotsForStreet(state.street))} disabled={boardInputMode!=="auto"||dealerRfid.state.status!=="connected"||!dealerSlotsForStreet(state.street).length}>現在Streetを再Scan</Button><Button size="sm" variant="outline" onClick={()=>dealerRfid.startScan([0,1,2,3,4])} disabled={boardInputMode!=="auto"||dealerRfid.state.status!=="connected"}>全slot再Scan</Button><Button size="sm" variant="ghost" onClick={dealerRfid.state.scanning?dealerRfid.stopScan:dealerRfid.disconnect} disabled={!['connected','error'].includes(dealerRfid.state.status)}>{dealerRfid.state.scanning?"停止":"切断"}</Button></div>
+            </section>
             <section className="rfid-settings rfid-settings-compact">
-              <div className="rfid-settings-head"><div><span className="eyebrow">ALL SEATS</span><h2>共通判定基準</h2></div><Button variant="ghost" size="sm" onClick={()=>seatRfids.forEach(reader=>reader.resetConfig())}>初期値へ戻す</Button></div>
+              <div className="rfid-settings-head"><div><span className="eyebrow">DEALER / ALL SEATS</span><h2>共通判定基準</h2></div><Button variant="ghost" size="sm" onClick={()=>{seatRfids.forEach(reader=>reader.resetConfig());dealerRfid.resetConfig();}}>初期値へ戻す</Button></div>
               <div className="rfid-settings-grid">
                 <label>観測窓<Input type="number" min="2" max="100" value={seat01Rfid.config.observationWindow} onChange={event=>updateAllRfidConfig({observationWindow:Number(event.target.value)})}/></label>
                 <label>最低観測<Input type="number" min="1" max="100" value={seat01Rfid.config.minObservations} onChange={event=>updateAllRfidConfig({minObservations:Number(event.target.value)})}/></label>
@@ -630,7 +673,7 @@ export default function PokerConsole(){
         </section>
         <section className="card-editor">
           <div className="section-title"><span>COMMUNITY CARDS</span></div>
-          <div className="board-editor">{["F1","F2","F3","T","R"].map((label,index)=><label key={label}><span>{label}</span>{cardSelect(state.board[index]??"",value=>setBoardCard(index,value),label)}</label>)}</div>
+          <div className="board-editor">{["F1","F2","F3","T","R"].map((label,index)=><label key={label}><span>{label}</span>{cardSelect(state.board[index]??"",value=>setBoardCard(index,value),label,boardInputMode==="auto")}</label>)}</div>
           <div className="section-title"><span>HOLE CARDS</span></div>
           <div className="hole-editor">{state.players.map(player=><div key={player.seat}><b>S{player.seat}</b>{cardSelect(player.cards?.[0]??"",value=>setHoleCard(player.seat,0,value),`Seat ${player.seat} card 1`)}{cardSelect(player.cards?.[1]??"",value=>setHoleCard(player.seat,1,value),`Seat ${player.seat} card 2`)}</div>)}</div>
         </section>

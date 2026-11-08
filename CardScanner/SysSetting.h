@@ -41,6 +41,7 @@ public:
     SysSetting();
     void set(const char *key, const char *value);
     String get(const char *key);
+    bool has(const char *key) const;
     int getAsInt(const char *key);
     bool load();
     bool loadFromStream(SysSettingSourceStream *stream);

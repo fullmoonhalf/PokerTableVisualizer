@@ -13,6 +13,7 @@ public:
     virtual bool scan(int timeout = 500) = 0;
     virtual int scanWithInfo(int timeout, AppCardInfo *outBuffer) = 0;
     virtual int encode(char *outBuffer);
+    virtual void setScanSlotMask(uint32_t mask) = 0;
     virtual int getSensorCount() = 0;
     virtual bool getSensorStatus(int index, char *buffer) = 0;
 
@@ -22,7 +23,7 @@ protected:
     int _scanWithInfo(MFRC522 *m, int timeout, AppCardInfo *outBuffer);
     bool _write(MFRC522 *m, uint page, uint8_t *data, int size, int timeout);
     void _dump(AppCardInfo *infos, int Count);
-    int _encode(char *outBuffer, AppCardInfo *infos, int Count);
+    int _encode(char *outBuffer, AppCardInfo *infos, int Count, bool includeSlot = false);
 
 private:
     bool resetAntenna(MFRC522 *m);
