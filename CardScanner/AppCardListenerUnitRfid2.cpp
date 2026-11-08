@@ -26,11 +26,22 @@ bool AppCardListenerUnitRfid2::init()
 
 bool AppCardListenerUnitRfid2::scan(int timeout)
 {
+    if(!_ScanEnabled)
+    {
+        _CardCount = 0;
+        return false;
+    }
     return _scan(_MFRC522, timeout, _CardInfo, &_CardCount);
 #if VERBOSE_CHECK(VERBOSE_INFO)
     _dump(_CardInfo, _CardCount);
 #endif
     return _CardCount > 0;
+}
+
+
+void AppCardListenerUnitRfid2::setScanSlotMask(uint32_t mask)
+{
+    _ScanEnabled = (mask & 1U) != 0;
 }
 
 
