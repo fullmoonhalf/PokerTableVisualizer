@@ -16,6 +16,7 @@ public:
     virtual bool scan(int timeout = 500);
     virtual int scanWithInfo(int timeout, AppCardInfo *outBuffer);
     virtual int encode(char *outBuffer);
+    virtual void setScanSlotMask(uint32_t mask);
     virtual int getSensorCount();
     virtual bool getSensorStatus(int index, char *buffer);
 
@@ -26,6 +27,7 @@ private:
     MFRC522 *_MFRC522;
     AppCardInfo _CardInfo[8];
     int _CardCount = 0;
+    bool _ScanEnabled = true;
 };
 
 
