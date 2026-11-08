@@ -34,8 +34,8 @@ void AppModeReader::start()
     _Scannable = false;
     _HeartbeatCounter = 0;
     _Timeout = 500;
-    _Idoltime = 5000;
-    _HeartbartInterval = 5000;
+    _IdleTime = 5000;
+    _HeartbeatInterval = 5000;
 
     // カードリーダー初期化
     {
@@ -147,7 +147,7 @@ void AppModeReader::update()
         _ScreenSaveCounter = 0;
     }
 
-    bool display_enable = _ScreenSaveCounter < _Idoltime;
+    bool display_enable = _ScreenSaveCounter < _IdleTime;
     SysDisplay::getInstance().setEnable(display_enable);
 
     // スキャン処理
@@ -160,7 +160,7 @@ void AppModeReader::update()
         }
         NeedToWait = false;
     }
-    if(_HeartbeatCounter > _HeartbartInterval)
+    if(_HeartbeatCounter > _HeartbeatInterval)
     {
         send(false);
     }
@@ -168,7 +168,7 @@ void AppModeReader::update()
     // 待ち処理
     if(NeedToWait)
     {
-        int wait_candidate = (_HeartbartInterval - _HeartbeatCounter)/2;
+        int wait_candidate = (_HeartbeatInterval - _HeartbeatCounter)/2;
         int wait_time = wait_candidate > 500 ? wait_candidate : 500;
         wait(wait_time);
     }
@@ -185,7 +185,7 @@ void AppModeReader::send(bool send_scan_data)
     _BLEProtocolParser->beginConstruction();
     if(send_scan_data)
     {
-        char buffer[256];
+        char buffer[1024];
         _CardReader->encode(buffer);
 
         _BLEProtocolParser->addKeyValue("mode", "scan");
@@ -269,7 +269,35 @@ void AppModeReader::onBLEWrite(const char *buffer, int size)
         auto mode = setting.get("mode");
         _Scannable = setting.getAsInt("scan") != 0 ? true : false; 
         _Timeout = setting.getAsInt("timeout");
-        _Idoltime = setting.getAsInt("idol");
-        _HeartbartInterval = setting.getAsInt("heartbeat");
+        if(setting.has("idle"))
+        {
+            _IdleTime = setting.getAsInt("idle");
+        }
+        else if(setting.has("idol"))
+        {
+            // Temporary compatibility for older browser builds.
+            _IdleTime = setting.getAsInt("idol");
+        }
+        _HeartbeatInterval = setting.getAsInt("heartbeat");
+
+        uint32_t slot_mask = 0xffffffffU;
+        if(setting.has("slots"))
+        {
+            slot_mask = 0;
+            String slots = setting.get("slots");
+            int start = 0;
+            while(start < slots.length())
+            {
+                int end = slots.indexOf(',', start);
+                if(end < 0) end = slots.length();
+                int slot = slots.substring(start, end).toInt();
+                if(slot >= 0 && slot < 32)
+                {
+                    slot_mask |= (1U << slot);
+                }
+                start = end + 1;
+            }
+        }
+        _CardReader->setScanSlotMask(slot_mask);
     }
 }
