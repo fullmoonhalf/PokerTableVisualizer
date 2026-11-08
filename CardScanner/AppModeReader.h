@@ -55,8 +55,8 @@ private: // 表示まわり
     int _LabelMonitorPosX;
     int _LabelMonitorPosY;
     int _Timeout;
-    int _Idoltime;
-    int _HeartbartInterval;
+    int _IdleTime;
+    int _HeartbeatInterval;
     uint32_t _LastMillis;
     uint32_t _ScreenSaveCounter;
     uint32_t _HeartbeatCounter;
