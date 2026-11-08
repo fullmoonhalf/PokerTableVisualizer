@@ -6,8 +6,8 @@ const BLE_SERVICE_UUID="cbaabb28-4e81-49c4-b775-aedfd27d8db0";
 const BLE_TX_UUID="45f116ee-b087-4271-888d-a15eebebd2eb";
 const BLE_RX_UUID="45f116ee-b087-4271-888d-a15eebebd2ee";
 const BLE_DEVICE_PREFIX="PTV_PP_";
-const SCAN_COMMAND="mode=scan\nscan=1\ntimeout=200\nidol=5000\nheartbeat=10000\n";
-const STOP_COMMAND="mode=scan\nscan=0\ntimeout=200\nidol=5000\nheartbeat=10000\n";
+const SCAN_COMMAND="mode=scan\nscan=1\ntimeout=200\nidle=5000\nheartbeat=10000\n";
+const STOP_COMMAND="mode=scan\nscan=0\ntimeout=200\nidle=5000\nheartbeat=10000\n";
 
 type RfidStatus="idle"|"requesting"|"connecting"|"connected"|"disconnected"|"error";
 export type RfidDetectionStatus="empty"|"detecting"|"stable"|"conflict"|"confirmed";
